@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	uuid "github.com/satori/go.uuid"
-	"github.com/threeaccents/mahi"
 )
 
 type ApplicationService struct {
 }
 
-func (s *ApplicationService) Create(ctx context.Context, n *mahi.NewApplication) (*mahi.Application, error) {
-	return &mahi.Application{
+func (s *ApplicationService) Create(ctx context.Context, n *gisvs.NewApplication) (*gisvs.Application, error) {
+	return &gisvs.Application{
 		ID:               uuid.NewV4().String(),
 		Name:             n.Name,
 		Description:      n.Description,
@@ -27,31 +27,31 @@ func (s *ApplicationService) Create(ctx context.Context, n *mahi.NewApplication)
 	}, nil
 }
 
-func (s *ApplicationService) Application(ctx context.Context, id string) (*mahi.Application, error) {
+func (s *ApplicationService) Application(ctx context.Context, id string) (*gisvs.Application, error) {
 	if id != TestID {
-		return nil, mahi.ErrApplicationNotFound
+		return nil, gisvs.ErrApplicationNotFound
 	}
-	return &mahi.Application{}, nil
+	return &gisvs.Application{}, nil
 }
 
-func (s *ApplicationService) Applications(ctx context.Context, sinceID string, limit int) ([]*mahi.Application, error) {
-	return []*mahi.Application{}, nil
+func (s *ApplicationService) Applications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
+	return []*gisvs.Application{}, nil
 }
 
 func (s *ApplicationService) Delete(ctx context.Context, id string) error {
 	if id != TestID {
-		return mahi.ErrApplicationNotFound
+		return gisvs.ErrApplicationNotFound
 	}
 	return nil
 }
 
-func (s *ApplicationService) Update(ctx context.Context, u *mahi.UpdateApplication) (*mahi.Application, error) {
+func (s *ApplicationService) Update(ctx context.Context, u *gisvs.UpdateApplication) (*gisvs.Application, error) {
 	if u.ID != TestID {
-		return nil, mahi.ErrApplicationNotFound
+		return nil, gisvs.ErrApplicationNotFound
 	}
-	return &mahi.Application{}, nil
+	return &gisvs.Application{}, nil
 }
 
-func (s *ApplicationService) FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (mahi.FileBlobStorage, error) {
+func (s *ApplicationService) FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (gisvs.FileBlobStorage, error) {
 	return &FileBlobStorage{}, nil
 }

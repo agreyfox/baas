@@ -3,7 +3,7 @@ package http
 import (
 	"time"
 
-	"github.com/threeaccents/mahi"
+	"github.com/agreyfox/gisvs"
 )
 
 type usagesResponse struct {
@@ -33,7 +33,7 @@ type usageMetric struct {
 	EndDate               time.Time `json:"endDate"`
 }
 
-func sanitizeTotalUsages(items []*mahi.TotalUsage) *usagesData {
+func sanitizeTotalUsages(items []*gisvs.TotalUsage) *usagesData {
 	var res usagesData
 
 	metrics := make([]*usageMetric, len(items))
@@ -62,7 +62,7 @@ func sanitizeTotalUsages(items []*mahi.TotalUsage) *usagesData {
 	return &res
 }
 
-func sanitizeTotalUsageMetric(v *mahi.TotalUsage) *usageMetric {
+func sanitizeTotalUsageMetric(v *gisvs.TotalUsage) *usageMetric {
 	return &usageMetric{
 		Transformations:       v.Transformations,
 		UniqueTransformations: v.UniqueTransformations,
@@ -74,7 +74,7 @@ func sanitizeTotalUsageMetric(v *mahi.TotalUsage) *usageMetric {
 	}
 }
 
-func sanitizeUsages(items []*mahi.Usage) *usagesData {
+func sanitizeUsages(items []*gisvs.Usage) *usagesData {
 	var res usagesData
 
 	metrics := make([]*usageMetric, len(items))
@@ -103,7 +103,7 @@ func sanitizeUsages(items []*mahi.Usage) *usagesData {
 	return &res
 }
 
-func sanitizeUsageMetric(v *mahi.Usage) *usageMetric {
+func sanitizeUsageMetric(v *gisvs.Usage) *usageMetric {
 	return &usageMetric{
 		Transformations:       v.Transformations,
 		UniqueTransformations: v.UniqueTransformations,

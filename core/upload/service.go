@@ -1,14 +1,14 @@
 package upload
 
 import (
+	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
-	"github.com/threeaccents/mahi"
 )
 
 type Service struct {
-	FileService        mahi.FileService
-	UsageService       mahi.UsageService
-	ApplicationService mahi.ApplicationService
+	FileService        gisvs.FileService
+	UsageService       gisvs.UsageService
+	ApplicationService gisvs.ApplicationService
 
 	ChunkUploadDir    string
 	FullFileDir       string

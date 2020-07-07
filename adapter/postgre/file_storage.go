@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/jackc/pgx/v4"
-	"github.com/threeaccents/mahi"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -32,7 +32,7 @@ type FileStorage struct {
 	DB *pgxpool.Pool
 }
 
-func (s *FileStorage) Store(ctx context.Context, n *mahi.NewFile) (*mahi.File, error) {
+func (s *FileStorage) Store(ctx context.Context, n *gisvs.NewFile) (*gisvs.File, error) {
 	var f file
 
 	query := `
@@ -81,7 +81,7 @@ func (s *FileStorage) Store(ctx context.Context, n *mahi.NewFile) (*mahi.File, e
 	return &mahiFile, nil
 }
 
-func (s *FileStorage) File(ctx context.Context, id string) (*mahi.File, error) {
+func (s *FileStorage) File(ctx context.Context, id string) (*gisvs.File, error) {
 	var f file
 
 	query := `
@@ -114,7 +114,7 @@ func (s *FileStorage) File(ctx context.Context, id string) (*mahi.File, error) {
 		&f.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, mahi.ErrFileNotFound
+			return nil, gisvs.ErrFileNotFound
 		}
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (s *FileStorage) File(ctx context.Context, id string) (*mahi.File, error) {
 	return &mahiFile, nil
 }
 
-func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (*mahi.File, error) {
+func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (*gisvs.File, error) {
 	var f file
 
 	query := `
@@ -157,7 +157,7 @@ func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (
 		&f.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, mahi.ErrFileNotFound
+			return nil, gisvs.ErrFileNotFound
 		}
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (
 	return &mahiFile, nil
 }
 
-func (s FileStorage) ApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*mahi.File, error) {
+func (s FileStorage) ApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*gisvs.File, error) {
 	if sinceID == "" {
 		return s.applicationFiles(ctx, applicationID, limit)
 	}
@@ -175,8 +175,8 @@ func (s FileStorage) ApplicationFiles(ctx context.Context, applicationID, sinceI
 	return s.paginateApplicationFiles(ctx, applicationID, sinceID, limit)
 }
 
-func (s FileStorage) applicationFiles(ctx context.Context, applicationID string, limit int) ([]*mahi.File, error) {
-	var files []*mahi.File
+func (s FileStorage) applicationFiles(ctx context.Context, applicationID string, limit int) ([]*gisvs.File, error) {
+	var files []*gisvs.File
 
 	const query = `
 	SELECT id, application_id, file_blob_id, filename, size, mime_type, mime_value, extension,
@@ -224,8 +224,8 @@ func (s FileStorage) applicationFiles(ctx context.Context, applicationID string,
 	return files, nil
 }
 
-func (s FileStorage) paginateApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*mahi.File, error) {
-	var files []*mahi.File
+func (s FileStorage) paginateApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*gisvs.File, error) {
+	var files []*gisvs.File
 
 	sinceFile, err := s.File(ctx, sinceID)
 	if err != nil {
@@ -290,13 +290,13 @@ func (s *FileStorage) Delete(ctx context.Context, id string) error {
 	}
 
 	if r.RowsAffected() == 0 {
-		return mahi.ErrFileNotFound
+		return gisvs.ErrFileNotFound
 	}
 
 	return nil
 }
 
-func sanitizeFile(f file) mahi.File {
+func sanitizeFile(f file) gisvs.File {
 	var width, height int
 	var hash string
 
@@ -312,7 +312,7 @@ func sanitizeFile(f file) mahi.File {
 		hash = f.Hash.String
 	}
 
-	return mahi.File{
+	return gisvs.File{
 		ID:            f.ID,
 		ApplicationID: f.ApplicationID,
 		FileBlobID:    f.FileBlobID,

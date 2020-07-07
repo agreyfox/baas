@@ -6,23 +6,23 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
-	"github.com/threeaccents/mahi"
 )
 
 type ServeService struct {
-	FileStorage mahi.FileStorage
+	FileStorage gisvs.FileStorage
 
-	UsageService       mahi.UsageService
-	ApplicationService mahi.ApplicationService
-	TransformService   mahi.TransformService
+	UsageService       gisvs.UsageService
+	ApplicationService gisvs.ApplicationService
+	TransformService   gisvs.TransformService
 
 	FullFileDir string
 
 	Log zerolog.Logger
 }
 
-func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts mahi.TransformationOption) (*mahi.FileBlob, error) {
+func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts gisvs.TransformationOption) (*gisvs.FileBlob, error) {
 	fileBlobID := getFileBlobID(u.Path)
 
 	file, err := s.FileStorage.FileByFileBlobID(ctx, fileBlobID)
@@ -46,7 +46,7 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts mahi.Transfor
 	}
 
 	if !shouldTransform(file, opts) {
-		updatedUsages := &mahi.UpdateUsage{
+		updatedUsages := &gisvs.UpdateUsage{
 			ApplicationID: file.ApplicationID,
 			Bandwidth:     fileBlob.Size,
 		}
@@ -68,7 +68,7 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts mahi.Transfor
 		return nil, err
 	}
 
-	updatedUsages := &mahi.UpdateUsage{
+	updatedUsages := &gisvs.UpdateUsage{
 		ApplicationID: file.ApplicationID,
 		Bandwidth:     transformedBlob.Size,
 	}
@@ -81,7 +81,7 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts mahi.Transfor
 	return transformedBlob, nil
 }
 
-func shouldTransform(file *mahi.File, opts mahi.TransformationOption) bool {
+func shouldTransform(file *gisvs.File, opts gisvs.TransformationOption) bool {
 	return opts.Width > 0 ||
 		opts.Height > 0 ||
 		opts.Format != file.Extension

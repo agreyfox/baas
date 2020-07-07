@@ -7,24 +7,24 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/agreyfox/gisvs/adapter/s3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/threeaccents/mahi"
-
 	"github.com/gosimple/slug"
 )
 
-func (s *Service) FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (mahi.FileBlobStorage, error) {
-	var fileBlobStorage mahi.FileBlobStorage
+func (s *Service) FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (gisvs.FileBlobStorage, error) {
+	var fileBlobStorage gisvs.FileBlobStorage
 	var err error
 
 	switch engine {
-	case mahi.StorageEngineAzureBlob:
+	case gisvs.StorageEngineAzureBlob:
 		return nil, fmt.Errorf("engine not supported yet")
 	default:
 		// s3, DO, wasabi, b2
+
 		fileBlobStorage, err = s.s3FileBlobStorage(accessKey, secretKey, region, endpoint)
 		if err != nil {
 			return nil, fmt.Errorf("cuold not create s3 file blob storage %w", err)
@@ -34,7 +34,7 @@ func (s *Service) FileBlobStorage(engine, accessKey, secretKey, region, endpoint
 	return fileBlobStorage, nil
 }
 
-func (s *Service) createStorageBucket(ctx context.Context, n *mahi.NewApplication) error {
+func (s *Service) createStorageBucket(ctx context.Context, n *gisvs.NewApplication) error {
 	fileBlobStorage, err := s.FileBlobStorage(n.StorageEngine, n.StorageAccessKey, n.StorageSecretKey, n.StorageRegion, n.StorageEndpoint)
 	if err != nil {
 		return err
@@ -75,11 +75,11 @@ func (s *Service) s3FileBlobStorage(accessKey, secretKey, region, endpoint strin
 
 func makeStorageEndpoint(engine, region string) string {
 	switch engine {
-	case mahi.StorageEngineDigitalOcean:
+	case gisvs.StorageEngineDigitalOcean:
 		return fmt.Sprintf("%s.digitaloceanspaces.com", region)
-	case mahi.StorageEngineWasabi:
+	case gisvs.StorageEngineWasabi:
 		return fmt.Sprintf("s3.%s.wasabisys.com", region)
-	case mahi.StorageEngineB2:
+	case gisvs.StorageEngineB2:
 		return fmt.Sprintf("s3.%s.backblazeb2.com", region)
 	default:
 		return ""
@@ -87,8 +87,8 @@ func makeStorageEndpoint(engine, region string) string {
 }
 
 func makeStorageBucketName(appname string) string {
-	salt := strconv.Itoa(mahi.RandInt(1000, 10000))
+	salt := strconv.Itoa(gisvs.RandInt(1000, 10000))
 	sluggedName := appname + "-" + salt
 
-	return slug.Make("mahi-" + sluggedName)
+	return slug.Make("gisvs-" + sluggedName)
 }

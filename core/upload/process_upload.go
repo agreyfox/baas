@@ -11,12 +11,12 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gosimple/slug"
-	"github.com/threeaccents/mahi"
 )
 
-func (s *Service) processUpload(ctx context.Context, u *uploadData) (*mahi.File, error) {
+func (s *Service) processUpload(ctx context.Context, u *uploadData) (*gisvs.File, error) {
 	app, err := s.ApplicationService.Application(ctx, u.ApplicationID)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (s *Service) processUpload(ctx context.Context, u *uploadData) (*mahi.File,
 
 	fileBlobID := makeFileBlobID(time.Now(), app.Name, u.Filename)
 
-	newFile := &mahi.NewFile{
+	newFile := &gisvs.NewFile{
 		ApplicationID: app.ID,
 		Filename:      u.Filename,
 		FileBlobID:    fileBlobID,
@@ -55,7 +55,7 @@ func (s *Service) processUpload(ctx context.Context, u *uploadData) (*mahi.File,
 		return nil, err
 	}
 
-	fileBlob := &mahi.FileBlob{
+	fileBlob := &gisvs.FileBlob{
 		ID:        newFile.FileBlobID,
 		Data:      u.File,
 		MIMEValue: newFile.MIMEValue,
@@ -76,7 +76,7 @@ func (s *Service) processUpload(ctx context.Context, u *uploadData) (*mahi.File,
 		return nil, fmt.Errorf("could not store file %w", err)
 	}
 
-	updatedUsage := &mahi.UpdateUsage{
+	updatedUsage := &gisvs.UpdateUsage{
 		ApplicationID: f.ApplicationID,
 		Storage:       f.Size,
 		FileCount:     1,

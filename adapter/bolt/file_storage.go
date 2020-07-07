@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/asdine/storm/v3/q"
-	"github.com/threeaccents/mahi"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -71,7 +71,7 @@ func (f file) validate() error {
 	return nil
 }
 
-func (s *FileStorage) Store(ctx context.Context, n *mahi.NewFile) (*mahi.File, error) {
+func (s *FileStorage) Store(ctx context.Context, n *gisvs.NewFile) (*gisvs.File, error) {
 	f := file{
 		ID:            uuid.NewV4().String(),
 		ApplicationID: n.ApplicationID,
@@ -102,11 +102,11 @@ func (s *FileStorage) Store(ctx context.Context, n *mahi.NewFile) (*mahi.File, e
 	return &mahiFile, nil
 }
 
-func (s *FileStorage) File(ctx context.Context, id string) (*mahi.File, error) {
+func (s *FileStorage) File(ctx context.Context, id string) (*gisvs.File, error) {
 	var f file
 	if err := s.DB.One("ID", id, &f); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, mahi.ErrFileNotFound
+			return nil, gisvs.ErrFileNotFound
 		}
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (s *FileStorage) boltFile(ctx context.Context, id string) (*file, error) {
 	var f file
 	if err := s.DB.One("ID", id, &f); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, mahi.ErrFileNotFound
+			return nil, gisvs.ErrFileNotFound
 		}
 		return nil, err
 	}
@@ -128,11 +128,11 @@ func (s *FileStorage) boltFile(ctx context.Context, id string) (*file, error) {
 	return &f, nil
 }
 
-func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (*mahi.File, error) {
+func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (*gisvs.File, error) {
 	var f file
 	if err := s.DB.One("FileBlobID", fileBlobID, &f); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, mahi.ErrFileNotFound
+			return nil, gisvs.ErrFileNotFound
 		}
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (s *FileStorage) FileByFileBlobID(ctx context.Context, fileBlobID string) (
 	return &mahiFile, nil
 }
 
-func (s FileStorage) ApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*mahi.File, error) {
+func (s FileStorage) ApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*gisvs.File, error) {
 	if sinceID == "" {
 		return s.applicationFiles(ctx, applicationID, limit)
 	}
@@ -150,16 +150,16 @@ func (s FileStorage) ApplicationFiles(ctx context.Context, applicationID, sinceI
 	return s.paginateApplicationFiles(ctx, applicationID, sinceID, limit)
 }
 
-func (s FileStorage) applicationFiles(ctx context.Context, applicationID string, limit int) ([]*mahi.File, error) {
+func (s FileStorage) applicationFiles(ctx context.Context, applicationID string, limit int) ([]*gisvs.File, error) {
 	var files []*file
 	if err := s.DB.Select(q.Eq("ApplicationID", applicationID)).Limit(limit).OrderBy("CreatedAt").Reverse().Find(&files); err != nil {
 		if err == storm.ErrNotFound {
-			return []*mahi.File{}, nil
+			return []*gisvs.File{}, nil
 		}
 		return nil, err
 	}
 
-	var mahiFiles []*mahi.File
+	var mahiFiles []*gisvs.File
 
 	for _, f := range files {
 		mahiApp := sanitizeFile(*f)
@@ -170,7 +170,7 @@ func (s FileStorage) applicationFiles(ctx context.Context, applicationID string,
 	return mahiFiles, nil
 }
 
-func (s FileStorage) paginateApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*mahi.File, error) {
+func (s FileStorage) paginateApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*gisvs.File, error) {
 	sinceFile, err := s.boltFile(ctx, sinceID)
 	if err != nil {
 		return nil, err
@@ -179,12 +179,12 @@ func (s FileStorage) paginateApplicationFiles(ctx context.Context, applicationID
 	var files []*file
 	if err := s.DB.Select(q.Lt("Pk", sinceFile.Pk), q.Eq("ApplicationID", applicationID)).Limit(limit).OrderBy("CreatedAt").Reverse().Find(&files); err != nil {
 		if err == storm.ErrNotFound {
-			return []*mahi.File{}, nil
+			return []*gisvs.File{}, nil
 		}
 		return nil, err
 	}
 
-	var mahiFiles []*mahi.File
+	var mahiFiles []*gisvs.File
 
 	for _, f := range files {
 		mahiApp := sanitizeFile(*f)
@@ -208,8 +208,8 @@ func (s *FileStorage) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func sanitizeFile(f file) mahi.File {
-	return mahi.File{
+func sanitizeFile(f file) gisvs.File {
+	return gisvs.File{
 		ID:            f.ID,
 		ApplicationID: f.ApplicationID,
 		FileBlobID:    f.FileBlobID,

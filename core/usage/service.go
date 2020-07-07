@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/jinzhu/now"
-	"github.com/threeaccents/mahi"
 )
 
 type Service struct {
-	UsageStorage mahi.UsageStorage
+	UsageStorage gisvs.UsageStorage
 }
 
-func (s *Service) Update(ctx context.Context, u *mahi.UpdateUsage) error {
+func (s *Service) Update(ctx context.Context, u *gisvs.UpdateUsage) error {
 	if _, err := s.UsageStorage.Update(ctx, u); err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func (s *Service) Update(ctx context.Context, u *mahi.UpdateUsage) error {
 	return nil
 }
 
-func (s *Service) Usages(ctx context.Context, startDate, endDate time.Time) ([]*mahi.TotalUsage, error) {
+func (s *Service) Usages(ctx context.Context, startDate, endDate time.Time) ([]*gisvs.TotalUsage, error) {
 	start := startDate
 	if start == (time.Time{}) {
 		start = now.BeginningOfMonth()
@@ -34,7 +34,7 @@ func (s *Service) Usages(ctx context.Context, startDate, endDate time.Time) ([]*
 	return s.UsageStorage.Usages(ctx, start, end)
 }
 
-func (s *Service) ApplicationUsages(ctx context.Context, applicationID string, startDate, endDate time.Time) ([]*mahi.Usage, error) {
+func (s *Service) ApplicationUsages(ctx context.Context, applicationID string, startDate, endDate time.Time) ([]*gisvs.Usage, error) {
 	start := startDate
 	if start == (time.Time{}) {
 		start = now.BeginningOfMonth()

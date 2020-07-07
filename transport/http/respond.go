@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
-	"github.com/threeaccents/mahi"
 )
 
 type PaginationData struct {
@@ -50,11 +50,11 @@ type MessageData struct {
 
 // RespondError writes an API error message to the response and logger.
 func RespondError(w http.ResponseWriter, err error, code int, reqID string) {
-	if errors.Is(err, mahi.ErrFileToLargeToTransform) || errors.Is(err, mahi.ErrApplicationNameTaken) || errors.Is(err, mahi.ErrBucketNotFound) || errors.Is(err, mahi.ErrInvalidStorageKey) {
+	if errors.Is(err, gisvs.ErrFileToLargeToTransform) || errors.Is(err, gisvs.ErrApplicationNameTaken) || errors.Is(err, gisvs.ErrBucketNotFound) || errors.Is(err, gisvs.ErrInvalidStorageKey) {
 		code = http.StatusBadRequest
 	}
 
-	if errors.Is(err, mahi.ErrFileNotFound) || errors.Is(err, mahi.ErrApplicationNotFound) {
+	if errors.Is(err, gisvs.ErrFileNotFound) || errors.Is(err, gisvs.ErrApplicationNotFound) {
 		code = http.StatusNotFound
 	}
 
@@ -65,7 +65,7 @@ func RespondError(w http.ResponseWriter, err error, code int, reqID string) {
 
 	// Hide error from client if it is internal.
 	if code == http.StatusInternalServerError && os.Getenv("DEBUG") != "true" {
-		err = mahi.ErrInternal
+		err = gisvs.ErrInternal
 	}
 
 	var errType string
@@ -125,7 +125,7 @@ func RespondAccepted(w http.ResponseWriter, v interface{}) {
 	encodeJSON(w, v)
 }
 
-func RespondServeFile(w http.ResponseWriter, f *mahi.FileBlob) {
+func RespondServeFile(w http.ResponseWriter, f *gisvs.FileBlob) {
 	w.Header().Set("Content-Type", f.MIMEValue)
 	w.Header().Set("Content-Length", strconv.FormatInt(f.Size, 10))
 	w.Header().Set("Cache-Control", "max-age=2592000")

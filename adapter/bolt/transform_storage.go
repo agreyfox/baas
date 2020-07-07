@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/asdine/storm/v3/q"
-	"github.com/threeaccents/mahi"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -22,7 +22,7 @@ type transformation struct {
 	ID            string `storm:"index"`
 	ApplicationID string
 	FileID        string
-	Actions       mahi.TransformationOption
+	Actions       gisvs.TransformationOption
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -36,7 +36,7 @@ func (t transformation) validate(db *storm.DB) error {
 		return errors.New("fileID is required")
 	}
 
-	if t.Actions == (mahi.TransformationOption{}) {
+	if t.Actions == (gisvs.TransformationOption{}) {
 		return errors.New("actions is required")
 	}
 
@@ -49,13 +49,13 @@ func (t transformation) validate(db *storm.DB) error {
 	}
 
 	if tran.ID != "" {
-		return mahi.ErrTransformationNotUnique
+		return gisvs.ErrTransformationNotUnique
 	}
 
 	return nil
 }
 
-func (s *TransformStorage) Store(ctx context.Context, n *mahi.NewTransformation) (*mahi.Transformation, error) {
+func (s *TransformStorage) Store(ctx context.Context, n *gisvs.NewTransformation) (*gisvs.Transformation, error) {
 	t := transformation{
 		ID:            uuid.NewV4().String(),
 		ApplicationID: n.ApplicationID,
@@ -71,7 +71,7 @@ func (s *TransformStorage) Store(ctx context.Context, n *mahi.NewTransformation)
 
 	if err := s.DB.Save(&t); err != nil {
 		if err == storm.ErrAlreadyExists {
-			return nil, mahi.ErrApplicationNameTaken
+			return nil, gisvs.ErrApplicationNameTaken
 		}
 		return nil, err
 	}
@@ -81,8 +81,8 @@ func (s *TransformStorage) Store(ctx context.Context, n *mahi.NewTransformation)
 	return &mahiTran, nil
 }
 
-func sanitizeTransformation(t transformation) mahi.Transformation {
-	return mahi.Transformation{
+func sanitizeTransformation(t transformation) gisvs.Transformation {
+	return gisvs.Transformation{
 		ID:            t.ID,
 		ApplicationID: t.ApplicationID,
 		FileID:        t.FileID,

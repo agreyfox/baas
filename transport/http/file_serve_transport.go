@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/threeaccents/mahi"
+	"github.com/agreyfox/gisvs"
 )
 
 func (s *Server) handleServeFile() http.Handler {
@@ -28,15 +28,15 @@ func (s *Server) handleServeFile() http.Handler {
 	})
 }
 
-func (s *Server) parseTransformationOptions(u *url.URL) (mahi.TransformationOption, error) {
+func (s *Server) parseTransformationOptions(u *url.URL) (gisvs.TransformationOption, error) {
 	extension := getFileExtension(u)
 
 	var queryParams serveFileQueryParam
 	if err := s.QueryDecoder.Decode(&queryParams, u.Query()); err != nil {
-		return mahi.TransformationOption{}, fmt.Errorf("failed to decode query params %w", err)
+		return gisvs.TransformationOption{}, fmt.Errorf("failed to decode query params %w", err)
 	}
 
-	opts := mahi.TransformationOption{
+	opts := gisvs.TransformationOption{
 		Width:       queryParams.Width,
 		Height:      queryParams.Height,
 		Format:      extension,

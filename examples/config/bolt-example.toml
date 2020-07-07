@@ -15,4 +15,4 @@ max_file_size_upload=20000000
 max_transform_file_size=50000000
 
 [bolt]
-dir = "./data/mahi.db"
+dir = "./data/gisvs.db"

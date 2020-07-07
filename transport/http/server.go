@@ -3,17 +3,17 @@ package http
 import (
 	"net/http"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/rs/zerolog"
-	"github.com/threeaccents/mahi"
 )
 
 type ServerConfig struct {
-	ApplicationService mahi.ApplicationService
-	UploadService      mahi.UploadService
-	FileServeService   mahi.FileServeService
-	UsageService       mahi.UsageService
+	ApplicationService gisvs.ApplicationService
+	UploadService      gisvs.UploadService
+	FileServeService   gisvs.FileServeService
+	UsageService       gisvs.UsageService
 
 	QueryDecoder *schema.Decoder
 
@@ -23,10 +23,10 @@ type ServerConfig struct {
 }
 
 type Server struct {
-	ApplicationService mahi.ApplicationService
-	UploadService      mahi.UploadService
-	FileServeService   mahi.FileServeService
-	UsageService       mahi.UsageService
+	ApplicationService gisvs.ApplicationService
+	UploadService      gisvs.UploadService
+	FileServeService   gisvs.FileServeService
+	UsageService       gisvs.UsageService
 
 	QueryDecoder *schema.Decoder
 

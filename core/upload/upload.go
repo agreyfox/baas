@@ -9,7 +9,7 @@ import (
 	"mime/multipart"
 	"os"
 
-	"github.com/threeaccents/mahi"
+	"github.com/agreyfox/gisvs"
 )
 
 type uploadData struct {
@@ -19,7 +19,7 @@ type uploadData struct {
 	Filename      string
 }
 
-func (s *Service) Upload(ctx context.Context, r *multipart.Reader) (*mahi.File, error) {
+func (s *Service) Upload(ctx context.Context, r *multipart.Reader) (*gisvs.File, error) {
 	u, err := s.parseUploadData(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing form data %w", err)
@@ -66,7 +66,7 @@ func (s *Service) parseUploadData(reader *multipart.Reader) (*uploadData, error)
 		return nil, fmt.Errorf("failed reading chunk part %w", err)
 	}
 
-	file, err := ioutil.TempFile("", "mahi-")
+	file, err := ioutil.TempFile("", "gisvs-")
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/threeaccents/mahi"
+	"github.com/agreyfox/gisvs"
 )
 
 func (s *Server) Authenticate(next http.Handler) http.Handler {
@@ -33,7 +33,7 @@ func (s *Server) Authenticate(next http.Handler) http.Handler {
 func extractAuthToken(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		return "", mahi.ErrAuthorizationHeaderMissing
+		return "", gisvs.ErrAuthorizationHeaderMissing
 	}
 
 	authHeaderParts := strings.Split(authHeader, " ")

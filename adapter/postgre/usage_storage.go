@@ -5,10 +5,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jinzhu/now"
-	"github.com/threeaccents/mahi"
 )
 
 type usage struct {
@@ -29,7 +29,7 @@ type UsageStorage struct {
 	DB *pgxpool.Pool
 }
 
-func (s *UsageStorage) Store(ctx context.Context, n *mahi.NewUsage) (*mahi.Usage, error) {
+func (s *UsageStorage) Store(ctx context.Context, n *gisvs.NewUsage) (*gisvs.Usage, error) {
 	if n.StartDate.Format("01/02/2006") == n.EndDate.Format("01/02/2006") {
 		return nil, errors.New("start and end times cannot be the same")
 	}
@@ -75,7 +75,7 @@ func (s *UsageStorage) Store(ctx context.Context, n *mahi.NewUsage) (*mahi.Usage
 	return &mahiUsage, nil
 }
 
-func (s *UsageStorage) Update(ctx context.Context, u *mahi.UpdateUsage) (*mahi.Usage, error) {
+func (s *UsageStorage) Update(ctx context.Context, u *gisvs.UpdateUsage) (*gisvs.Usage, error) {
 	start := now.BeginningOfDay()
 	if u.StartDate != (time.Time{}) {
 		start = now.New(u.StartDate).BeginningOfDay()
@@ -91,14 +91,14 @@ func (s *UsageStorage) Update(ctx context.Context, u *mahi.UpdateUsage) (*mahi.U
 	}
 
 	usage, err := s.Usage(ctx, u.ApplicationID, start, end)
-	if err != nil && err != mahi.ErrUsageNotFound {
+	if err != nil && err != gisvs.ErrUsageNotFound {
 		return nil, err
 	}
 
 	// first entry of the day
-	if err != nil && err == mahi.ErrUsageNotFound {
+	if err != nil && err == gisvs.ErrUsageNotFound {
 		latestUsage, err := s.lastApplicationUsage(ctx, u.ApplicationID)
-		if err != nil && err != mahi.ErrUsageNotFound {
+		if err != nil && err != gisvs.ErrUsageNotFound {
 			return nil, err
 		}
 
@@ -106,7 +106,7 @@ func (s *UsageStorage) Update(ctx context.Context, u *mahi.UpdateUsage) (*mahi.U
 		storage := latestUsage.Storage + u.Storage
 		fileCount := latestUsage.FileCount + u.FileCount
 
-		newUsage := &mahi.NewUsage{
+		newUsage := &gisvs.NewUsage{
 			ApplicationID:         u.ApplicationID,
 			Transformations:       u.Transformations,
 			UniqueTransformations: u.UniqueTransformations,
@@ -120,7 +120,7 @@ func (s *UsageStorage) Update(ctx context.Context, u *mahi.UpdateUsage) (*mahi.U
 		return s.Store(ctx, newUsage)
 	}
 
-	updatedUsage := &mahi.UpdateUsage{
+	updatedUsage := &gisvs.UpdateUsage{
 		ApplicationID:         u.ApplicationID,
 		Transformations:       usage.Transformations + u.Transformations,
 		UniqueTransformations: usage.UniqueTransformations + u.UniqueTransformations,
@@ -134,7 +134,7 @@ func (s *UsageStorage) Update(ctx context.Context, u *mahi.UpdateUsage) (*mahi.U
 	return s.update(ctx, usage.ID, updatedUsage)
 }
 
-func (s *UsageStorage) Usage(ctx context.Context, applicationID string, start, end time.Time) (*mahi.Usage, error) {
+func (s *UsageStorage) Usage(ctx context.Context, applicationID string, start, end time.Time) (*gisvs.Usage, error) {
 	var u usage
 
 	query := `
@@ -168,7 +168,7 @@ func (s *UsageStorage) Usage(ctx context.Context, applicationID string, start, e
 		&u.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, mahi.ErrUsageNotFound
+			return nil, gisvs.ErrUsageNotFound
 		}
 		return nil, err
 	}
@@ -178,8 +178,8 @@ func (s *UsageStorage) Usage(ctx context.Context, applicationID string, start, e
 	return &mahiUsage, nil
 }
 
-func (s *UsageStorage) ApplicationUsages(ctx context.Context, applicationID string, start, end time.Time) ([]*mahi.Usage, error) {
-	var usages []*mahi.Usage
+func (s *UsageStorage) ApplicationUsages(ctx context.Context, applicationID string, start, end time.Time) ([]*gisvs.Usage, error) {
+	var usages []*gisvs.Usage
 
 	query := `
 		SELECT id, application_id, transformations, unique_transformations, bandwidth, storage, file_count, start_date, end_date,
@@ -232,8 +232,8 @@ func (s *UsageStorage) ApplicationUsages(ctx context.Context, applicationID stri
 	return usages, nil
 }
 
-func (s *UsageStorage) Usages(ctx context.Context, start, end time.Time) ([]*mahi.TotalUsage, error) {
-	var usages []*mahi.TotalUsage
+func (s *UsageStorage) Usages(ctx context.Context, start, end time.Time) ([]*gisvs.TotalUsage, error) {
+	var usages []*gisvs.TotalUsage
 
 	query := `
 		SELECT SUM(transformations)  AS transformations,
@@ -286,7 +286,7 @@ func (s *UsageStorage) Usages(ctx context.Context, start, end time.Time) ([]*mah
 	return usages, nil
 }
 
-func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *mahi.UpdateUsage) (*mahi.Usage, error) {
+func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *gisvs.UpdateUsage) (*gisvs.Usage, error) {
 	var u usage
 
 	query := `
@@ -331,7 +331,7 @@ func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *mahi
 	return &mahiUsage, nil
 }
 
-func (s *UsageStorage) lastApplicationUsage(ctx context.Context, applicationID string) (mahi.Usage, error) {
+func (s *UsageStorage) lastApplicationUsage(ctx context.Context, applicationID string) (gisvs.Usage, error) {
 	var u usage
 
 	query := `
@@ -360,9 +360,9 @@ func (s *UsageStorage) lastApplicationUsage(ctx context.Context, applicationID s
 		&u.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return mahi.Usage{}, mahi.ErrUsageNotFound
+			return gisvs.Usage{}, gisvs.ErrUsageNotFound
 		}
-		return mahi.Usage{}, err
+		return gisvs.Usage{}, err
 	}
 
 	mahiUsage := sanitizeUsage(u)
@@ -370,8 +370,8 @@ func (s *UsageStorage) lastApplicationUsage(ctx context.Context, applicationID s
 	return mahiUsage, nil
 }
 
-func sanitizeUsage(u usage) mahi.Usage {
-	return mahi.Usage{
+func sanitizeUsage(u usage) gisvs.Usage {
+	return gisvs.Usage{
 		ID:                    u.ID,
 		ApplicationID:         u.ApplicationID,
 		Transformations:       u.Transformations,
@@ -386,8 +386,8 @@ func sanitizeUsage(u usage) mahi.Usage {
 	}
 }
 
-func sanitizeTotalUsage(u usage) mahi.TotalUsage {
-	return mahi.TotalUsage{
+func sanitizeTotalUsage(u usage) gisvs.TotalUsage {
+	return gisvs.TotalUsage{
 		Transformations:       u.Transformations,
 		UniqueTransformations: u.UniqueTransformations,
 		Bandwidth:             u.Bandwidth,

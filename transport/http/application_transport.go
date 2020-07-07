@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/gorilla/mux"
-	"github.com/threeaccents/mahi"
 )
 
 func (s *Server) handleCreateApplication() http.Handler {
@@ -23,7 +23,7 @@ func (s *Server) handleCreateApplication() http.Handler {
 			return
 		}
 
-		n := &mahi.NewApplication{
+		n := &gisvs.NewApplication{
 			Name:             payload.Name,
 			Description:      payload.Description,
 			StorageAccessKey: payload.StorageAccessKey,
@@ -112,7 +112,7 @@ func (s *Server) handleUpdateApplication() http.Handler {
 			return
 		}
 
-		n := &mahi.UpdateApplication{
+		n := &gisvs.UpdateApplication{
 			ID:          payload.ID,
 			Name:        payload.Name,
 			Description: payload.Description,
@@ -145,28 +145,28 @@ func (s *Server) handleDeleteApplication() http.Handler {
 	})
 }
 
-func generateApplicationSinceID(applications []*mahi.Application, queryLimit int) string {
+func generateApplicationSinceID(applications []*gisvs.Application, queryLimit int) string {
 	filesLen := len(applications)
 
 	if filesLen == 0 {
 		return ""
 	}
 
-	if filesLen != mahi.DefaultFilePaginationLimit || filesLen != queryLimit {
+	if filesLen != gisvs.DefaultFilePaginationLimit || filesLen != queryLimit {
 		return applications[len(applications)-1].ID
 	}
 
 	return ""
 }
 
-func generateNextApplicationURL(applications []*mahi.Application, queryLimit int, q url.Values) string {
+func generateNextApplicationURL(applications []*gisvs.Application, queryLimit int, q url.Values) string {
 	appsLen := len(applications)
 
 	if appsLen == 0 {
 		return ""
 	}
 
-	if appsLen == mahi.DefaultFilePaginationLimit || appsLen == queryLimit {
+	if appsLen == gisvs.DefaultFilePaginationLimit || appsLen == queryLimit {
 		sinceID := applications[len(applications)-1].ID
 
 		q.Set("since_id", sinceID)

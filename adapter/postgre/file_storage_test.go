@@ -6,19 +6,19 @@ import (
 
 	"syreclabs.com/go/faker"
 
+	"github.com/agreyfox/gisvs"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/threeaccents/mahi"
 )
 
 func TestFileStorage_Store(t *testing.T) {
-	completeFile := &mahi.NewFile{ApplicationID: testApplication.ID, Filename: faker.Name().String(), FileBlobID: faker.Name().String(), Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Hash: "test", Width: 50, Height: 50}
-	completeFileWithNoHash := &mahi.NewFile{ApplicationID: testApplication.ID, Filename: faker.Name().String(), FileBlobID: faker.Name().String(), Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Width: 50, Height: 50}
-	completeFileWithNoWidthAndHeight := &mahi.NewFile{ApplicationID: testApplication.ID, Filename: faker.Name().String(), FileBlobID: faker.Name().String(), Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Hash: "test"}
-	NoNameFile := &mahi.NewFile{ApplicationID: testApplication.ID, FileBlobID: "test", Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Hash: "test", Width: 50, Height: 50}
+	completeFile := &gisvs.NewFile{ApplicationID: testApplication.ID, Filename: faker.Name().String(), FileBlobID: faker.Name().String(), Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Hash: "test", Width: 50, Height: 50}
+	completeFileWithNoHash := &gisvs.NewFile{ApplicationID: testApplication.ID, Filename: faker.Name().String(), FileBlobID: faker.Name().String(), Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Width: 50, Height: 50}
+	completeFileWithNoWidthAndHeight := &gisvs.NewFile{ApplicationID: testApplication.ID, Filename: faker.Name().String(), FileBlobID: faker.Name().String(), Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Hash: "test"}
+	NoNameFile := &gisvs.NewFile{ApplicationID: testApplication.ID, FileBlobID: "test", Size: faker.RandomInt64(100, 999999), MIMEType: "test", MIMEValue: "test", Extension: "test", URL: faker.Name().String(), Hash: "test", Width: 50, Height: 50}
 
 	tests := []struct {
-		newFile     *mahi.NewFile
+		newFile     *gisvs.NewFile
 		expected    bool
 		description string
 	}{
@@ -70,7 +70,7 @@ func TestFileStorage_File(t *testing.T) {
 		errType     interface{}
 	}{
 		{existentID, true, "file should be returned", nil},
-		{nonExistentID, false, "file with wrong id should return err", mahi.ErrFileNotFound},
+		{nonExistentID, false, "file with wrong id should return err", gisvs.ErrFileNotFound},
 		{notUUID, false, "file with invalid uuid should return error", nil},
 	}
 
@@ -85,7 +85,7 @@ func TestFileStorage_File(t *testing.T) {
 		}
 
 		if test.errType != nil {
-			assert.Equal(t, err, mahi.ErrFileNotFound, "error should be mahi.ErrFileNotFound")
+			assert.Equal(t, err, gisvs.ErrFileNotFound, "error should be gisvs.ErrFileNotFound")
 		}
 
 		if err == nil {
@@ -117,7 +117,7 @@ func TestFileStorage_FileByFileBlobID(t *testing.T) {
 		errType     interface{}
 	}{
 		{existentID, true, "file should be returned", nil},
-		{nonExistentID, false, "file with wrong id should return err", mahi.ErrFileNotFound},
+		{nonExistentID, false, "file with wrong id should return err", gisvs.ErrFileNotFound},
 	}
 
 	ctx := context.Background()
@@ -131,7 +131,7 @@ func TestFileStorage_FileByFileBlobID(t *testing.T) {
 		}
 
 		if test.errType != nil {
-			assert.Equal(t, err, mahi.ErrFileNotFound, "error should be mahi.ErrFileNotFound")
+			assert.Equal(t, err, gisvs.ErrFileNotFound, "error should be gisvs.ErrFileNotFound")
 		}
 
 		if err == nil {
@@ -190,7 +190,7 @@ func TestFileStorage_Delete(t *testing.T) {
 		errType     interface{}
 	}{
 		{existentID, true, "file should be returned", nil},
-		{nonExistentID, false, "file with wrong id should return err", mahi.ErrFileNotFound},
+		{nonExistentID, false, "file with wrong id should return err", gisvs.ErrFileNotFound},
 		{notUUID, false, "file with invalid uuid should return error", nil},
 	}
 
@@ -205,7 +205,7 @@ func TestFileStorage_Delete(t *testing.T) {
 		}
 
 		if test.errType != nil {
-			assert.Equal(t, err, mahi.ErrFileNotFound, "error should be mahi.ErrFileNotFound")
+			assert.Equal(t, err, gisvs.ErrFileNotFound, "error should be gisvs.ErrFileNotFound")
 		}
 	}
 }

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/threeaccents/mahi"
 )
 
 const (
@@ -22,12 +22,12 @@ type transformation struct {
 	ID            string
 	ApplicationID string
 	FileID        string
-	Actions       mahi.TransformationOption
+	Actions       gisvs.TransformationOption
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
 
-func (s *TransformStorage) Store(ctx context.Context, n *mahi.NewTransformation) (*mahi.Transformation, error) {
+func (s *TransformStorage) Store(ctx context.Context, n *gisvs.NewTransformation) (*gisvs.Transformation, error) {
 	var t transformation
 
 	query := `
@@ -53,7 +53,7 @@ func (s *TransformStorage) Store(ctx context.Context, n *mahi.NewTransformation)
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.ConstraintName == uniqueFileTransformationConstraint {
-				return nil, mahi.ErrTransformationNotUnique
+				return nil, gisvs.ErrTransformationNotUnique
 			}
 		}
 		return nil, err
@@ -64,8 +64,8 @@ func (s *TransformStorage) Store(ctx context.Context, n *mahi.NewTransformation)
 	return &mahiTransformation, nil
 }
 
-func sanitizeTransformation(t transformation) mahi.Transformation {
-	return mahi.Transformation{
+func sanitizeTransformation(t transformation) gisvs.Transformation {
+	return gisvs.Transformation{
 		ID:            t.ID,
 		ApplicationID: t.ApplicationID,
 		FileID:        t.FileID,

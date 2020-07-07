@@ -6,29 +6,29 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
-	"github.com/threeaccents/mahi"
 
 	"gopkg.in/h2non/bimg.v1"
 )
 
 type TransformService struct {
-	UsageService mahi.UsageService
+	UsageService gisvs.UsageService
 
-	TransformStorage mahi.TransformStorage
+	TransformStorage gisvs.TransformStorage
 
 	MaxTransformFileSize int64
 
 	Log zerolog.Logger
 }
 
-func (s *TransformService) Transform(ctx context.Context, f *mahi.File, blob *mahi.FileBlob, opts mahi.TransformationOption) (*mahi.FileBlob, error) {
+func (s *TransformService) Transform(ctx context.Context, f *gisvs.File, blob *gisvs.FileBlob, opts gisvs.TransformationOption) (*gisvs.FileBlob, error) {
 	if !blob.IsTransformable() {
 		return blob, nil
 	}
 
 	if blob.Size > s.MaxTransformFileSize {
-		return nil, mahi.ErrFileToLargeToTransform
+		return nil, gisvs.ErrFileToLargeToTransform
 	}
 
 	transformedBlob, err := transform(blob, opts)
@@ -44,20 +44,20 @@ func (s *TransformService) Transform(ctx context.Context, f *mahi.File, blob *ma
 	return transformedBlob, nil
 }
 
-func (s *TransformService) updateUsages(ctx context.Context, f *mahi.File, opts mahi.TransformationOption) error {
-	updatedUsages := &mahi.UpdateUsage{
+func (s *TransformService) updateUsages(ctx context.Context, f *gisvs.File, opts gisvs.TransformationOption) error {
+	updatedUsages := &gisvs.UpdateUsage{
 		ApplicationID:   f.ApplicationID,
 		Transformations: 1,
 	}
 
-	newTransformation := &mahi.NewTransformation{
+	newTransformation := &gisvs.NewTransformation{
 		FileID:        f.ID,
 		ApplicationID: f.ApplicationID,
 		Actions:       opts,
 	}
 
 	_, err := s.TransformStorage.Store(ctx, newTransformation)
-	if err != nil && err != mahi.ErrTransformationNotUnique {
+	if err != nil && err != gisvs.ErrTransformationNotUnique {
 		return err
 	}
 
@@ -68,10 +68,10 @@ func (s *TransformService) updateUsages(ctx context.Context, f *mahi.File, opts 
 	return s.UsageService.Update(ctx, updatedUsages)
 }
 
-func transform(blob *mahi.FileBlob, opts mahi.TransformationOption) (*mahi.FileBlob, error) {
+func transform(blob *gisvs.FileBlob, opts gisvs.TransformationOption) (*gisvs.FileBlob, error) {
 	bimgOpts := convertBimgOptions(opts)
 
-	f := new(mahi.FileBlob)
+	f := new(gisvs.FileBlob)
 
 	blobBytes := make([]byte, blob.Size)
 	if _, err := blob.Bytes(blobBytes); err != nil {
@@ -114,7 +114,7 @@ func getMimeValue(format string) string {
 	return fileFormat
 }
 
-func convertBimgOptions(opts mahi.TransformationOption) bimg.Options {
+func convertBimgOptions(opts gisvs.TransformationOption) bimg.Options {
 	var fileType bimg.ImageType
 
 	switch opts.Format {

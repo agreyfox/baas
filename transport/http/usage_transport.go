@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/agreyfox/gisvs"
 	"github.com/gorilla/mux"
-	"github.com/threeaccents/mahi"
 )
 
 func (s *Server) handleListUsages() http.Handler {
@@ -18,12 +18,12 @@ func (s *Server) handleListUsages() http.Handler {
 
 		startDate, err := parseTime(queryParams.StartDate)
 		if err != nil {
-			RespondError(w, mahi.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
+			RespondError(w, gisvs.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
 			return
 		}
 		endDate, err := parseTime(queryParams.EndDate)
 		if err != nil {
-			RespondError(w, mahi.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
+			RespondError(w, gisvs.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
 			return
 		}
 
@@ -53,12 +53,12 @@ func (s *Server) handleListApplicationUsages() http.Handler {
 
 		startDate, err := parseTime(queryParams.StartDate)
 		if err != nil {
-			RespondError(w, mahi.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
+			RespondError(w, gisvs.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
 			return
 		}
 		endDate, err := parseTime(queryParams.EndDate)
 		if err != nil {
-			RespondError(w, mahi.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
+			RespondError(w, gisvs.ErrInvalidDate, http.StatusBadRequest, GetReqID(r))
 			return
 		}
 
@@ -81,7 +81,7 @@ func parseTime(date string) (time.Time, error) {
 		return time.Time{}, nil
 	}
 
-	t, err := time.Parse(mahi.DateLayout, date)
+	t, err := time.Parse(gisvs.DateLayout, date)
 	if err != nil {
 		return time.Time{}, err
 	}

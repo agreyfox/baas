@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/threeaccents/mahi"
+	"github.com/agreyfox/gisvs"
 )
 
 type Service struct {
-	ApplicationStorage mahi.ApplicationStorage
+	ApplicationStorage gisvs.ApplicationStorage
 
-	EncryptionService mahi.EncryptionService
+	EncryptionService gisvs.EncryptionService
 }
 
-func (s *Service) Create(ctx context.Context, n *mahi.NewApplication) (*mahi.Application, error) {
+func (s *Service) Create(ctx context.Context, n *gisvs.NewApplication) (*gisvs.Application, error) {
 	cipherStorageSecretKey, err := s.EncryptionService.EncryptToString([]byte(n.StorageSecretKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed enrcypting secret key %w", err)
@@ -36,13 +36,13 @@ func (s *Service) Create(ctx context.Context, n *mahi.NewApplication) (*mahi.App
 	return s.ApplicationStorage.Store(ctx, n)
 }
 
-func (s *Service) Application(ctx context.Context, id string) (*mahi.Application, error) {
+func (s *Service) Application(ctx context.Context, id string) (*gisvs.Application, error) {
 	return s.ApplicationStorage.Application(ctx, id)
 }
 
-func (s *Service) Applications(ctx context.Context, sinceID string, limit int) ([]*mahi.Application, error) {
+func (s *Service) Applications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
 	if limit == 0 {
-		limit = mahi.DefaultFilePaginationLimit
+		limit = gisvs.DefaultFilePaginationLimit
 	}
 
 	return s.ApplicationStorage.Applications(ctx, sinceID, limit)
@@ -52,6 +52,6 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	return s.ApplicationStorage.Delete(ctx, id)
 }
 
-func (s *Service) Update(ctx context.Context, u *mahi.UpdateApplication) (*mahi.Application, error) {
+func (s *Service) Update(ctx context.Context, u *gisvs.UpdateApplication) (*gisvs.Application, error) {
 	return s.ApplicationStorage.Update(ctx, u)
 }

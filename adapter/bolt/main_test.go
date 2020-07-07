@@ -21,11 +21,11 @@ var (
 	testUsageStorage          *UsageStorage
 	testTransformationStorage *TransformStorage
 
-	testUsage                *mahi.Usage
-	testApplication          *mahi.Application
-	testDeletableApplication *mahi.Application
-	testFile                 *mahi.File
-	testDeletableFile        *mahi.File
+	testUsage                *gisvs.Usage
+	testApplication          *gisvs.Application
+	testDeletableApplication *gisvs.Application
+	testFile                 *gisvs.File
+	testDeletableFile        *gisvs.File
 )
 
 func TestMain(m *testing.M) {
@@ -80,7 +80,7 @@ func setup(db *storm.DB) {
 
 }
 
-func createTestUsage(db *storm.DB) *mahi.Usage {
+func createTestUsage(db *storm.DB) *gisvs.Usage {
 	a := usage{
 		ID:                    uuid.NewV4().String(),
 		ApplicationID:         testApplication.ID,
@@ -89,8 +89,8 @@ func createTestUsage(db *storm.DB) *mahi.Usage {
 		Bandwidth:             49494,
 		Storage:               23232323,
 		FileCount:             12,
-		StartDate:             now.BeginningOfDay().Format(mahi.DateLayout),
-		EndDate:               now.EndOfDay().Add(2 * time.Hour).Format(mahi.DateLayout),
+		StartDate:             now.BeginningOfDay().Format(gisvs.DateLayout),
+		EndDate:               now.EndOfDay().Add(2 * time.Hour).Format(gisvs.DateLayout),
 	}
 
 	if err := db.Save(&a); err != nil {
@@ -105,7 +105,7 @@ func createTestUsage(db *storm.DB) *mahi.Usage {
 	return &mahiUsage
 }
 
-func createTestApplication(db *storm.DB) *mahi.Application {
+func createTestApplication(db *storm.DB) *gisvs.Application {
 	a := application{
 		ID:               uuid.NewV4().String(),
 		Name:             faker.Name().String(),
@@ -128,7 +128,7 @@ func createTestApplication(db *storm.DB) *mahi.Application {
 	return &mahiApp
 }
 
-func createTestFile(db *storm.DB) *mahi.File {
+func createTestFile(db *storm.DB) *gisvs.File {
 	n := file{
 		ID:            uuid.NewV4().String(),
 		ApplicationID: testApplication.ID,

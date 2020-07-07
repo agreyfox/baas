@@ -3,7 +3,7 @@ package http
 import (
 	"time"
 
-	"github.com/threeaccents/mahi"
+	"github.com/agreyfox/gisvs"
 )
 
 type fileResponse struct {
@@ -30,7 +30,7 @@ type fileData struct {
 	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
-func sanitizeFile(f *mahi.File) *fileData {
+func sanitizeFile(f *gisvs.File) *fileData {
 	return &fileData{
 		ID:         f.ID,
 		Filename:   f.Filename,
@@ -47,7 +47,7 @@ func sanitizeFile(f *mahi.File) *fileData {
 	}
 }
 
-func sanitizeFiles(v []*mahi.File) []*fileData {
+func sanitizeFiles(v []*gisvs.File) []*fileData {
 	ss := make([]*fileData, len(v))
 	for x, u := range v {
 		nu := sanitizeFile(u)
