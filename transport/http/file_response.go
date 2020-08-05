@@ -2,8 +2,6 @@ package http
 
 import (
 	"time"
-
-	"github.com/agreyfox/gisvs"
 )
 
 type fileResponse struct {
@@ -28,9 +26,10 @@ type fileData struct {
 	Height     int       `json:"height"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
+	Hash       string    `json:"hash"`
 }
 
-func sanitizeFile(f *gisvs.File) *fileData {
+func sanitizeFile(f *baas.File) *fileData {
 	return &fileData{
 		ID:         f.ID,
 		Filename:   f.Filename,
@@ -44,10 +43,11 @@ func sanitizeFile(f *gisvs.File) *fileData {
 		Height:     f.Height,
 		CreatedAt:  f.CreatedAt,
 		UpdatedAt:  f.UpdatedAt,
+		Hash:       f.Hash,
 	}
 }
 
-func sanitizeFiles(v []*gisvs.File) []*fileData {
+func sanitizeFiles(v []*baas.File) []*fileData {
 	ss := make([]*fileData, len(v))
 	for x, u := range v {
 		nu := sanitizeFile(u)

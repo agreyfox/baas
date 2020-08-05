@@ -1,0 +1,73 @@
+package file
+
+// #cgo CFLAGS: -x c++ -fpermissive -I /home/lq/block/baas/src/Fast-Fourier-Transform/include -I /usr/local/include/opencv4 -I /usr/local/include -g -Wall
+// #cgo LDFLAGS: -L /home/lq/block/baas/src/Fast-Fourier-Transform/src/libfft.a -L /usr/local/lib -L /usr/share/lib  -L.
+// #include <entry.h>
+import "C"
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+
+	"github.com/agreyfox/baas"
+	"gopkg.in/h2non/bimg.v1"
+)
+
+func (s *TransformService) MakeWaterInImage(ctx context.Context, ff *baas.File, blob *baas.FileBlob, text string) (*baas.FileBlob, error) {
+	file, err := ioutil.TempFile("wm", "wm.*")
+	if err != nil {
+		log.Fatal(err)
+	}
+	name := file.Name()
+	file.Close()
+	ok := convertTxtToImage(text, name)
+	if !ok {
+		s.Log.Error().Err(err).Msg("failed to create watermark image file")
+		return &baas.FileBlob{}, errors.New("failed to create watermark image file")
+	}
+	waterfile := "wm-" + blob.TempFileName
+	icc := C.makewm(C.CString(blob.TempFileName), C.CString(name), C.CString(waterfile))
+	fmt.Println(icc)
+
+	fd, _ := os.Open(waterfile)
+	fi, err := fd.Stat()
+	if err != nil {
+		// Could not obtain stat, handle error
+		s.Log.Error().Err(err).Msg("Error in generate watermark file ")
+		return &baas.FileBlob{}, errors.New("Error in generate watermark file")
+	}
+
+	f := &baas.FileBlob{
+		ID:           "watermark",
+		Data:         ioutil.NopCloser(fd),
+		MIMEValue:    ff.MIMEValue,
+		Size:         fi.Size(),
+		TempFileName: name,
+		Hash:         ff.Hash,
+	}
+	return f, nil
+}
+
+func (s *TransformService) VerifyWaterInImage(ctx context.Context, f *baas.File, blob *baas.FileBlob, text string) (*baas.FileBlob, error) {
+	return &baas.FileBlob{}, nil
+}
+
+func convertTxtToImage(txt string, outputfile sting) bool {
+
+	watermark := bimg.Watermark{
+		Text:       txt,
+		Opacity:    0.25,
+		Width:      200,
+		DPI:        100,
+		Margin:     150,
+		Font:       "sans bold 12",
+		Background: bimg.Color{255, 255, 255},
+	}
+
+	bimg.Write(outputfile, watermark)
+	return true
+}

@@ -2,27 +2,25 @@ package file
 
 import (
 	"context"
-
-	"github.com/agreyfox/gisvs"
 )
 
 // Service is the implementation of the file service interface.
 // It will handle the apps business logic concerning files.
 type Service struct {
-	FileStorage gisvs.FileStorage
+	FileStorage baas.FileStorage
 }
 
-func (s *Service) Create(ctx context.Context, n *gisvs.NewFile) (*gisvs.File, error) {
+func (s *Service) Create(ctx context.Context, n *baas.NewFile) (*baas.File, error) {
 	return s.FileStorage.Store(ctx, n)
 }
 
-func (s *Service) File(ctx context.Context, id string) (*gisvs.File, error) {
+func (s *Service) File(ctx context.Context, id string) (*baas.File, error) {
 	return s.FileStorage.File(ctx, id)
 }
 
-func (s *Service) ApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*gisvs.File, error) {
+func (s *Service) ApplicationFiles(ctx context.Context, applicationID, sinceID string, limit int) ([]*baas.File, error) {
 	if limit == 0 {
-		limit = gisvs.DefaultFilePaginationLimit
+		limit = baas.DefaultFilePaginationLimit
 	}
 
 	return s.FileStorage.ApplicationFiles(ctx, applicationID, sinceID, limit)

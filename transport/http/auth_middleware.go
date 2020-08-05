@@ -4,8 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-
-	"github.com/agreyfox/gisvs"
 )
 
 func (s *Server) Authenticate(next http.Handler) http.Handler {
@@ -33,7 +31,7 @@ func (s *Server) Authenticate(next http.Handler) http.Handler {
 func extractAuthToken(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		return "", gisvs.ErrAuthorizationHeaderMissing
+		return "", baas.ErrAuthorizationHeaderMissing
 	}
 
 	authHeaderParts := strings.Split(authHeader, " ")

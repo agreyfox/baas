@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/agreyfox/gisvs"
+	"github.com/agreyfox/baas"
 )
 
 // chunk is a chunk of a file.
@@ -46,7 +46,7 @@ func (s *Service) ChunkUpload(ctx context.Context, r *multipart.Reader) error {
 	return nil
 }
 
-func (s *Service) CompleteChunkUpload(ctx context.Context, applicationID, uploadID, filename string) (*gisvs.File, error) {
+func (s *Service) CompleteChunkUpload(ctx context.Context, applicationID, uploadID, filename string) (*baas.File, error) {
 	fullFile, err := s.rebuildFile(uploadID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to rebuild file %w", err)
@@ -189,7 +189,7 @@ func (s *Service) rebuildFile(uploadID string) (*os.File, error) {
 		return nil, err
 	}
 
-	fullFile, err := ioutil.TempFile(s.FullFileDir, "gisvs-")
+	fullFile, err := ioutil.TempFile(s.FullFileDir, "baas")
 	if err != nil {
 		return nil, err
 	}

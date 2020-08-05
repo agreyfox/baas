@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/agreyfox/gisvs"
-	"github.com/agreyfox/gisvs/mock"
+	"github.com/agreyfox/baas"
+	"github.com/agreyfox/baas/mock"
 )
 
 const (
@@ -24,8 +24,8 @@ const (
 )
 
 var (
-	testFileService        gisvs.FileService
-	testApplicationService gisvs.ApplicationService
+	testFileService        baas.FileService
+	testApplicationService baas.ApplicationService
 
 	testService *Service
 )

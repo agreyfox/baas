@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agreyfox/gisvs"
+	"github.com/agreyfox/baas"
 	"github.com/jinzhu/now"
 	"syreclabs.com/go/faker"
 
@@ -22,11 +22,11 @@ var (
 	testUsageStorage          *UsageStorage
 	testTransformationStorage *TransformStorage
 
-	testUsage                *gisvs.Usage
-	testApplication          *gisvs.Application
-	testDeletableApplication *gisvs.Application
-	testFile                 *gisvs.File
-	testDeletableFile        *gisvs.File
+	testUsage                *baas.Usage
+	testApplication          *baas.Application
+	testDeletableApplication *baas.Application
+	testFile                 *baas.File
+	testDeletableFile        *baas.File
 )
 
 func TestMain(m *testing.M) {
@@ -84,8 +84,8 @@ func deleteUsagesAheadOfToday(db *pgxpool.Pool) {
 	}
 }
 
-func createTestUsage(db *pgxpool.Pool) *gisvs.Usage {
-	u := &gisvs.Usage{
+func createTestUsage(db *pgxpool.Pool) *baas.Usage {
+	u := &baas.Usage{
 		ID:                    uuid.NewV4().String(),
 		ApplicationID:         testApplication.ID,
 		Transformations:       10,
@@ -121,8 +121,8 @@ func createTestUsage(db *pgxpool.Pool) *gisvs.Usage {
 	return u
 }
 
-func createTestApplication(db *pgxpool.Pool) *gisvs.Application {
-	a := &gisvs.Application{
+func createTestApplication(db *pgxpool.Pool) *baas.Application {
+	a := &baas.Application{
 		ID:               uuid.NewV4().String(),
 		Name:             faker.Name().String(),
 		Description:      "",
@@ -161,8 +161,8 @@ func createTestApplication(db *pgxpool.Pool) *gisvs.Application {
 	return a
 }
 
-func createTestFile(db *pgxpool.Pool) *gisvs.File {
-	n := &gisvs.File{
+func createTestFile(db *pgxpool.Pool) *baas.File {
+	n := &baas.File{
 		ID:            uuid.NewV4().String(),
 		ApplicationID: testApplication.ID,
 		Filename:      faker.Name().String(),

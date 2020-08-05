@@ -1,14 +1,13 @@
 package upload
 
 import (
-	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
 )
 
 type Service struct {
-	FileService        gisvs.FileService
-	UsageService       gisvs.UsageService
-	ApplicationService gisvs.ApplicationService
+	FileService        baas.FileService
+	UsageService       baas.UsageService
+	ApplicationService baas.ApplicationService
 
 	ChunkUploadDir    string
 	FullFileDir       string

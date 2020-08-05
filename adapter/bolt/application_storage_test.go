@@ -6,7 +6,7 @@ import (
 
 	"syreclabs.com/go/faker"
 
-	"github.com/agreyfox/gisvs"
+	"github.com/agreyfox/baas"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,19 +22,19 @@ const (
 )
 
 func TestApplicationStorage_Store(t *testing.T) {
-	completeApplication := &gisvs.NewApplication{Name: faker.Name().String(), Description: "hello", StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, StorageEndpoint: testStorageEndpoint, DeliveryURL: testDeliveryURL}
-	completeApplicationWithNoDescription := &gisvs.NewApplication{Name: faker.Name().String(), StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, StorageEndpoint: testStorageEndpoint, DeliveryURL: testDeliveryURL}
-	completeApplicationWithNoEndpoint := &gisvs.NewApplication{Name: faker.Name().String(), StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, DeliveryURL: testDeliveryURL}
-	NoNameApplication := &gisvs.NewApplication{StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, StorageEndpoint: testStorageEndpoint, DeliveryURL: testDeliveryURL}
+	completeApplication := &baas.NewApplication{Name: faker.Name().String(), Description: "hello", StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, StorageEndpoint: testStorageEndpoint, DeliveryURL: testDeliveryURL}
+	completeApplicationWithNoDescription := &baas.NewApplication{Name: faker.Name().String(), StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, StorageEndpoint: testStorageEndpoint, DeliveryURL: testDeliveryURL}
+	completeApplicationWithNoEndpoint := &baas.NewApplication{Name: faker.Name().String(), StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, DeliveryURL: testDeliveryURL}
+	NoNameApplication := &baas.NewApplication{StorageEngine: testStorageEngine, StorageAccessKey: testStorageAccessKey, StorageBucket: testStorageBucket, StorageSecretKey: testStorageSecretKey, StorageRegion: testStorageRegion, StorageEndpoint: testStorageEndpoint, DeliveryURL: testDeliveryURL}
 
 	tests := []struct {
-		newApp      *gisvs.NewApplication
+		newApp      *baas.NewApplication
 		expected    bool
 		errorType   error
 		description string
 	}{
 		{completeApplication, true, nil, "insert complete application is successful"},
-		{completeApplication, false, gisvs.ErrApplicationNameTaken, "insert of duplipacte name should fail"},
+		{completeApplication, false, baas.ErrApplicationNameTaken, "insert of duplipacte name should fail"},
 		{completeApplicationWithNoDescription, true, nil, "description shouldn't be required"},
 		{completeApplicationWithNoEndpoint, true, nil, "endpoint shouldn't be required"},
 		{NoNameApplication, false, nil, "insert application with no name should fail"},
@@ -84,7 +84,7 @@ func TestApplicationStorage_Application(t *testing.T) {
 		errType     interface{}
 	}{
 		{existentID, true, "application should be returned", nil},
-		{nonExistentID, false, "application with wrong id should return err", gisvs.ErrApplicationNotFound},
+		{nonExistentID, false, "application with wrong id should return err", baas.ErrApplicationNotFound},
 		{notUUID, false, "application with invalid uuid should return error", nil},
 	}
 
@@ -99,7 +99,7 @@ func TestApplicationStorage_Application(t *testing.T) {
 		}
 
 		if test.errType != nil {
-			assert.Equal(t, err, gisvs.ErrApplicationNotFound, "error should be gisvs.ErrApplicationNotFound")
+			assert.Equal(t, err, baas.ErrApplicationNotFound, "error should be baas.ErrApplicationNotFound")
 		}
 
 		if err == nil {
@@ -144,19 +144,19 @@ func TestApplicationStorage_Applications(t *testing.T) {
 }
 
 func TestApplicationStorage_Update(t *testing.T) {
-	updatedName := &gisvs.UpdateApplication{Name: faker.Name().String(), ID: testApplication.ID}
-	updatedNameAndDesc := &gisvs.UpdateApplication{Name: faker.Name().String(), Description: "udpated", ID: testApplication.ID}
-	nonExistentID := &gisvs.UpdateApplication{Name: faker.Name().String(), ID: uuid.NewV4().String()}
+	updatedName := &baas.UpdateApplication{Name: faker.Name().String(), ID: testApplication.ID}
+	updatedNameAndDesc := &baas.UpdateApplication{Name: faker.Name().String(), Description: "udpated", ID: testApplication.ID}
+	nonExistentID := &baas.UpdateApplication{Name: faker.Name().String(), ID: uuid.NewV4().String()}
 
 	tests := []struct {
-		newApp      *gisvs.UpdateApplication
+		newApp      *baas.UpdateApplication
 		expected    bool
 		errType     interface{}
 		description string
 	}{
 		{updatedName, true, nil, "update should succedd"},
 		{updatedNameAndDesc, true, nil, "update should succedd"},
-		{nonExistentID, false, gisvs.ErrApplicationNotFound, "update should error with application not found"},
+		{nonExistentID, false, baas.ErrApplicationNotFound, "update should error with application not found"},
 	}
 
 	ctx := context.Background()
@@ -171,7 +171,7 @@ func TestApplicationStorage_Update(t *testing.T) {
 		}
 
 		if test.errType != nil {
-			assert.Equal(t, err, gisvs.ErrApplicationNotFound, "error should be gisvs.ErrApplicationNotFound")
+			assert.Equal(t, err, baas.ErrApplicationNotFound, "error should be baas.ErrApplicationNotFound")
 		}
 
 		if err == nil {
@@ -201,7 +201,7 @@ func TestApplicationStorage_Delete(t *testing.T) {
 		errType     interface{}
 	}{
 		{existentID, true, "application should be returned", nil},
-		{nonExistentID, false, "application with wrong id should return err", gisvs.ErrApplicationNotFound},
+		{nonExistentID, false, "application with wrong id should return err", baas.ErrApplicationNotFound},
 		{notUUID, false, "application with invalid uuid should return error", nil},
 	}
 
@@ -216,7 +216,7 @@ func TestApplicationStorage_Delete(t *testing.T) {
 		}
 
 		if test.errType != nil {
-			assert.Equal(t, err, gisvs.ErrApplicationNotFound, "error should be gisvs.ErrApplicationNotFound")
+			assert.Equal(t, err, baas.ErrApplicationNotFound, "error should be baas.ErrApplicationNotFound")
 		}
 	}
 }

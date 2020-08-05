@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/asdine/storm/v3/q"
 
 	"github.com/jinzhu/now"
@@ -35,9 +34,9 @@ type UsageStorage struct {
 	DB *storm.DB
 }
 
-func (s *UsageStorage) Store(ctx context.Context, n *gisvs.NewUsage) (*gisvs.Usage, error) {
-	start := n.StartDate.Format(gisvs.DateLayout)
-	end := n.EndDate.Format(gisvs.DateLayout)
+func (s *UsageStorage) Store(ctx context.Context, n *baas.NewUsage) (*baas.Usage, error) {
+	start := n.StartDate.Format(baas.DateLayout)
+	end := n.EndDate.Format(baas.DateLayout)
 
 	if start == end {
 		return nil, errors.New("start and end times cannot be the same")
@@ -69,7 +68,7 @@ func (s *UsageStorage) Store(ctx context.Context, n *gisvs.NewUsage) (*gisvs.Usa
 	return &mahiUsage, nil
 }
 
-func (s *UsageStorage) Update(ctx context.Context, u *gisvs.UpdateUsage) (*gisvs.Usage, error) {
+func (s *UsageStorage) Update(ctx context.Context, u *baas.UpdateUsage) (*baas.Usage, error) {
 	if u.ApplicationID == "" {
 		return nil, errors.New("application id is required")
 	}
@@ -84,19 +83,19 @@ func (s *UsageStorage) Update(ctx context.Context, u *gisvs.UpdateUsage) (*gisvs
 		end = now.New(u.EndDate).EndOfDay()
 	}
 
-	if start.Format(gisvs.DateLayout) == end.Format(gisvs.DateLayout) {
+	if start.Format(baas.DateLayout) == end.Format(baas.DateLayout) {
 		return nil, errors.New("start and end times cannot be the same")
 	}
 
 	usage, err := s.Usage(ctx, u.ApplicationID, start, end)
-	if err != nil && err != gisvs.ErrUsageNotFound {
+	if err != nil && err != baas.ErrUsageNotFound {
 		return nil, fmt.Errorf("failed getting usage %w", err)
 	}
 
 	// first entry of the day
-	if err != nil && err == gisvs.ErrUsageNotFound {
+	if err != nil && err == baas.ErrUsageNotFound {
 		latestUsage, err := s.lastApplicationUsage(ctx, u.ApplicationID)
-		if err != nil && err != gisvs.ErrUsageNotFound {
+		if err != nil && err != baas.ErrUsageNotFound {
 			return nil, err
 		}
 
@@ -104,7 +103,7 @@ func (s *UsageStorage) Update(ctx context.Context, u *gisvs.UpdateUsage) (*gisvs
 		storage := latestUsage.Storage + u.Storage
 		fileCount := latestUsage.FileCount + u.FileCount
 
-		newUsage := &gisvs.NewUsage{
+		newUsage := &baas.NewUsage{
 			ApplicationID:         u.ApplicationID,
 			Transformations:       u.Transformations,
 			UniqueTransformations: u.UniqueTransformations,
@@ -118,7 +117,7 @@ func (s *UsageStorage) Update(ctx context.Context, u *gisvs.UpdateUsage) (*gisvs
 		return s.Store(ctx, newUsage)
 	}
 
-	updatedUsage := &gisvs.UpdateUsage{
+	updatedUsage := &baas.UpdateUsage{
 		ApplicationID:         u.ApplicationID,
 		Transformations:       usage.Transformations + u.Transformations,
 		UniqueTransformations: usage.UniqueTransformations + u.UniqueTransformations,
@@ -132,14 +131,14 @@ func (s *UsageStorage) Update(ctx context.Context, u *gisvs.UpdateUsage) (*gisvs
 	return s.update(ctx, usage.ID, updatedUsage)
 }
 
-func (s *UsageStorage) Usage(ctx context.Context, applicationID string, startDate, endDate time.Time) (*gisvs.Usage, error) {
-	start := startDate.Format(gisvs.DateLayout)
-	end := endDate.Format(gisvs.DateLayout)
+func (s *UsageStorage) Usage(ctx context.Context, applicationID string, startDate, endDate time.Time) (*baas.Usage, error) {
+	start := startDate.Format(baas.DateLayout)
+	end := endDate.Format(baas.DateLayout)
 
 	var u usage
 	if err := s.DB.Select(q.Eq("ApplicationID", applicationID), q.Gte("StartDate", start), q.Lte("EndDate", end)).First(&u); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, gisvs.ErrUsageNotFound
+			return nil, baas.ErrUsageNotFound
 		}
 		return nil, err
 	}
@@ -156,7 +155,7 @@ func (s *UsageStorage) boltUsage(ctx context.Context, id string) (*usage, error)
 	var u usage
 	if err := s.DB.Select(q.Eq("ID", id)).First(&u); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, gisvs.ErrUsageNotFound
+			return nil, baas.ErrUsageNotFound
 		}
 		return nil, err
 	}
@@ -164,19 +163,19 @@ func (s *UsageStorage) boltUsage(ctx context.Context, id string) (*usage, error)
 	return &u, nil
 }
 
-func (s *UsageStorage) ApplicationUsages(ctx context.Context, applicationID string, startDate, endDate time.Time) ([]*gisvs.Usage, error) {
-	start := startDate.Format(gisvs.DateLayout)
-	end := endDate.Format(gisvs.DateLayout)
+func (s *UsageStorage) ApplicationUsages(ctx context.Context, applicationID string, startDate, endDate time.Time) ([]*baas.Usage, error) {
+	start := startDate.Format(baas.DateLayout)
+	end := endDate.Format(baas.DateLayout)
 
 	var usages []*usage
 	if err := s.DB.Select(q.Eq("ApplicationID", applicationID), q.Gte("StartDate", start), q.Lte("EndDate", end)).OrderBy("StartDate").Find(&usages); err != nil {
 		if err == storm.ErrNotFound {
-			return []*gisvs.Usage{}, nil
+			return []*baas.Usage{}, nil
 		}
 		return nil, err
 	}
 
-	var mahiUsages []*gisvs.Usage
+	var mahiUsages []*baas.Usage
 
 	for _, u := range usages {
 		mahiUsage, err := sanitizeUsage(*u)
@@ -190,19 +189,19 @@ func (s *UsageStorage) ApplicationUsages(ctx context.Context, applicationID stri
 	return mahiUsages, nil
 }
 
-func (s *UsageStorage) Usages(ctx context.Context, startDate, endDate time.Time) ([]*gisvs.TotalUsage, error) {
-	start := startDate.Format(gisvs.DateLayout)
-	end := endDate.Format(gisvs.DateLayout)
+func (s *UsageStorage) Usages(ctx context.Context, startDate, endDate time.Time) ([]*baas.TotalUsage, error) {
+	start := startDate.Format(baas.DateLayout)
+	end := endDate.Format(baas.DateLayout)
 
 	var usages []*usage
 	if err := s.DB.Select(q.Gte("StartDate", start), q.Lte("EndDate", end)).OrderBy("StartDate").Find(&usages); err != nil {
 		if err == storm.ErrNotFound {
-			return []*gisvs.TotalUsage{}, nil
+			return []*baas.TotalUsage{}, nil
 		}
 		return nil, err
 	}
 
-	var mahiTotalUsages []*gisvs.TotalUsage
+	var mahiTotalUsages []*baas.TotalUsage
 
 	for _, u := range usages {
 		mahiUsage, err := sanitizeTotalUsage(*u)
@@ -216,7 +215,7 @@ func (s *UsageStorage) Usages(ctx context.Context, startDate, endDate time.Time)
 	return mahiTotalUsages, nil
 }
 
-func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *gisvs.UpdateUsage) (*gisvs.Usage, error) {
+func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *baas.UpdateUsage) (*baas.Usage, error) {
 	u, err := s.boltUsage(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting bolt usage %w", err)
@@ -241,35 +240,35 @@ func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *gisv
 	return &mahiUsage, nil
 }
 
-func (s *UsageStorage) lastApplicationUsage(ctx context.Context, applicationID string) (gisvs.Usage, error) {
+func (s *UsageStorage) lastApplicationUsage(ctx context.Context, applicationID string) (baas.Usage, error) {
 	var u usage
 	if err := s.DB.Select(q.Eq("ApplicationID", applicationID)).OrderBy("StartDate").Reverse().First(&u); err != nil {
 		if err == storm.ErrNotFound {
-			return gisvs.Usage{}, gisvs.ErrUsageNotFound
+			return baas.Usage{}, baas.ErrUsageNotFound
 		}
-		return gisvs.Usage{}, err
+		return baas.Usage{}, err
 	}
 
 	mahiUsage, err := sanitizeUsage(u)
 	if err != nil {
-		return gisvs.Usage{}, err
+		return baas.Usage{}, err
 	}
 
 	return mahiUsage, nil
 }
 
-func sanitizeUsage(u usage) (gisvs.Usage, error) {
-	start, err := time.Parse(gisvs.DateLayout, u.StartDate)
+func sanitizeUsage(u usage) (baas.Usage, error) {
+	start, err := time.Parse(baas.DateLayout, u.StartDate)
 	if err != nil {
-		return gisvs.Usage{}, err
+		return baas.Usage{}, err
 	}
 
-	end, err := time.Parse(gisvs.DateLayout, u.EndDate)
+	end, err := time.Parse(baas.DateLayout, u.EndDate)
 	if err != nil {
-		return gisvs.Usage{}, err
+		return baas.Usage{}, err
 	}
 
-	return gisvs.Usage{
+	return baas.Usage{
 		ID:                    u.ID,
 		ApplicationID:         u.ApplicationID,
 		Transformations:       u.Transformations,
@@ -284,18 +283,18 @@ func sanitizeUsage(u usage) (gisvs.Usage, error) {
 	}, nil
 }
 
-func sanitizeTotalUsage(u usage) (gisvs.TotalUsage, error) {
-	start, err := time.Parse(gisvs.DateLayout, u.StartDate)
+func sanitizeTotalUsage(u usage) (baas.TotalUsage, error) {
+	start, err := time.Parse(baas.DateLayout, u.StartDate)
 	if err != nil {
-		return gisvs.TotalUsage{}, err
+		return baas.TotalUsage{}, err
 	}
 
-	end, err := time.Parse(gisvs.DateLayout, u.EndDate)
+	end, err := time.Parse(baas.DateLayout, u.EndDate)
 	if err != nil {
-		return gisvs.TotalUsage{}, err
+		return baas.TotalUsage{}, err
 	}
 
-	return gisvs.TotalUsage{
+	return baas.TotalUsage{
 		Transformations:       u.Transformations,
 		UniqueTransformations: u.UniqueTransformations,
 		Bandwidth:             u.Bandwidth,

@@ -4,23 +4,23 @@ import (
 	"context"
 	"testing"
 
-	"github.com/agreyfox/gisvs"
+	"github.com/agreyfox/baas"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTransformStorage_Store(t *testing.T) {
-	completeTransformation := &gisvs.NewTransformation{ApplicationID: testApplication.ID, FileID: testFile.ID, Actions: gisvs.TransformationOption{Width: 5}}
-	transformationMustBeUnique := &gisvs.NewTransformation{ApplicationID: testApplication.ID, FileID: testFile.ID, Actions: gisvs.TransformationOption{Width: 5}}
-	NoApplicationID := &gisvs.NewTransformation{FileID: testFile.ID, Actions: gisvs.TransformationOption{Width: 10}}
+	completeTransformation := &baas.NewTransformation{ApplicationID: testApplication.ID, FileID: testFile.ID, Actions: baas.TransformationOption{Width: 5}}
+	transformationMustBeUnique := &baas.NewTransformation{ApplicationID: testApplication.ID, FileID: testFile.ID, Actions: baas.TransformationOption{Width: 5}}
+	NoApplicationID := &baas.NewTransformation{FileID: testFile.ID, Actions: baas.TransformationOption{Width: 10}}
 
 	tests := []struct {
-		newTran     *gisvs.NewTransformation
+		newTran     *baas.NewTransformation
 		expectedErr error
 		expected    bool
 		description string
 	}{
 		{completeTransformation, nil, true, "insert complete transformation is successful"},
-		{transformationMustBeUnique, gisvs.ErrTransformationNotUnique, false, "insert of duplipacte transformation should fail"},
+		{transformationMustBeUnique, baas.ErrTransformationNotUnique, false, "insert of duplipacte transformation should fail"},
 		{NoApplicationID, nil, false, "application_id shouldn be required"},
 	}
 

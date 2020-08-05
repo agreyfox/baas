@@ -6,23 +6,22 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
 )
 
 type ServeService struct {
-	FileStorage gisvs.FileStorage
+	FileStorage baas.FileStorage
 
-	UsageService       gisvs.UsageService
-	ApplicationService gisvs.ApplicationService
-	TransformService   gisvs.TransformService
+	UsageService       baas.UsageService
+	ApplicationService baas.ApplicationService
+	TransformService   baas.TransformService
 
 	FullFileDir string
 
 	Log zerolog.Logger
 }
 
-func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts gisvs.TransformationOption) (*gisvs.FileBlob, error) {
+func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts baas.TransformationOption) (*baas.FileBlob, error) {
 	fileBlobID := getFileBlobID(u.Path)
 
 	file, err := s.FileStorage.FileByFileBlobID(ctx, fileBlobID)
@@ -39,14 +38,77 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts gisvs.Transfo
 	if err != nil {
 		return nil, err
 	}
+	var id string
+	if len(file.Hash) > 0 {
+		id = file.Hash
+	} else {
+		id = fileBlobID
+	}
 
-	fileBlob, err := fileBlobStorage.FileBlob(ctx, app.StorageBucket, fileBlobID, s.FullFileDir)
+	fileBlob, err := fileBlobStorage.FileBlob(ctx, app.StorageBucket, id, s.FullFileDir)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file blob %w", err)
 	}
+	if len(file.Hash) > 0 { //fixed for ipfs
+		fileBlob.Size = file.Size
+		fileBlob.MIMEValue = file.MIMEValue
+	}
+	if opts.WM { // should to do the blind watermark
+		s.Log.Printf("Doing the blind wm job")
+		//return fileBlob, nil
+		//s.Log.Printf("%v,%v", file, fileBlob)
+		f, err := s.TransformService.MakeWaterInImage(ctx, file, fileBlob, opts.WMText)
+		if err != nil {
+			return &baas.FileBlob{}, err
+		} else {
+			return f, nil
+		}
+	}
+	if opts.WMV {
+		s.Log.Printf("Doing the verify Blind WaterMark job")
+		// Now we have check image, then we need find the origin imagefile
+		origfileBlobID := getFileBlobID(opts.Origin)
 
+		origfile, err := s.FileStorage.FileByFileBlobID(ctx, origfileBlobID)
+		if err != nil {
+			return nil, err
+		}
+
+		origapp, err := s.ApplicationService.Application(ctx, origfile.ApplicationID)
+		if err != nil {
+			return nil, err
+		}
+
+		origfileBlobStorage, err := s.ApplicationService.FileBlobStorage(origapp.StorageEngine, origapp.StorageAccessKey, origapp.StorageSecretKey, origapp.StorageRegion, origapp.StorageEndpoint)
+		if err != nil {
+			return nil, err
+		}
+		var id string
+		if len(origfile.Hash) > 0 {
+			id = origfile.Hash
+		} else {
+			id = origfileBlobID
+		}
+
+		origfileBlob, err := origfileBlobStorage.FileBlob(ctx, origapp.StorageBucket, id, s.FullFileDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not get origin file blob %w", err)
+		}
+		if len(origfile.Hash) > 0 { //fixed for ipfs
+			origfileBlob.Size = file.Size
+			origfileBlob.MIMEValue = file.MIMEValue
+		}
+		// found.check watermrk
+		f, err := s.TransformService.VerifyWaterInImage(ctx, file, fileBlob, origfile, origfileBlob)
+		// get the result and return
+		if err != nil {
+			return &baas.FileBlob{}, err
+		} else {
+			return f, nil
+		}
+	}
 	if !shouldTransform(file, opts) {
-		updatedUsages := &gisvs.UpdateUsage{
+		updatedUsages := &baas.UpdateUsage{
 			ApplicationID: file.ApplicationID,
 			Bandwidth:     fileBlob.Size,
 		}
@@ -68,7 +130,7 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts gisvs.Transfo
 		return nil, err
 	}
 
-	updatedUsages := &gisvs.UpdateUsage{
+	updatedUsages := &baas.UpdateUsage{
 		ApplicationID: file.ApplicationID,
 		Bandwidth:     transformedBlob.Size,
 	}
@@ -81,7 +143,7 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts gisvs.Transfo
 	return transformedBlob, nil
 }
 
-func shouldTransform(file *gisvs.File, opts gisvs.TransformationOption) bool {
+func shouldTransform(file *baas.File, opts baas.TransformationOption) bool {
 	return opts.Width > 0 ||
 		opts.Height > 0 ||
 		opts.Format != file.Extension

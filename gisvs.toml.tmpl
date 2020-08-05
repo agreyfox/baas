@@ -1,0 +1,18 @@
+db_engine="bolt"
+
+[http]
+https=false
+port=4200
+
+[security]
+aes_key="qwertyuiopasdfghjklmnbvcxzqwerty"
+
+[upload]
+chunk_upload_dir="/home/lq/data/chunk"
+full_file_dir="/home/lq/data/fullfile"
+max_chunk_size=52428800
+max_file_size_upload=838860800
+max_transform_file_size=1000000000
+
+[bolt]
+dir = "/home/lq/data/baas.db"

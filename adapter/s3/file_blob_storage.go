@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -21,7 +20,7 @@ type FileBlobStorage struct {
 	AWSSession *session.Session
 }
 
-func (s *FileBlobStorage) Upload(ctx context.Context, bucket string, b *gisvs.FileBlob) error {
+func (s *FileBlobStorage) Upload(ctx context.Context, bucket string, b *baas.FileBlob) error {
 	uploader := s3manager.NewUploader(s.AWSSession)
 	if _, err := uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Body:        b.Data,
@@ -64,7 +63,7 @@ func (s *FileBlobStorage) CreateBucket(ctx context.Context, name string) error {
 	return nil
 }
 
-func (s *FileBlobStorage) FileBlob(ctx context.Context, bucket, id, tempDir string) (*gisvs.FileBlob, error) {
+func (s *FileBlobStorage) FileBlob(ctx context.Context, bucket, id, tempDir string) (*baas.FileBlob, error) {
 	downloader := s3manager.NewDownloader(s.AWSSession)
 
 	svc := s3.New(s.AWSSession)
@@ -92,7 +91,7 @@ func (s *FileBlobStorage) FileBlob(ctx context.Context, bucket, id, tempDir stri
 		return nil, fmt.Errorf("could not get file from s3 compatible storage %w", err)
 	}
 
-	f := &gisvs.FileBlob{
+	f := &baas.FileBlob{
 		ID:           id,
 		Data:         buff,
 		MIMEValue:    *resp.ContentType,
@@ -108,19 +107,19 @@ func handleAWSErr(err error) error {
 	if errors.As(err, &awsErr) {
 		switch awsErr.Code() {
 		case s3.ErrCodeNoSuchBucket:
-			return gisvs.ErrBucketNotFound
+			return baas.ErrBucketNotFound
 		case s3.ErrCodeNoSuchKey:
-			return gisvs.ErrFileNotFound
+			return baas.ErrFileNotFound
 		case s3.ErrCodeNoSuchUpload:
-			return gisvs.ErrFileNotFound
+			return baas.ErrFileNotFound
 		case "InvalidAccessKeyId":
-			return gisvs.ErrInvalidStorageKey
+			return baas.ErrInvalidStorageKey
 		case "AccessDenied":
-			return gisvs.ErrInvalidStorageKey
+			return baas.ErrInvalidStorageKey
 		}
 
 		if awsErr.Message() == "Access Denied" {
-			return gisvs.ErrInvalidStorageKey
+			return baas.ErrInvalidStorageKey
 		}
 	}
 

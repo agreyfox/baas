@@ -5,19 +5,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/jinzhu/now"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUsageStorage_Store(t *testing.T) {
-	completeUsage := &gisvs.NewUsage{ApplicationID: testApplication.ID, Transformations: 1, Bandwidth: 10, Storage: 2, FileCount: 20, StartDate: now.BeginningOfDay().Add(240 * time.Hour), EndDate: now.EndOfDay().Add(242 * time.Hour)}
-	sameStartAndEndDates := &gisvs.NewUsage{ApplicationID: testApplication.ID, Transformations: 1, Bandwidth: 10, Storage: 2, FileCount: 20, StartDate: now.BeginningOfDay(), EndDate: now.BeginningOfDay()}
-	noApplicationID := &gisvs.NewUsage{Transformations: 1, Bandwidth: 10, Storage: 2, FileCount: 20, StartDate: now.BeginningOfDay(), EndDate: now.BeginningOfDay()}
+	completeUsage := &baas.NewUsage{ApplicationID: testApplication.ID, Transformations: 1, Bandwidth: 10, Storage: 2, FileCount: 20, StartDate: now.BeginningOfDay().Add(240 * time.Hour), EndDate: now.EndOfDay().Add(242 * time.Hour)}
+	sameStartAndEndDates := &baas.NewUsage{ApplicationID: testApplication.ID, Transformations: 1, Bandwidth: 10, Storage: 2, FileCount: 20, StartDate: now.BeginningOfDay(), EndDate: now.BeginningOfDay()}
+	noApplicationID := &baas.NewUsage{Transformations: 1, Bandwidth: 10, Storage: 2, FileCount: 20, StartDate: now.BeginningOfDay(), EndDate: now.BeginningOfDay()}
 
 	tests := []struct {
-		newUsage    *gisvs.NewUsage
+		newUsage    *baas.NewUsage
 		expected    bool
 		description string
 	}{
@@ -46,19 +45,19 @@ func TestUsageStorage_Store(t *testing.T) {
 			assert.Equal(t, test.newUsage.Bandwidth, u.Bandwidth, "Bandwidth should be equal", test.description)
 			assert.Equal(t, test.newUsage.Storage, u.Storage, "Storage should be equal", test.description)
 			assert.Equal(t, test.newUsage.FileCount, u.FileCount, "FileCount should be equal", test.description)
-			assert.Equal(t, test.newUsage.StartDate.Format(gisvs.DateLayout), u.StartDate.Format(gisvs.DateLayout), "StartDate should be equal", test.description)
-			assert.Equal(t, test.newUsage.EndDate.Format(gisvs.DateLayout), u.EndDate.Format(gisvs.DateLayout), "EndDate should be equal", test.description)
+			assert.Equal(t, test.newUsage.StartDate.Format(baas.DateLayout), u.StartDate.Format(baas.DateLayout), "StartDate should be equal", test.description)
+			assert.Equal(t, test.newUsage.EndDate.Format(baas.DateLayout), u.EndDate.Format(baas.DateLayout), "EndDate should be equal", test.description)
 		}
 	}
 }
 
 func TestUsageStorage_Update(t *testing.T) {
-	createNewUsageIfNoneExist := &gisvs.UpdateUsage{ApplicationID: testApplication.ID, Transformations: 1, StartDate: now.BeginningOfDay().Add(72 * time.Hour), EndDate: now.EndOfDay().Add(74 * time.Hour)}
-	withNoTimestamps := &gisvs.UpdateUsage{ApplicationID: testApplication.ID, Transformations: 1}
-	statsGetUpdated := &gisvs.UpdateUsage{ApplicationID: testApplication.ID, Transformations: 1, Bandwidth: 1, FileCount: 1, Storage: 1, StartDate: testUsage.StartDate, EndDate: testUsage.EndDate}
+	createNewUsageIfNoneExist := &baas.UpdateUsage{ApplicationID: testApplication.ID, Transformations: 1, StartDate: now.BeginningOfDay().Add(72 * time.Hour), EndDate: now.EndOfDay().Add(74 * time.Hour)}
+	withNoTimestamps := &baas.UpdateUsage{ApplicationID: testApplication.ID, Transformations: 1}
+	statsGetUpdated := &baas.UpdateUsage{ApplicationID: testApplication.ID, Transformations: 1, Bandwidth: 1, FileCount: 1, Storage: 1, StartDate: testUsage.StartDate, EndDate: testUsage.EndDate}
 
 	tests := []struct {
-		updateUsage  *gisvs.UpdateUsage
+		updateUsage  *baas.UpdateUsage
 		expected     bool
 		testIncrease bool
 		description  string

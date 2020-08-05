@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/gorilla/mux"
 )
 
@@ -23,7 +22,7 @@ func (s *Server) handleCreateApplication() http.Handler {
 			return
 		}
 
-		n := &gisvs.NewApplication{
+		n := &baas.NewApplication{
 			Name:             payload.Name,
 			Description:      payload.Description,
 			StorageAccessKey: payload.StorageAccessKey,
@@ -112,7 +111,7 @@ func (s *Server) handleUpdateApplication() http.Handler {
 			return
 		}
 
-		n := &gisvs.UpdateApplication{
+		n := &baas.UpdateApplication{
 			ID:          payload.ID,
 			Name:        payload.Name,
 			Description: payload.Description,
@@ -145,28 +144,28 @@ func (s *Server) handleDeleteApplication() http.Handler {
 	})
 }
 
-func generateApplicationSinceID(applications []*gisvs.Application, queryLimit int) string {
+func generateApplicationSinceID(applications []*baas.Application, queryLimit int) string {
 	filesLen := len(applications)
 
 	if filesLen == 0 {
 		return ""
 	}
 
-	if filesLen != gisvs.DefaultFilePaginationLimit || filesLen != queryLimit {
+	if filesLen != baas.DefaultFilePaginationLimit || filesLen != queryLimit {
 		return applications[len(applications)-1].ID
 	}
 
 	return ""
 }
 
-func generateNextApplicationURL(applications []*gisvs.Application, queryLimit int, q url.Values) string {
+func generateNextApplicationURL(applications []*baas.Application, queryLimit int, q url.Values) string {
 	appsLen := len(applications)
 
 	if appsLen == 0 {
 		return ""
 	}
 
-	if appsLen == gisvs.DefaultFilePaginationLimit || appsLen == queryLimit {
+	if appsLen == baas.DefaultFilePaginationLimit || appsLen == queryLimit {
 		sinceID := applications[len(applications)-1].ID
 
 		q.Set("since_id", sinceID)

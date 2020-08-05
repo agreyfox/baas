@@ -4,21 +4,24 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/agreyfox/gisvs"
+	"github.com/agreyfox/baas/cmd/baas"
 )
 
 type Service struct {
-	ApplicationStorage gisvs.ApplicationStorage
+	ApplicationStorage baas.ApplicationStorage
 
-	EncryptionService gisvs.EncryptionService
+	EncryptionService baas.EncryptionService
 }
 
-func (s *Service) Create(ctx context.Context, n *gisvs.NewApplication) (*gisvs.Application, error) {
+func (s *Service) Create(ctx context.Context, n *baas.NewApplication) (*baas.Application, error) {
 	cipherStorageSecretKey, err := s.EncryptionService.EncryptToString([]byte(n.StorageSecretKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed enrcypting secret key %w", err)
 	}
-
+	conf := baas..GetSystemConfig()
+	if !conf.Security.Application {
+		return nil, fmt.Errorf("Not allowed!")
+	}
 	n.StorageSecretKey = cipherStorageSecretKey
 
 	if n.StorageEndpoint == "" {
@@ -36,13 +39,13 @@ func (s *Service) Create(ctx context.Context, n *gisvs.NewApplication) (*gisvs.A
 	return s.ApplicationStorage.Store(ctx, n)
 }
 
-func (s *Service) Application(ctx context.Context, id string) (*gisvs.Application, error) {
+func (s *Service) Application(ctx context.Context, id string) (*baas.Application, error) {
 	return s.ApplicationStorage.Application(ctx, id)
 }
 
-func (s *Service) Applications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
+func (s *Service) Applications(ctx context.Context, sinceID string, limit int) ([]*baas.Application, error) {
 	if limit == 0 {
-		limit = gisvs.DefaultFilePaginationLimit
+		limit = baas.DefaultFilePaginationLimit
 	}
 
 	return s.ApplicationStorage.Applications(ctx, sinceID, limit)
@@ -52,6 +55,6 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	return s.ApplicationStorage.Delete(ctx, id)
 }
 
-func (s *Service) Update(ctx context.Context, u *gisvs.UpdateApplication) (*gisvs.Application, error) {
+func (s *Service) Update(ctx context.Context, u *baas.UpdateApplication) (*baas.Application, error) {
 	return s.ApplicationStorage.Update(ctx, u)
 }

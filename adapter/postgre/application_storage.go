@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/jackc/pgconn"
 
 	"github.com/jackc/pgx/v4"
@@ -37,7 +36,7 @@ type ApplicationStorage struct {
 	DB *pgxpool.Pool
 }
 
-func (s ApplicationStorage) Store(ctx context.Context, n *gisvs.NewApplication) (*gisvs.Application, error) {
+func (s ApplicationStorage) Store(ctx context.Context, n *baas.NewApplication) (*baas.Application, error) {
 	var a application
 
 	query := `
@@ -77,7 +76,7 @@ func (s ApplicationStorage) Store(ctx context.Context, n *gisvs.NewApplication) 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.ConstraintName == uniqueApplicationNameConstraint {
-				return nil, gisvs.ErrApplicationNameTaken
+				return nil, baas.ErrApplicationNameTaken
 			}
 		}
 		return nil, err
@@ -88,7 +87,7 @@ func (s ApplicationStorage) Store(ctx context.Context, n *gisvs.NewApplication) 
 	return &mahiApp, nil
 }
 
-func (s ApplicationStorage) Application(ctx context.Context, id string) (*gisvs.Application, error) {
+func (s ApplicationStorage) Application(ctx context.Context, id string) (*baas.Application, error) {
 	var a application
 
 	query := `
@@ -118,7 +117,7 @@ func (s ApplicationStorage) Application(ctx context.Context, id string) (*gisvs.
 		&a.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, gisvs.ErrApplicationNotFound
+			return nil, baas.ErrApplicationNotFound
 		}
 		return nil, err
 	}
@@ -128,7 +127,7 @@ func (s ApplicationStorage) Application(ctx context.Context, id string) (*gisvs.
 	return &mahiApp, nil
 }
 
-func (s ApplicationStorage) Applications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
+func (s ApplicationStorage) Applications(ctx context.Context, sinceID string, limit int) ([]*baas.Application, error) {
 	if sinceID == "" {
 		return s.applications(ctx, limit)
 	}
@@ -136,8 +135,8 @@ func (s ApplicationStorage) Applications(ctx context.Context, sinceID string, li
 	return s.paginateApplications(ctx, sinceID, limit)
 }
 
-func (s ApplicationStorage) applications(ctx context.Context, limit int) ([]*gisvs.Application, error) {
-	var applications []*gisvs.Application
+func (s ApplicationStorage) applications(ctx context.Context, limit int) ([]*baas.Application, error) {
+	var applications []*baas.Application
 
 	const query = `
 	SELECT id, name, description, storage_engine, storage_access_key, storage_secret_key, storage_bucket,
@@ -182,8 +181,8 @@ func (s ApplicationStorage) applications(ctx context.Context, limit int) ([]*gis
 	return applications, nil
 }
 
-func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
-	var applications []*gisvs.Application
+func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID string, limit int) ([]*baas.Application, error) {
+	var applications []*baas.Application
 
 	sinceApp, err := s.Application(ctx, sinceID)
 	if err != nil {
@@ -234,7 +233,7 @@ func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID st
 	return applications, nil
 }
 
-func (s ApplicationStorage) Update(ctx context.Context, u *gisvs.UpdateApplication) (*gisvs.Application, error) {
+func (s ApplicationStorage) Update(ctx context.Context, u *baas.UpdateApplication) (*baas.Application, error) {
 	var a application
 
 	query := `
@@ -267,7 +266,7 @@ func (s ApplicationStorage) Update(ctx context.Context, u *gisvs.UpdateApplicati
 		&a.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, gisvs.ErrApplicationNotFound
+			return nil, baas.ErrApplicationNotFound
 		}
 		return nil, err
 	}
@@ -288,13 +287,13 @@ func (s ApplicationStorage) Delete(ctx context.Context, id string) error {
 	}
 
 	if r.RowsAffected() == 0 {
-		return gisvs.ErrApplicationNotFound
+		return baas.ErrApplicationNotFound
 	}
 
 	return nil
 }
 
-func sanitizeApp(a application) gisvs.Application {
+func sanitizeApp(a application) baas.Application {
 	description := ""
 	if a.Description.Valid {
 		description = a.Description.String
@@ -305,7 +304,7 @@ func sanitizeApp(a application) gisvs.Application {
 		endpoint = a.StorageEndpoint.String
 	}
 
-	mahiApp := gisvs.Application{
+	mahiApp := baas.Application{
 		ID:               a.ID,
 		Name:             a.Name,
 		Description:      description,

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/agreyfox/baas"
 	"github.com/jinzhu/now"
-	"github.com/threeaccents/mahi"
 
 	"github.com/asdine/storm/v3"
 	"syreclabs.com/go/faker"
@@ -21,11 +21,11 @@ var (
 	testUsageStorage          *UsageStorage
 	testTransformationStorage *TransformStorage
 
-	testUsage                *gisvs.Usage
-	testApplication          *gisvs.Application
-	testDeletableApplication *gisvs.Application
-	testFile                 *gisvs.File
-	testDeletableFile        *gisvs.File
+	testUsage                *baas.Usage
+	testApplication          *baas.Application
+	testDeletableApplication *baas.Application
+	testFile                 *baas.File
+	testDeletableFile        *baas.File
 )
 
 func TestMain(m *testing.M) {
@@ -80,7 +80,7 @@ func setup(db *storm.DB) {
 
 }
 
-func createTestUsage(db *storm.DB) *gisvs.Usage {
+func createTestUsage(db *storm.DB) *baas.Usage {
 	a := usage{
 		ID:                    uuid.NewV4().String(),
 		ApplicationID:         testApplication.ID,
@@ -89,8 +89,8 @@ func createTestUsage(db *storm.DB) *gisvs.Usage {
 		Bandwidth:             49494,
 		Storage:               23232323,
 		FileCount:             12,
-		StartDate:             now.BeginningOfDay().Format(gisvs.DateLayout),
-		EndDate:               now.EndOfDay().Add(2 * time.Hour).Format(gisvs.DateLayout),
+		StartDate:             now.BeginningOfDay().Format(baas.DateLayout),
+		EndDate:               now.EndOfDay().Add(2 * time.Hour).Format(baas.DateLayout),
 	}
 
 	if err := db.Save(&a); err != nil {
@@ -105,7 +105,7 @@ func createTestUsage(db *storm.DB) *gisvs.Usage {
 	return &mahiUsage
 }
 
-func createTestApplication(db *storm.DB) *gisvs.Application {
+func createTestApplication(db *storm.DB) *baas.Application {
 	a := application{
 		ID:               uuid.NewV4().String(),
 		Name:             faker.Name().String(),
@@ -128,7 +128,7 @@ func createTestApplication(db *storm.DB) *gisvs.Application {
 	return &mahiApp
 }
 
-func createTestFile(db *storm.DB) *gisvs.File {
+func createTestFile(db *storm.DB) *baas.File {
 	n := file{
 		ID:            uuid.NewV4().String(),
 		ApplicationID: testApplication.ID,

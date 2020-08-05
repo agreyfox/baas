@@ -11,12 +11,11 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gosimple/slug"
 )
 
-func (s *Service) processUpload(ctx context.Context, u *uploadData) (*gisvs.File, error) {
+func (s *Service) processUpload(ctx context.Context, u *uploadData) (*baas.File, error) {
 	app, err := s.ApplicationService.Application(ctx, u.ApplicationID)
 	if err != nil {
 		return nil, err
@@ -29,7 +28,7 @@ func (s *Service) processUpload(ctx context.Context, u *uploadData) (*gisvs.File
 
 	fileBlobID := makeFileBlobID(time.Now(), app.Name, u.Filename)
 
-	newFile := &gisvs.NewFile{
+	newFile := &baas.NewFile{
 		ApplicationID: app.ID,
 		Filename:      u.Filename,
 		FileBlobID:    fileBlobID,
@@ -55,7 +54,7 @@ func (s *Service) processUpload(ctx context.Context, u *uploadData) (*gisvs.File
 		return nil, err
 	}
 
-	fileBlob := &gisvs.FileBlob{
+	fileBlob := &baas.FileBlob{
 		ID:        newFile.FileBlobID,
 		Data:      u.File,
 		MIMEValue: newFile.MIMEValue,
@@ -70,13 +69,13 @@ func (s *Service) processUpload(ctx context.Context, u *uploadData) (*gisvs.File
 	if err := fileBlobStorage.Upload(ctx, app.StorageBucket, fileBlob); err != nil {
 		return nil, fmt.Errorf("failed uploading file blob to storage %w", err)
 	}
-
+	newFile.Hash = fileBlob.Hash // record ipfs hash
 	f, err := s.FileService.Create(ctx, newFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not store file %w", err)
 	}
 
-	updatedUsage := &gisvs.UpdateUsage{
+	updatedUsage := &baas.UpdateUsage{
 		ApplicationID: f.ApplicationID,
 		Storage:       f.Size,
 		FileCount:     1,

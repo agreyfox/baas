@@ -3,7 +3,7 @@ package http
 import (
 	"time"
 
-	"github.com/agreyfox/gisvs"
+	"github.com/agreyfox/baas"
 )
 
 type applicationResponse struct {
@@ -29,7 +29,7 @@ type applicationData struct {
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
 
-func sanitizeApplication(v *gisvs.Application) *applicationData {
+func sanitizeApplication(v *baas.Application) *applicationData {
 	return &applicationData{
 		ID:               v.ID,
 		Name:             v.Name,
@@ -45,7 +45,7 @@ func sanitizeApplication(v *gisvs.Application) *applicationData {
 	}
 }
 
-func sanitizeApplications(v []*gisvs.Application) []*applicationData {
+func sanitizeApplications(v []*baas.Application) []*applicationData {
 	ss := make([]*applicationData, len(v))
 	for x, u := range v {
 		nu := sanitizeApplication(u)

@@ -1,4 +1,4 @@
-package main
+package baasd
 
 import (
 	"errors"
@@ -17,8 +17,8 @@ const (
 
 	DefaultChunkUploadDir = "./data/chunks"
 	DefaultFullFileDir    = "./data/files"
-
-	DefaultHTTPPort = 4200
+	DefaultTempFileDir    = "./data/temp"
+	DefaultHTTPPort       = 4200
 
 	//DefaultPostgreDatabase = "mahi"
 	//DefaultPostgreUser     = "mahi"
@@ -26,22 +26,37 @@ const (
 	DefaultPostgreHost     = "localhost"
 	DefaultPostgrePort     = 5432
 
-	DefaultBoltDir = "./data/gisvs/gisvs.db"
+	DefaultBoltDir = "./data/baas.db"
+)
+
+var (
+	_config *Config
 )
 
 var DefaultPostgreMaxConns = runtime.NumCPU() * 10
 
 type Config struct {
+	Init       bool
 	DbEngine   string     `toml:"db_engine"`
 	Upload     Upload     `toml:"upload"`
 	PostgreSQL PostgreSQL `toml:"postgresql"`
 	Bolt       Bolt       `toml:"bolt"`
 	Security   Security   `toml:"security"`
 	HTTP       HTTP       `toml:"http"`
+	IPFS       IPFS       `toml:"ipfs"`
 }
 
-func (c *Config) init() error {
-	if err := c.validate(); err != nil {
+func init() {
+	_config = &Config{}
+}
+
+// Return system wide config
+func GetSystemConfig() *Config {
+	return _config
+}
+
+func (c *Config) InitConfig() error {
+	if err := c.Validate(); err != nil {
 		return err
 	}
 
@@ -64,28 +79,28 @@ func (c *Config) init() error {
 	if c.HTTP.Port == 0 {
 		c.HTTP.Port = DefaultHTTPPort
 	}
-
-	if c.DbEngine == DBEnginePostgreSQL {
-		if c.PostgreSQL.Database == "" {
-			c.PostgreSQL.Database = DefaultPostgreDatabase
+	/*
+		if c.DbEngine == DBEnginePostgreSQL {
+			if c.PostgreSQL.Database == "" {
+				c.PostgreSQL.Database = DefaultPostgreDatabase
+			}
+			if c.PostgreSQL.User == "" {
+				c.PostgreSQL.User = DefaultPostgreUser
+			}
+			if c.PostgreSQL.Password == "" {
+				c.PostgreSQL.Password = DefaultPostgrePassword
+			}
+			if c.PostgreSQL.Host == "" {
+				c.PostgreSQL.Host = DefaultPostgreHost
+			}
+			if c.PostgreSQL.Port == 0 {
+				c.PostgreSQL.Port = DefaultPostgrePort
+			}
+			if c.PostgreSQL.MaxConns == 0 {
+				c.PostgreSQL.MaxConns = DefaultPostgreMaxConns
+			}
 		}
-		if c.PostgreSQL.User == "" {
-			c.PostgreSQL.User = DefaultPostgreUser
-		}
-		if c.PostgreSQL.Password == "" {
-			c.PostgreSQL.Password = DefaultPostgrePassword
-		}
-		if c.PostgreSQL.Host == "" {
-			c.PostgreSQL.Host = DefaultPostgreHost
-		}
-		if c.PostgreSQL.Port == 0 {
-			c.PostgreSQL.Port = DefaultPostgrePort
-		}
-		if c.PostgreSQL.MaxConns == 0 {
-			c.PostgreSQL.MaxConns = DefaultPostgreMaxConns
-		}
-	}
-
+	*/
 	if c.DbEngine == DBEngineBolt {
 		if c.Bolt.Dir == "" {
 			c.Bolt.Dir = DefaultBoltDir
@@ -95,12 +110,12 @@ func (c *Config) init() error {
 	return nil
 }
 
-func (c *Config) validate() error {
+func (c *Config) Validate() error {
 	if c.DbEngine == "" {
 		return errors.New("db_engine is required")
 	}
-	if c.DbEngine != DBEnginePostgreSQL && c.DbEngine != DBEngineBolt {
-		return fmt.Errorf("db_engine must be of type %s or %s", DBEnginePostgreSQL, DBEngineBolt)
+	if c.DbEngine != DBEngineBolt {
+		return fmt.Errorf("db_engine must be of type %s", DBEngineBolt)
 	}
 	if c.Security.AESKey == "" {
 		return errors.New("[security].aes_key is required")
@@ -130,11 +145,16 @@ type HTTP struct {
 	SSLCertPath string `toml:"ssl_cert_path"`
 	SSLKeyPath  string `toml:"ssl_key_path"`
 }
+type IPFS struct {
+	API     string `toml:"api"`
+	Service string `toml:"service"`
+}
 
 type Security struct {
-	AESKey    string `toml:"aes_key"`
-	AuthToken string `toml:"auth_token"`
-	HTTPS     bool   `toml:"https"`
+	AESKey      string `toml:"aes_key"`
+	AuthToken   string `toml:"auth_token"`
+	HTTPS       bool   `toml:"https"`
+	Application bool   `toml:"application"`
 }
 
 type Upload struct {

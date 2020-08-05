@@ -1,4 +1,4 @@
-package gisvs
+package baas
 
 import (
 	"context"
@@ -22,6 +22,7 @@ type FileBlob struct {
 
 	// TempFileName this is used to determine if we need to delete the temp file after using the FileBlob
 	TempFileName string
+	Hash         string
 }
 
 // Bytes transforms the data of the FileBlob into a byte array

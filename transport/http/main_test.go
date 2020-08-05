@@ -6,7 +6,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/agreyfox/gisvs/mock"
+	"github.com/agreyfox/baas/mock"
 	"github.com/gorilla/schema"
 
 	"github.com/gorilla/mux"

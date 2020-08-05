@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -11,37 +10,44 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/agreyfox/gisvs"
-	"github.com/agreyfox/gisvs/adapter/bolt"
+	"github.com/agreyfox/baas/adapter/bolt"
 
-	"github.com/agreyfox/gisvs/core/usage"
+	"github.com/agreyfox/baas/cmd/baas"
 
-	"github.com/agreyfox/gisvs/core/file"
+	"github.com/agreyfox/baas/core/usage"
 
-	"github.com/agreyfox/gisvs/core/upload"
+	"github.com/agreyfox/baas/core/file"
 
-	"github.com/agreyfox/gisvs/transport/http"
+	"github.com/agreyfox/baas/core/upload"
 
-	"github.com/agreyfox/gisvs/core/application"
+	"github.com/agreyfox/baas/transport/http"
+
+	"github.com/agreyfox/baas/core/application"
 
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
-	"github.com/agreyfox/gisvs/adapter/aes"
+	"github.com/agreyfox/baas/adapter/aes"
 
 	"github.com/gorilla/schema"
-
-	"github.com/agreyfox/gisvs/adapter/postgre"
-	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/BurntSushi/toml"
 )
 
 var (
-	tomlConfigPathPtr = flag.String("config", "./gisvs.toml", "the file path for the toml configuration file")
+	tomlConfigPathPtr = flag.String("config", "./baas.toml", "the file path for the toml configuration file")
+	inputImage        = flag.String("in", "test.jpg", "输入图片")
+	outImage          = flag.String("out", "out.jpg", "输出图片")
+	mkImage           = flag.String("wm", "wm.jpg", "水印图片")
+	origImage         = flag.String("orig", "orig.jpg", "水印图片")
+	textInput         = flag.String("text", "watermark", "输入文字")
+	createwm          = flag.Bool("c", false, "创建watermask图像文件")
+	convertwm         = flag.Bool("w", false, "手工转换带有watermask图片")
+	extractwm         = flag.Bool("e", false, "获取wm图像")
 )
 
 func main() {
+
 	flag.Parse()
 
 	if err := run(); err != nil {
@@ -51,17 +57,39 @@ func main() {
 }
 
 func run() error {
-	color.Blue("Start gisvs...")
+	if *createwm {
+		fmt.Println("创建水印...")
+		baas..CreateWaterMarkImageFile(*textInput, *mkImage)
+		baas..CreateWaterMarkImageFile2(*textInput, "wm.jpg")
+		return nil
+	}
+	if *convertwm {
+		fmt.Println("现在给图片打水印")
+		//baas..Fftwtest(*inputImage, *mkImage, *outImage)
+		name, err := baas..DoWater(*inputImage, *mkImage)
+		fmt.Printf("生成文件:%s,error:%s\n", name, err)
+		return nil
+	}
+
+	if *extractwm {
+		fmt.Println("现在尝试获取图片隐藏水印")
+		//baas..Fftwtest(*inputImage, *mkImage, *outImage)
+		name, err := baas..ExtractWater(*inputImage, *origImage)
+		fmt.Printf("生成文件:%s,error:%v\n", name, err)
+		return nil
+	}
+
+	color.Blue("Start baas...")
 	conf, err := parseConfig(*tomlConfigPathPtr)
 	if err != nil {
 		return fmt.Errorf("failed parsing config file %w", err)
 	}
 
-	if err := conf.init(); err != nil {
+	if err := conf.InitConfig(); err != nil {
 		return fmt.Errorf("failed initializing config %w", err)
 	}
 
-	logger := zerolog.New(os.Stdout).With().Timestamp().Str("service", "mahi").Logger()
+	logger := zerolog.New(os.Stdout).With().Timestamp().Str("service", "baas.).Logger()
 
 	if err := os.MkdirAll(conf.Upload.ChunkUploadDir, 02750); err != nil {
 		return err
@@ -71,12 +99,12 @@ func run() error {
 		return err
 	}
 
-	var fileStorage gisvs.FileStorage
-	var applicationStorage gisvs.ApplicationStorage
-	var usageStorage gisvs.UsageStorage
-	var transformStorage gisvs.TransformStorage
+	var fileStorage baas.FileStorage
+	var applicationStorage baas.ApplicationStorage
+	var usageStorage baas.UsageStorage
+	var transformStorage baas.TransformStorage
 
-	if conf.DbEngine == DBEnginePostgreSQL {
+	/* if conf.DbEngine == DBEnginePostgreSQL {
 		pgConf := conf.PostgreSQL
 		pgxConf, err := pgxpool.ParseConfig(fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", pgConf.User, pgConf.Password, pgConf.Host, pgConf.Port, pgConf.Database))
 		if err != nil {
@@ -104,30 +132,30 @@ func run() error {
 		transformStorage = &postgre.TransformStorage{
 			DB: db,
 		}
-	} else {
-		// bolt db
-		db, err := bolt.Open(conf.Bolt.Dir)
-		if err != nil {
-			return err
-		}
-		defer db.Close()
-
-		fileStorage = &bolt.FileStorage{
-			DB: db,
-		}
-
-		applicationStorage = &bolt.ApplicationStorage{
-			DB: db,
-		}
-
-		usageStorage = &bolt.UsageStorage{
-			DB: db,
-		}
-
-		transformStorage = &bolt.TransformStorage{
-			DB: db,
-		}
+	} else { */
+	// bolt db
+	db, err := bolt.Open(conf.Bolt.Dir)
+	if err != nil {
+		return err
 	}
+	defer db.Close()
+
+	fileStorage = &bolt.FileStorage{
+		DB: db,
+	}
+
+	applicationStorage = &bolt.ApplicationStorage{
+		DB: db,
+	}
+
+	usageStorage = &bolt.UsageStorage{
+		DB: db,
+	}
+
+	transformStorage = &bolt.TransformStorage{
+		DB: db,
+	}
+	//
 
 	// schema decoder
 	schemaDecoder := schema.NewDecoder()
@@ -213,7 +241,7 @@ func run() error {
 	return http.Serve(requestIDMiddleware, conf.HTTP.Port, conf.HTTP.HTTPS, conf.HTTP.SSLCertPath, conf.HTTP.SSLKeyPath)
 }
 
-func parseConfig(path string) (*Config, error) {
+func parseConfig(path string) (*baas..Config, error) {
 	configFile, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -225,10 +253,11 @@ func parseConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
-	var conf Config
-	if _, err := toml.Decode(buf.String(), &conf); err != nil {
+	//var conf baas..Config
+	conf := baas..GetSystemConfig()
+	if _, err := toml.Decode(buf.String(), conf); err != nil {
 		return nil, err
 	}
-
-	return &conf, nil
+	conf.Init = true // indicated the config is initialized
+	return conf, nil
 }

@@ -6,29 +6,28 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/rs/zerolog"
 
 	"gopkg.in/h2non/bimg.v1"
 )
 
 type TransformService struct {
-	UsageService gisvs.UsageService
+	UsageService baas.UsageService
 
-	TransformStorage gisvs.TransformStorage
+	TransformStorage baas.TransformStorage
 
 	MaxTransformFileSize int64
 
 	Log zerolog.Logger
 }
 
-func (s *TransformService) Transform(ctx context.Context, f *gisvs.File, blob *gisvs.FileBlob, opts gisvs.TransformationOption) (*gisvs.FileBlob, error) {
+func (s *TransformService) Transform(ctx context.Context, f *baas.File, blob *baas.FileBlob, opts baas.TransformationOption) (*baas.FileBlob, error) {
 	if !blob.IsTransformable() {
 		return blob, nil
 	}
 
 	if blob.Size > s.MaxTransformFileSize {
-		return nil, gisvs.ErrFileToLargeToTransform
+		return nil, baas.ErrFileToLargeToTransform
 	}
 
 	transformedBlob, err := transform(blob, opts)
@@ -44,20 +43,20 @@ func (s *TransformService) Transform(ctx context.Context, f *gisvs.File, blob *g
 	return transformedBlob, nil
 }
 
-func (s *TransformService) updateUsages(ctx context.Context, f *gisvs.File, opts gisvs.TransformationOption) error {
-	updatedUsages := &gisvs.UpdateUsage{
+func (s *TransformService) updateUsages(ctx context.Context, f *baas.File, opts baas.TransformationOption) error {
+	updatedUsages := &baas.UpdateUsage{
 		ApplicationID:   f.ApplicationID,
 		Transformations: 1,
 	}
 
-	newTransformation := &gisvs.NewTransformation{
+	newTransformation := &baas.NewTransformation{
 		FileID:        f.ID,
 		ApplicationID: f.ApplicationID,
 		Actions:       opts,
 	}
 
 	_, err := s.TransformStorage.Store(ctx, newTransformation)
-	if err != nil && err != gisvs.ErrTransformationNotUnique {
+	if err != nil && err != baas.ErrTransformationNotUnique {
 		return err
 	}
 
@@ -68,10 +67,10 @@ func (s *TransformService) updateUsages(ctx context.Context, f *gisvs.File, opts
 	return s.UsageService.Update(ctx, updatedUsages)
 }
 
-func transform(blob *gisvs.FileBlob, opts gisvs.TransformationOption) (*gisvs.FileBlob, error) {
+func transform(blob *baas.FileBlob, opts baas.TransformationOption) (*baas.FileBlob, error) {
 	bimgOpts := convertBimgOptions(opts)
 
-	f := new(gisvs.FileBlob)
+	f := new(baas.FileBlob)
 
 	blobBytes := make([]byte, blob.Size)
 	if _, err := blob.Bytes(blobBytes); err != nil {
@@ -114,7 +113,7 @@ func getMimeValue(format string) string {
 	return fileFormat
 }
 
-func convertBimgOptions(opts gisvs.TransformationOption) bimg.Options {
+func convertBimgOptions(opts baas.TransformationOption) bimg.Options {
 	var fileType bimg.ImageType
 
 	switch opts.Format {

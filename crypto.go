@@ -1,4 +1,4 @@
-package gisvs
+package baas
 
 // EncryptionService manages the encrypting and decrypting of data
 type EncryptionService interface {

@@ -3,8 +3,7 @@ package http
 import (
 	"errors"
 
-	"github.com/agreyfox/gisvs"
-	"github.com/agreyfox/gisvs/libs/sliceutil"
+	"github.com/agreyfox/baas/libs/sliceutil"
 
 	"github.com/asaskevich/govalidator"
 )
@@ -38,7 +37,7 @@ func (r *createApplicationRequest) validate() error {
 	if r.StorageEngine == "" {
 		return errors.New("storageEngine is required")
 	}
-	if !sliceutil.StrContains(r.StorageEngine, gisvs.AvailableStorageEngines) {
+	if !sliceutil.StrContains(r.StorageEngine, baas.AvailableStorageEngines) {
 		return errors.New("invalid storage engine")
 	}
 

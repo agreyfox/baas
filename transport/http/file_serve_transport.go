@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/agreyfox/gisvs"
 )
 
 func (s *Server) handleServeFile() http.Handler {
@@ -28,15 +26,15 @@ func (s *Server) handleServeFile() http.Handler {
 	})
 }
 
-func (s *Server) parseTransformationOptions(u *url.URL) (gisvs.TransformationOption, error) {
+func (s *Server) parseTransformationOptions(u *url.URL) (baas.TransformationOption, error) {
 	extension := getFileExtension(u)
 
 	var queryParams serveFileQueryParam
 	if err := s.QueryDecoder.Decode(&queryParams, u.Query()); err != nil {
-		return gisvs.TransformationOption{}, fmt.Errorf("failed to decode query params %w", err)
+		return baas.TransformationOption{}, fmt.Errorf("failed to decode query params %w", err)
 	}
 
-	opts := gisvs.TransformationOption{
+	opts := baas.TransformationOption{
 		Width:       queryParams.Width,
 		Height:      queryParams.Height,
 		Format:      extension,
@@ -48,6 +46,10 @@ func (s *Server) parseTransformationOptions(u *url.URL) (gisvs.TransformationOpt
 		Zoom:        queryParams.Zoom,
 		BW:          queryParams.BW,
 		Flop:        queryParams.Flop,
+		WM:          queryParams.WM,
+		WMText:      queryParams.WMText,
+		WMV:         queryParams.WMV,
+		Origin:      queryParams.Origin,
 	}
 
 	return opts, nil

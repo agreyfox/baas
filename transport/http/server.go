@@ -3,17 +3,16 @@ package http
 import (
 	"net/http"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/rs/zerolog"
 )
 
 type ServerConfig struct {
-	ApplicationService gisvs.ApplicationService
-	UploadService      gisvs.UploadService
-	FileServeService   gisvs.FileServeService
-	UsageService       gisvs.UsageService
+	ApplicationService baas.ApplicationService
+	UploadService      baas.UploadService
+	FileServeService   baas.FileServeService
+	UsageService       baas.UsageService
 
 	QueryDecoder *schema.Decoder
 
@@ -23,10 +22,10 @@ type ServerConfig struct {
 }
 
 type Server struct {
-	ApplicationService gisvs.ApplicationService
-	UploadService      gisvs.UploadService
-	FileServeService   gisvs.FileServeService
-	UsageService       gisvs.UsageService
+	ApplicationService baas.ApplicationService
+	UploadService      baas.UploadService
+	FileServeService   baas.FileServeService
+	UsageService       baas.UsageService
 
 	QueryDecoder *schema.Decoder
 

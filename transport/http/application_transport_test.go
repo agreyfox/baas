@@ -7,8 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/agreyfox/gisvs"
-	"github.com/agreyfox/gisvs/mock"
+	"github.com/agreyfox/baas/mock"
 
 	"syreclabs.com/go/faker"
 
@@ -19,14 +18,14 @@ import (
 
 var (
 	// CREATE
-	completeApplicationRequest           = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: gisvs.StorageEngineS3, DeliveryURL: "delivery"}
-	noDescriptionApplicationRequest      = &createApplicationRequest{Name: faker.Name().String(), StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: gisvs.StorageEngineS3, DeliveryURL: "testurl"}
-	nameMissingApplicationRequest        = &createApplicationRequest{Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: gisvs.StorageEngineS3, DeliveryURL: "testurl"}
-	accessKeyMissingApplicationRequest   = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageSecretKey: "test", StorageEngine: gisvs.StorageEngineS3, DeliveryURL: "testurl"}
-	secretKeyMissingApplicationRequest   = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageEngine: gisvs.StorageEngineS3, DeliveryURL: "testurl"}
-	regionMissingApplicationRequest      = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: gisvs.StorageEngineS3, DeliveryURL: "testurl"}
+	completeApplicationRequest           = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: baas.StorageEngineS3, DeliveryURL: "delivery"}
+	noDescriptionApplicationRequest      = &createApplicationRequest{Name: faker.Name().String(), StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: baas.StorageEngineS3, DeliveryURL: "testurl"}
+	nameMissingApplicationRequest        = &createApplicationRequest{Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: baas.StorageEngineS3, DeliveryURL: "testurl"}
+	accessKeyMissingApplicationRequest   = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageSecretKey: "test", StorageEngine: baas.StorageEngineS3, DeliveryURL: "testurl"}
+	secretKeyMissingApplicationRequest   = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageEngine: baas.StorageEngineS3, DeliveryURL: "testurl"}
+	regionMissingApplicationRequest      = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: baas.StorageEngineS3, DeliveryURL: "testurl"}
 	engineMissingApplicationRequest      = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", DeliveryURL: "testurl"}
-	deliveryURLMissingApplicationRequest = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: gisvs.StorageEngineS3}
+	deliveryURLMissingApplicationRequest = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: baas.StorageEngineS3}
 	wrongEngineApplicationRequest        = &createApplicationRequest{Name: faker.Name().String(), Description: "test", StorageRegion: "test", StorageAccessKey: "test", StorageSecretKey: "test", StorageEngine: "wrong-engine", DeliveryURL: "testurl"}
 	wrongJSONApplicationRequest          = &testBadJSON{Name: 1}
 

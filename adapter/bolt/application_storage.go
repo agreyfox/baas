@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/agreyfox/gisvs"
 	"github.com/asdine/storm/v3/q"
 
 	"github.com/asdine/storm/v3"
@@ -69,7 +68,7 @@ type ApplicationStorage struct {
 	DB *storm.DB
 }
 
-func (s ApplicationStorage) Store(ctx context.Context, n *gisvs.NewApplication) (*gisvs.Application, error) {
+func (s ApplicationStorage) Store(ctx context.Context, n *baas.NewApplication) (*baas.Application, error) {
 	a := application{
 		ID:               uuid.NewV4().String(),
 		Name:             n.Name,
@@ -91,7 +90,7 @@ func (s ApplicationStorage) Store(ctx context.Context, n *gisvs.NewApplication) 
 
 	if err := s.DB.Save(&a); err != nil {
 		if err == storm.ErrAlreadyExists {
-			return nil, gisvs.ErrApplicationNameTaken
+			return nil, baas.ErrApplicationNameTaken
 		}
 		return nil, err
 	}
@@ -101,11 +100,11 @@ func (s ApplicationStorage) Store(ctx context.Context, n *gisvs.NewApplication) 
 	return &mahiApp, nil
 }
 
-func (s ApplicationStorage) Application(ctx context.Context, id string) (*gisvs.Application, error) {
+func (s ApplicationStorage) Application(ctx context.Context, id string) (*baas.Application, error) {
 	var a application
 	if err := s.DB.One("ID", id, &a); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, gisvs.ErrApplicationNotFound
+			return nil, baas.ErrApplicationNotFound
 		}
 		return nil, err
 	}
@@ -119,7 +118,7 @@ func (s ApplicationStorage) boltApplication(ctx context.Context, id string) (*ap
 	var a application
 	if err := s.DB.One("ID", id, &a); err != nil {
 		if err == storm.ErrNotFound {
-			return nil, gisvs.ErrApplicationNotFound
+			return nil, baas.ErrApplicationNotFound
 		}
 		return nil, err
 	}
@@ -127,7 +126,7 @@ func (s ApplicationStorage) boltApplication(ctx context.Context, id string) (*ap
 	return &a, nil
 }
 
-func (s ApplicationStorage) Applications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
+func (s ApplicationStorage) Applications(ctx context.Context, sinceID string, limit int) ([]*baas.Application, error) {
 	if sinceID == "" {
 		return s.applications(ctx, limit)
 	}
@@ -135,16 +134,16 @@ func (s ApplicationStorage) Applications(ctx context.Context, sinceID string, li
 	return s.paginateApplications(ctx, sinceID, limit)
 }
 
-func (s ApplicationStorage) applications(ctx context.Context, limit int) ([]*gisvs.Application, error) {
+func (s ApplicationStorage) applications(ctx context.Context, limit int) ([]*baas.Application, error) {
 	var applications []*application
 	if err := s.DB.Select().Limit(limit).OrderBy("CreatedAt").Reverse().Find(&applications); err != nil {
 		if err == storm.ErrNotFound {
-			return []*gisvs.Application{}, nil
+			return []*baas.Application{}, nil
 		}
 		return nil, err
 	}
 
-	var mahiApplications []*gisvs.Application
+	var mahiApplications []*baas.Application
 
 	for _, a := range applications {
 		mahiApp := sanitizeApp(*a)
@@ -155,7 +154,7 @@ func (s ApplicationStorage) applications(ctx context.Context, limit int) ([]*gis
 	return mahiApplications, nil
 }
 
-func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID string, limit int) ([]*gisvs.Application, error) {
+func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID string, limit int) ([]*baas.Application, error) {
 	sinceApp, err := s.boltApplication(ctx, sinceID)
 	if err != nil {
 		return nil, err
@@ -164,12 +163,12 @@ func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID st
 	var applications []*application
 	if err := s.DB.Select(q.Lt("Pk", sinceApp.Pk)).Limit(limit).OrderBy("CreatedAt").Reverse().Find(&applications); err != nil {
 		if err == storm.ErrNotFound {
-			return []*gisvs.Application{}, nil
+			return []*baas.Application{}, nil
 		}
 		return nil, err
 	}
 
-	var mahiApplications []*gisvs.Application
+	var mahiApplications []*baas.Application
 
 	for _, a := range applications {
 		mahiApp := sanitizeApp(*a)
@@ -180,7 +179,7 @@ func (s ApplicationStorage) paginateApplications(ctx context.Context, sinceID st
 	return mahiApplications, nil
 }
 
-func (s ApplicationStorage) Update(ctx context.Context, u *gisvs.UpdateApplication) (*gisvs.Application, error) {
+func (s ApplicationStorage) Update(ctx context.Context, u *baas.UpdateApplication) (*baas.Application, error) {
 	a, err := s.boltApplication(ctx, u.ID)
 	if err != nil {
 		return nil, err
@@ -196,7 +195,7 @@ func (s ApplicationStorage) Update(ctx context.Context, u *gisvs.UpdateApplicati
 
 	if err := s.DB.Save(a); err != nil {
 		if err == storm.ErrAlreadyExists {
-			return nil, gisvs.ErrApplicationNameTaken
+			return nil, baas.ErrApplicationNameTaken
 		}
 		return nil, err
 	}
@@ -219,8 +218,8 @@ func (s ApplicationStorage) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func sanitizeApp(a application) gisvs.Application {
-	mahiApp := gisvs.Application{
+func sanitizeApp(a application) baas.Application {
+	mahiApp := baas.Application{
 		ID:               a.ID,
 		Name:             a.Name,
 		Description:      a.Description,

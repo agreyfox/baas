@@ -1,4 +1,4 @@
-package gisvs
+package baas
 
 import (
 	"context"
@@ -12,6 +12,7 @@ var (
 		StorageEngineS3,
 		StorageEngineB2,
 		StorageEngineAzureBlob,
+		StorageEngineIPFS,
 	}
 )
 
@@ -21,6 +22,7 @@ const (
 	StorageEngineS3           = "s3"
 	StorageEngineB2           = "b2"
 	StorageEngineAzureBlob    = "azure_blob"
+	StorageEngineIPFS         = "ipfs"
 )
 
 // ApplicationService defines the business logic for dealing with all aspects of an application.

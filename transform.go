@@ -1,4 +1,4 @@
-package gisvs
+package baas
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 
 type TransformService interface {
 	Transform(ctx context.Context, f *File, blob *FileBlob, opts TransformationOption) (*FileBlob, error)
+	MakeWaterInImage(ctx context.Context, ff *File, blob *FileBlob, text string) (*FileBlob, error)
+	VerifyWaterInImage(ctx context.Context, f *File, blob *FileBlob, origf *File, origblob *FileBlob) (*FileBlob, error)
 }
 
 type TransformStorage interface {
@@ -51,4 +53,12 @@ type TransformationOption struct {
 	Zoom int
 	// black and white
 	BW bool
+	// 是否加水印
+	WM bool
+	// 水印文字
+	WMText string
+	//校验WM
+	WMV bool
+	//Origin
+	Origin string
 }
