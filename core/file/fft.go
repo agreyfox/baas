@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/agreyfox/baas"
-	"github.com/agreyfox/baas/cmd/baas"
+	"github.com/agreyfox/baas/cmd/baasd"
 )
 
 func (s *TransformService) MakeWaterInImage(ctx context.Context, ff *baas.File, blob *baas.FileBlob, text string) (*baas.FileBlob, error) {
