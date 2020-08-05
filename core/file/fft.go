@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/agreyfox/baas/cmd/baas"
 	"github.com/agreyfox/baas"
+	"github.com/agreyfox/baas/cmd/baas"
 )
 
 func (s *TransformService) MakeWaterInImage(ctx context.Context, ff *baas.File, blob *baas.FileBlob, text string) (*baas.FileBlob, error) {
@@ -49,7 +49,7 @@ func (s *TransformService) MakeWaterInImage(ctx context.Context, ff *baas.File, 
 	resultname := resultfile.Name() */
 
 	s.Log.Info().Msg("Now call lib with:" + sourcefile + " " + name)
-	resultfile, err := baas..DoWater(sourcefile, name)
+	resultfile, err := baasd.DoWater(sourcefile, name)
 	if err == nil {
 		fmt.Printf("result filename is %s\n", resultfile)
 		fddd, _ := os.Open(resultfile)
@@ -91,7 +91,7 @@ func (s *TransformService) VerifyWaterInImage(ctx context.Context, f *baas.File,
 	blob.TempFileName = sourcefile // make sure the temporary file be deleted
 
 	s.Log.Info().Msg("Now call lib with:" + sourcefile + "," + origsourcefile)
-	resultfile, err := baas..ExtractWater(sourcefile, origsourcefile)
+	resultfile, err := baasd.ExtractWater(sourcefile, origsourcefile)
 	if err == nil {
 		fmt.Printf("result filename is %s\n", resultfile)
 		fddd, _ := os.Open(resultfile)
@@ -114,7 +114,7 @@ func (s *TransformService) VerifyWaterInImage(ctx context.Context, f *baas.File,
 }
 
 func (s *TransformService) ConvertTxtToImage(txt string, outputfile string) bool {
-	ret := baas..CreateWaterMarkImageFile2(txt, outputfile)
+	ret := baasd.CreateWaterMarkImageFile2(txt, outputfile)
 	s.Log.Info().Msgf("result is %d", ret)
 	return true
 }

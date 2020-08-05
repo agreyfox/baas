@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/agreyfox/baas/cmd/baas"
+	"github.com/agreyfox/baas/cmd/baasd"
 )
 
 type Service struct {
@@ -18,7 +19,7 @@ func (s *Service) Create(ctx context.Context, n *baas.NewApplication) (*baas.App
 	if err != nil {
 		return nil, fmt.Errorf("failed enrcypting secret key %w", err)
 	}
-	conf := baas..GetSystemConfig()
+	conf := baasd.GetSystemConfig()
 	if !conf.Security.Application {
 		return nil, fmt.Errorf("Not allowed!")
 	}

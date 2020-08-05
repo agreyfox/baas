@@ -11,7 +11,7 @@ import (
 
 	"github.com/agreyfox/baas/adapter/ipfs"
 	"github.com/agreyfox/baas/adapter/s3"
-	"github.com/agreyfox/baas/cmd/baas"
+	"github.com/agreyfox/baas/cmd/baasd"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -96,7 +96,7 @@ func makeStorageEndpoint(engine, region string) string {
 	case baas.StorageEngineB2:
 		return fmt.Sprintf("s3.%s.backblazeb2.com", region)
 	case baas.StorageEngineIPFS:
-		conf := baas..GetSystemConfig()
+		conf := baasd.GetSystemConfig()
 		return fmt.Sprintf("%s,%s", conf.IPFS.API, conf.IPFS.Service) //"127.0.0.1:5001,127.0.0.1:10010"
 	default:
 		return ""

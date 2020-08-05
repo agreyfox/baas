@@ -12,7 +12,7 @@ import (
 
 	"github.com/agreyfox/baas/adapter/bolt"
 
-	"github.com/agreyfox/baas/cmd/baas"
+	"github.com/agreyfox/baas/cmd/baasd"
 
 	"github.com/agreyfox/baas/core/usage"
 
@@ -59,14 +59,14 @@ func main() {
 func run() error {
 	if *createwm {
 		fmt.Println("创建水印...")
-		baas..CreateWaterMarkImageFile(*textInput, *mkImage)
-		baas..CreateWaterMarkImageFile2(*textInput, "wm.jpg")
+		baasd.CreateWaterMarkImageFile(*textInput, *mkImage)
+		baasd.CreateWaterMarkImageFile2(*textInput, "wm.jpg")
 		return nil
 	}
 	if *convertwm {
 		fmt.Println("现在给图片打水印")
 		//baas..Fftwtest(*inputImage, *mkImage, *outImage)
-		name, err := baas..DoWater(*inputImage, *mkImage)
+		name, err := baasd.DoWater(*inputImage, *mkImage)
 		fmt.Printf("生成文件:%s,error:%s\n", name, err)
 		return nil
 	}
@@ -74,7 +74,7 @@ func run() error {
 	if *extractwm {
 		fmt.Println("现在尝试获取图片隐藏水印")
 		//baas..Fftwtest(*inputImage, *mkImage, *outImage)
-		name, err := baas..ExtractWater(*inputImage, *origImage)
+		name, err := baasd.ExtractWater(*inputImage, *origImage)
 		fmt.Printf("生成文件:%s,error:%v\n", name, err)
 		return nil
 	}
@@ -89,7 +89,7 @@ func run() error {
 		return fmt.Errorf("failed initializing config %w", err)
 	}
 
-	logger := zerolog.New(os.Stdout).With().Timestamp().Str("service", "baas.).Logger()
+	logger := zerolog.New(os.Stdout).With().Timestamp().Str("service", "baas").Logger()
 
 	if err := os.MkdirAll(conf.Upload.ChunkUploadDir, 02750); err != nil {
 		return err
@@ -241,7 +241,7 @@ func run() error {
 	return http.Serve(requestIDMiddleware, conf.HTTP.Port, conf.HTTP.HTTPS, conf.HTTP.SSLCertPath, conf.HTTP.SSLKeyPath)
 }
 
-func parseConfig(path string) (*baas..Config, error) {
+func parseConfig(path string) (*baasd.Config, error) {
 	configFile, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -254,7 +254,7 @@ func parseConfig(path string) (*baas..Config, error) {
 	}
 
 	//var conf baas..Config
-	conf := baas..GetSystemConfig()
+	conf := baasd.GetSystemConfig()
 	if _, err := toml.Decode(buf.String(), conf); err != nil {
 		return nil, err
 	}
