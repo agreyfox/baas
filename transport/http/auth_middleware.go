@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
+	"github.com/agreyfox/baas"
 )
 
 func (s *Server) Authenticate(next http.Handler) http.Handler {

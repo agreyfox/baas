@@ -11,6 +11,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
+	"github.com/agreyfox/baas"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gosimple/slug"
 )

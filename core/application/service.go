@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/cmd/baasd"
 )
 

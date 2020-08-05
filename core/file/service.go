@@ -2,6 +2,8 @@ package file
 
 import (
 	"context"
+
+	"github.com/agreyfox/baas"
 )
 
 // Service is the implementation of the file service interface.

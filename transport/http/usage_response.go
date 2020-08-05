@@ -2,6 +2,8 @@ package http
 
 import (
 	"time"
+
+	"github.com/agreyfox/baas"
 )
 
 type usagesResponse struct {

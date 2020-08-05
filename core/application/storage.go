@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/adapter/ipfs"
 	"github.com/agreyfox/baas/adapter/s3"
 	"github.com/agreyfox/baas/cmd/baasd"

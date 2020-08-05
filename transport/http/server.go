@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 
+	"github.com/agreyfox/baas"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/rs/zerolog"

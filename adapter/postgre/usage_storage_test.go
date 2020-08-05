@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/agreyfox/baas"
 	"github.com/jinzhu/now"
 
 	"github.com/stretchr/testify/assert"

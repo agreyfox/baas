@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/agreyfox/baas"
 	shell "github.com/ipfs/go-ipfs-api"
 )
 

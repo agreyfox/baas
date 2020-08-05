@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/agreyfox/baas"
 )
 
 func (s *Server) handleServeFile() http.Handler {

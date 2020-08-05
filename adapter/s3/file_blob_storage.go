@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/agreyfox/baas"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"

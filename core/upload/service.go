@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"github.com/agreyfox/baas"
 	"github.com/rs/zerolog"
 )
 

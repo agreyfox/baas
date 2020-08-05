@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/agreyfox/baas"
 	"github.com/rs/zerolog"
 
 	"gopkg.in/h2non/bimg.v1"
