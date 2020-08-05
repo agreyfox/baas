@@ -8,9 +8,9 @@ import (
 	_ "net/http/pprof"
 	"os"
 
-	"github.com/fatih/color"
-
+	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/adapter/bolt"
+	"github.com/fatih/color"
 
 	"github.com/agreyfox/baas/cmd/baasd"
 
