@@ -14,6 +14,7 @@ import (
 
 	"github.com/agreyfox/baas/cmd/baasd"
 
+	"github.com/agreyfox/baas/core/block"
 	"github.com/agreyfox/baas/core/usage"
 
 	"github.com/agreyfox/baas/core/file"
@@ -35,15 +36,15 @@ import (
 )
 
 var (
-	tomlConfigPathPtr = flag.String("config", "./baas.toml", "the file path for the toml configuration file")
-	inputImage        = flag.String("in", "test.jpg", "输入图片")
+	tomlConfigPathPtr = flag.String("config", "./baas.toml", "the filepath for the system toml configuration file")
+	/* inputImage        = flag.String("in", "test.jpg", "输入图片")
 	outImage          = flag.String("out", "out.jpg", "输出图片")
 	mkImage           = flag.String("wm", "wm.jpg", "水印图片")
 	origImage         = flag.String("orig", "orig.jpg", "水印图片")
 	textInput         = flag.String("text", "watermark", "输入文字")
 	createwm          = flag.Bool("c", false, "创建watermask图像文件")
 	convertwm         = flag.Bool("w", false, "手工转换带有watermask图片")
-	extractwm         = flag.Bool("e", false, "获取wm图像")
+	extractwm         = flag.Bool("e", false, "获取wm图像") */
 )
 
 func main() {
@@ -57,7 +58,7 @@ func main() {
 }
 
 func run() error {
-	if *createwm {
+	/* if *createwm {
 		fmt.Println("创建水印...")
 		baasd.CreateWaterMarkImageFile(*textInput, *mkImage)
 		baasd.CreateWaterMarkImageFile2(*textInput, "wm.jpg")
@@ -77,7 +78,7 @@ func run() error {
 		name, err := baasd.ExtractWater(*inputImage, *origImage)
 		fmt.Printf("生成文件:%s,error:%v\n", name, err)
 		return nil
-	}
+	} */
 
 	color.Blue("Start baas...")
 	conf, err := parseConfig(*tomlConfigPathPtr)
@@ -103,37 +104,8 @@ func run() error {
 	var applicationStorage baas.ApplicationStorage
 	var usageStorage baas.UsageStorage
 	var transformStorage baas.TransformStorage
+	var blockStorage baas.BlockStorage //add by gjh
 
-	/* if conf.DbEngine == DBEnginePostgreSQL {
-		pgConf := conf.PostgreSQL
-		pgxConf, err := pgxpool.ParseConfig(fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", pgConf.User, pgConf.Password, pgConf.Host, pgConf.Port, pgConf.Database))
-		if err != nil {
-			return fmt.Errorf("failed to parse db url %w", err)
-		}
-
-		db, err := pgxpool.ConnectConfig(context.Background(), pgxConf)
-		if err != nil {
-			return err
-		}
-		defer db.Close()
-
-		fileStorage = &postgre.FileStorage{
-			DB: db,
-		}
-
-		applicationStorage = &postgre.ApplicationStorage{
-			DB: db,
-		}
-
-		usageStorage = &postgre.UsageStorage{
-			DB: db,
-		}
-
-		transformStorage = &postgre.TransformStorage{
-			DB: db,
-		}
-	} else { */
-	// bolt db
 	db, err := bolt.Open(conf.Bolt.Dir)
 	if err != nil {
 		return err
@@ -153,6 +125,10 @@ func run() error {
 	}
 
 	transformStorage = &bolt.TransformStorage{
+		DB: db,
+	}
+
+	blockStorage = &bolt.BlockStorage{
 		DB: db,
 	}
 	//
@@ -212,11 +188,19 @@ func run() error {
 		Log: logger,
 	}
 
+	blockService := &block.Service{ //Provide Block Chain service
+		BlockStorage:       blockStorage,
+		ApplicationService: applicationService,
+		EncryptionService:  encryptionService,
+		UsageService:       usageService,
+		Log:                logger,
+	}
 	//////////////////////////////
 	// HTTP //
 	/////////////////////////////
 
 	h := http.NewServer(&http.ServerConfig{
+		BlockService:       blockService,
 		ApplicationService: applicationService,
 		UploadService:      uploadService,
 		FileServeService:   fileServeService,

@@ -10,6 +10,7 @@ import (
 )
 
 type ServerConfig struct {
+	BlockService       baas.BlockService
 	ApplicationService baas.ApplicationService
 	UploadService      baas.UploadService
 	FileServeService   baas.FileServeService
@@ -23,6 +24,7 @@ type ServerConfig struct {
 }
 
 type Server struct {
+	BlockService       baas.BlockService
 	ApplicationService baas.ApplicationService
 	UploadService      baas.UploadService
 	FileServeService   baas.FileServeService
