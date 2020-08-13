@@ -23,20 +23,22 @@ func (s *Service) Create(ctx context.Context, n *baas.NewApplication) (*baas.App
 	if !conf.Security.Application {
 		return nil, fmt.Errorf("Not allowed!")
 	}
-	n.StorageSecretKey = cipherStorageSecretKey
+	if n.StorageEngine != "bolt" {
 
-	if n.StorageEndpoint == "" {
-		n.StorageEndpoint = makeStorageEndpoint(n.StorageEngine, n.StorageRegion)
+		n.StorageSecretKey = cipherStorageSecretKey
+
+		if n.StorageEndpoint == "" {
+			n.StorageEndpoint = makeStorageEndpoint(n.StorageEngine, n.StorageRegion)
+		}
+
+		if n.StorageBucket == "" {
+			n.StorageBucket = makeStorageBucketName(n.Name)
+		}
+
+		if err := s.createStorageBucket(ctx, n); err != nil {
+			return nil, fmt.Errorf("failed creating bucket %w", err)
+		}
 	}
-
-	if n.StorageBucket == "" {
-		n.StorageBucket = makeStorageBucketName(n.Name)
-	}
-
-	if err := s.createStorageBucket(ctx, n); err != nil {
-		return nil, fmt.Errorf("failed creating bucket %w", err)
-	}
-
 	return s.ApplicationStorage.Store(ctx, n)
 }
 

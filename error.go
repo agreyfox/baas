@@ -39,6 +39,11 @@ const (
 	ErrTransformationNotUnique = Error("transformation is not unique")
 )
 
+// Blockchain baas error
+const (
+	ErrBaasNoSuchUser = Error("baas user not found")
+)
+
 // Error represents a Mahi error.
 type Error string
 

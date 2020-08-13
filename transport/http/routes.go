@@ -76,7 +76,47 @@ func (s *Server) routes() {
 		s.handleServeFile()).Methods("GET")
 
 	//////////////////////////////
+	// BLOCK //
+	/////////////////////////////
+	const baasCreateKey = "/api/baas/createKey"
+	s.Handle(baasCreateKey,
+		s.Authenticate(
+			s.handleCreateKey())).Methods("POST")
+
+	const baasGetKey = "/api/baas/getKey"
+	s.Handle(baasGetKey,
+		s.Authenticate(
+			s.handleGetKey())).Methods("POST")
+	const baasGetAddress = "/api/baas/getAddress"
+	s.Handle(baasGetAddress,
+		s.Authenticate(
+			s.handleGetAddress())).Methods("POST")
+	const baasGetBalance = "/api/baas/getBalance"
+	s.Handle(baasGetBalance,
+		s.Authenticate(
+			s.handleGetBalance())).Methods("POST")
+
+	const baasSendToken = "/api/baas/sendToken"
+	s.Handle(baasSendToken,
+		s.Authenticate(
+			s.handleSendToken())).Methods("POST")
+	const baasWriteMsg = "/api/baas/writeMsg"
+	s.Handle(baasWriteMsg,
+		s.Authenticate(
+			s.handleWriteMsg())).Methods("POST")
+	const baasReadMsg = "/api/baas/readMsg"
+	s.Handle(baasReadMsg,
+		s.Authenticate(
+			s.handleReadMsg())).Methods("POST")
+
+	const baasGetTx = "/api/baas/getTxByHash"
+	s.Handle(baasGetTx,
+		s.Authenticate(
+			s.handleGetTxByHash())).Methods("POST")
+
+	//////////////////////////////
 	// PPROF //
 	/////////////////////////////
 	s.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
+
 }

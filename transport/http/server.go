@@ -45,8 +45,8 @@ func NewServer(c *ServerConfig) *Server {
 		UploadService:      c.UploadService,
 		FileServeService:   c.FileServeService,
 		UsageService:       c.UsageService,
-
-		QueryDecoder: c.QueryDecoder,
+		BlockService:       c.BlockService,
+		QueryDecoder:       c.QueryDecoder,
 
 		AuthToken: c.AuthToken,
 

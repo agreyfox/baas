@@ -36,21 +36,22 @@ func (a application) validate() error {
 	if a.Name == "" {
 		return errors.New("name is required")
 	}
+	if a.StorageEngine != "bolt" {
+		if a.StorageAccessKey == "" {
+			return errors.New("StorageAccessKey is required")
+		}
 
-	if a.StorageAccessKey == "" {
-		return errors.New("StorageAccessKey is required")
-	}
+		if a.StorageSecretKey == "" {
+			return errors.New("StorageSecretKey is required")
+		}
 
-	if a.StorageSecretKey == "" {
-		return errors.New("StorageSecretKey is required")
-	}
+		if a.StorageBucket == "" {
+			return errors.New("StorageBucket is required")
+		}
 
-	if a.StorageBucket == "" {
-		return errors.New("StorageBucket is required")
-	}
-
-	if a.StorageRegion == "" {
-		return errors.New("StorageRegion is required")
+		if a.StorageRegion == "" {
+			return errors.New("StorageRegion is required")
+		}
 	}
 
 	if a.StorageEngine == "" {

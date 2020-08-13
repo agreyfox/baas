@@ -44,6 +44,7 @@ type Config struct {
 	Security   Security   `toml:"security"`
 	HTTP       HTTP       `toml:"http"`
 	IPFS       IPFS       `toml:"ipfs"`
+	Blockchain BlockChain `toml:"blockchain"`
 }
 
 func init() {
@@ -176,4 +177,8 @@ type PostgreSQL struct {
 
 type Bolt struct {
 	Dir string `toml:"dir"`
+}
+
+type BlockChain struct {
+	Connection string `toml:"connection"`
 }

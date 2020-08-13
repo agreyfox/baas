@@ -1,0 +1,577 @@
+POST  http://view.bk.cloudns.cc:8080/admin/v1/login
+HEAD: "Content-Type: applications/json"
+
+{
+    "email":"lq@163.com",
+    "password":"qweasdzxc"
+}
+
+### to login paypal site
+
+post https://api.sandbox.paypal.com/v1/oauth2/token
+Content-Type: applications/json
+Accept-Language: en-US
+Authorization: Basic AbOMcM4iaf0PYKGgOFCktDD-Rqzpn7R_r2yPfwbopgCLYkBLXkD45c1qejwVX2BrBSxVQgz3_QlU7iFn:EKxToL0apcJ7HOAryLeFkyP9JRWuw-p8pMj9M5N3Y1Ee8tsUDFgRv1wA_3hIjRMiHqrmbQu12KW_Noys
+
+grant_type=client_credentials
+
+### 
+
+GET https://api.sandbox.paypal.com/v1/notifications/webhooks 
+Content-Type: application/json 
+Authorization: Bearer A21AAGGYeBxl1wCjR8XOGr9Z1xBfMj6UVFjUNCMZAPbWAUsZmWFQnQTocx30W_ipTewPjxpVY9VySYmOvgykRVcbxm0kGDqFA
+
+### 
+
+
+GET https://api.sandbox.paypal.com/v1/reporting/transactions?transactions_id=6PV87177YK9364734&start_date=2020-07-04T00:00:00-0700&end_date=2020-07-08T23:59:59-0700&fields=all&page_size=100&page=1 
+Content-Type: application/json
+Authorization: Bearer A21AAG4tOxgh9wz1Q44ieUZgPyI0YOAIv2qvFbS7KEe-swpq1dxS7boi18Fkd-Vl5cPnM0IYJue0tPp7a1PrkJW4o_UjazzSA
+
+###
+GET https://api.sandbox.paypal.com/v2/checkout/orders/8K9173018M398481Y
+Content-Type: application/json
+Authorization: Bearer A21AAG4tOxgh9wz1Q44ieUZgPyI0YOAIv2qvFbS7KEe-swpq1dxS7boi18Fkd-Vl5cPnM0IYJue0tPp7a1PrkJW4o_UjazzSA
+
+###
+
+GET https://api.sandbox.paypal.com/v2/payments/captures/1BA013359L365131R
+Content-Type: application/json
+Authorization: Bearer A21AAHhaJi5v-rs5F16L26I1xhelfJHr62BYPScnlwduSqm22n1tIvNfug0BdRgGLPzy-RNhBPUJHl5j39YXKByqVcNGTakyg
+
+###
+
+https://api.sandbox.paypal.com/v1/payments/payment?count=10&start_index=0&sort_by=create_time 
+Content-Type: application/json
+Authorization: Bearer A21AAF7Dmsvq96UHaH0bLCn-pHOg8laYivs8R0HiZTYJ8oacLsfEkP__DrnWPRacC6oFcXOenVzW_6wQY-cefjs6g200rvVnQ
+
+###
+
+GET https://api.sandbox.paypal.com/v1/notifications/webhooks/8GJ36790KA152731C
+Content-Type: application/json
+Authorization: Bearer A21AAF7Dmsvq96UHaH0bLCn-pHOg8laYivs8R0HiZTYJ8oacLsfEkP__DrnWPRacC6oFcXOenVzW_6wQY-cefjs6g200rvVnQ
+
+
+### create a order capture
+
+POST https://api.sandbox.paypal.com/v2/checkout/orders 
+Content-Type: application/json
+Authorization: Bearer A21AAF7Dmsvq96UHaH0bLCn-pHOg8laYivs8R0HiZTYJ8oacLsfEkP__DrnWPRacC6oFcXOenVzW_6wQY-cefjs6g200rvVnQ
+
+{
+  "intent": "CAPTURE",
+  "purchase_units": [
+    {
+      "amount": {
+        "currency_code": "USD",
+        "value": "100.00"
+      }
+    }
+  ]
+}
+
+###
+
+POST https://api.sandbox.paypal.com/v2/checkout/orders
+Content-Type: application/json
+Authorization: Bearer A21AAEl-QGUtyHPyHaS0I854JT129xmhK9BjIs0RaeBAUaaNsBYUjKY-B3KYl6iW_FMXBzTo9ttX6ej047kM9OYBuske9sdyg
+Prefer:return=representation
+
+{
+  "intent": "CAPTURE",
+  "application_context":{
+    "brand_name":"aaaaaa 坏了",
+    "landing_page":"LOGIN",
+    "locale":"de-DE"
+  },
+  "purchase_units": [
+    {
+      "amount": {
+        "currency_code": "USD",
+        "value": "100.00"
+      }
+    }
+  ]
+}
+
+###
+
+POST http://view.bk.cloudns.cc:8080/payment/paypal/pay
+Content-Type: application/json
+
+{
+  "payer":"paypal",
+  "email":"jihua.gao@mgmail.com",
+  "method":"credict",
+  "amount":{
+        "value": "30.11",
+        "currency_code": "USD"
+  },
+  "shipping": {
+      "recipient_name": "Brian Robinson",
+      "line1": "4th Floor",
+      "line2": "Unit #34",
+      "city": "San Jose",
+      "country_code": "US",
+      "postal_code": "95131",
+      "phone": "011862212345678",
+      "state": "CA"
+    },
+  "item_list": [
+          {
+            "name": "hat",
+            "description": "Brown hat.",
+            "unit_amount": "5",
+            "quantity": "5",
+            "price": "30.11",
+            "currency": "USD"
+          }
+  ]  
+}
+
+###
+
+
+POST http://view.bk.cloudns.cc:8080/payment/paypal/pay
+Content-Type: application/json
+
+{
+  "payer":"paypal",
+  "email":"e_raeb@yahoo.com",
+  "comments":"yyuyyyyyyuyyuyu",
+  "item_list": [
+        {
+          "amount":{
+                "value": "21.11",
+                "currency_code": "USD",
+                "breakdown":{
+                  "item_total":{
+                    "currency_code":"USD",
+                    "value":"21.11"
+                  }
+                }
+          },
+          "invoice_id":"xzzzzzz2323",
+          "description":"note",
+          "shipping": {
+            "name": {
+              "full_name":"Brian Robinson"
+            },
+            "address":{
+              "address_line_1": "4th Floor",
+              "address_line_2":"",
+              "admin_area_2": "San Jose",
+              "admin_area_1": "CA",
+              "country_code": "US",
+              "postal_code":"300984"
+            }
+          },
+          "items":[
+          {
+            "name": "hat111",
+            "description": "Brown hat. for human",
+            "unit_amount":{
+              "currency_code":"USD",
+              "value":"0.5"
+            },
+            "quantity": "2",
+            "category": "DIGITAL_GOODS"
+          },
+          {
+            "name": "hat",
+            "description": "n",
+            "unit_amount":{
+              "currency_code":"USD",
+              "value":"10"
+            },
+            "quantity": "1",
+            "category": "DIGITAL_GOODS"
+          },
+          {
+            "name": "handbag222",
+            "description": "Black handbag. for spagati",
+            "quantity": "1",
+            "unit_amount":{
+              "currency_code":"USD",
+              "value":"10.11"
+            },
+            "category": "DIGITAL_GOODS"
+          }
+          ]
+        }
+  ] 
+}
+
+###
+
+POST http://127.0.0.1:8080/payment/paypal/pay
+Content-Type: application/json
+
+{
+  "payer":"paypal",
+  "email":"e_raeb@yahoo.com",
+  "comments":"sdm,dssfds sdfsdf",
+  "method":"BILLING",
+  "Locale":"DE",
+  "item_list": [
+    {
+     "amount":{
+        "value": "30",
+        "currency_code": "USD",
+        "breakdown":{
+          "item_total":{
+            "currency_code":"USD",
+            "value":"30"
+          }
+        }
+  },
+  "shipping": {
+      "name": {
+              "full_name":"geRobinson"
+            },
+      "address":{
+              "address_line_1": "4th Floor",
+              "address_line_2":"",
+              "admin_area_2": "San Jose",
+              "admin_area_1": "CA",
+              "country_code": "DE",
+              "postal_code":"300984"
+            }
+    },
+     "items":[      { 
+            "name": "hat111",
+            "description": "Brown hat.",
+            "unit_amount":{
+              "currency_code":"USD",
+              "value":"3"
+            },
+            "quantity": "5",
+            "category": "DIGITAL_GOODS"
+          },
+          {
+            "name": "handbag222",
+            "description": "Black handbag.",
+            "quantity": "1",
+            "unit_amount":{
+              "currency_code":"USD",
+              "value":"15"
+            },
+            "category": "DIGITAL_GOODS"
+          }
+     ]
+    }
+  ]  
+}
+
+
+###
+
+POST http://view.bk.cloudns.cc:8080/admin/v1/login 
+Content-Type: applications/json
+
+{"email":"lq@163.com","password":"qweasdzxc"}
+
+###
+
+POST http://view.bk.cloudns.cc:8080/admin/v1/user/update  
+Content-Type: applications/json
+Set-Cookie: lqcms_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImNvdW50cnkiOiIiLCJleHAiOiIyMDIwLTA3LTA0VDE0OjQ3OjQ0Ljc2NjAwOTI4MyswODowMCIsImlhdCI6bnVsbCwiaXNzIjpudWxsLCJqdGkiOm51bGwsIm5iZiI6bnVsbCwic3ViIjpudWxsLCJ1c2VyIjoibHFAMTYzLmNvbSJ9.6tizq2Qw3GulIZE7KBo5kmyFBdrCWIcMamHBERUP1kY; Path=/; Expires=Sat, 04 Jul 2020 06:47:44 GMT
+
+{"email":"408006570@qq.com","password":"abcd1234","new_password":"sss111"}
+
+###
+
+
+POST http://sandbox.payssion.com/api/v1/payment/create
+Content-Type: applications/json
+
+{"api_key":"sandbox_5dea43e2a2a8e257",
+"pm_id":"dotpay_pl",
+"amount":"1",
+"currency":"USD",
+"description":"payment description",
+"order_id":"1234",
+"api_sig":"add918417e849e1e8c350c3babe3c6d7"
+}
+
+
+###
+
+
+POST http://view.bk.cloudns.cc:8080/payment/payssion/pay
+Content-Type: applications/json
+
+{
+"pm_id":"dotpay_pl",
+"amount":"221",
+"currency":"USD",
+"description":"神奇宝贝",
+"payer_email":"18901882538@189.cn"
+}
+
+
+###
+https://api.sandbox.paypal.com/v1/identity/oauth2/userinfo?schema=paypalv1.1 \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer Access-Token"
+
+### 
+
+POST http://view.bk.cloudns.cc:8080/payment/payssion/pay
+Content-Type: applications/json
+
+{
+"pm_id":"dotpay_pl",
+"amount":"3.3",
+"currency":"USD",
+"description":"天降大人"
+}
+
+### 
+POST http://view.bk.cloudns.cc:8080/payment/payssion/notify
+Content-Type: applications/json
+
+{
+  "app_name": "eshop",
+"pm_id": "dotpay_pl",
+"transaction_id": "T527553600236576",
+"order_id" :"cf6ff489dc1cb799987fa989c6f41d45",
+"amount":"1.1",
+"currency":"USD",
+"state":"completed",
+"notify_sig": "addDSAasfsafdaasdf"
+}
+
+### 
+
+POST http://127.0.0.1:8080/payment/paypal/notify
+Content-Type: application/json
+
+{
+  "id": "WH-58D329510W468432D-8HN650336L201105X",
+  "create_time": "2019-02-14T21:50:07.940Z",
+  "resource_type": "capture",
+  "event_type": "PAYMENT.CAPTURE.COMPLETED",
+  "summary": "Payment completed for $ 2.51 USD",
+  "resource": {
+    "amount": {
+      "currency_code": "USD",
+      "value": "2.51"
+    },
+    "seller_protection": {
+      "status": "ELIGIBLE",
+      "dispute_categories": [
+        "ITEM_NOT_RECEIVED",
+        "UNAUTHORIZED_TRANSACTION"
+      ]
+    },
+    "update_time": "2019-02-14T21:49:58Z",
+    "create_time": "2019-02-14T21:49:58Z",
+    "final_capture": true,
+    "seller_receivable_breakdown": {
+      "gross_amount": {
+        "currency_code": "USD",
+        "value": "2.51"
+      },
+      "paypal_fee": {
+        "currency_code": "USD",
+        "value": "0.37"
+      },
+      "net_amount": {
+        "currency_code": "USD",
+        "value": "2.14"
+      }
+    },
+    "links": [
+      {
+        "href": "https://api.paypal.com/v2/payments/captures/27M47624FP291604U",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.paypal.com/v2/payments/captures/27M47624FP291604U/refund",
+        "rel": "refund",
+        "method": "POST"
+      },
+      {
+        "href": "https://api.paypal.com/v2/payments/authorizations/7W5147081L658180V",
+        "rel": "up",
+        "method": "GET"
+      }
+    ],
+    "id": "27M47624FP291604U",
+    "status": "COMPLETED"
+  },
+  "links": [
+    {
+      "href": "https://api.paypal.com/v1/notifications/webhooks-events/WH-58D329510W468432D-8HN650336L201105X",
+      "rel": "self",
+      "method": "GET",
+      "encType": "application/json"
+    },
+    {
+      "href": "https://api.paypal.com/v1/notifications/webhooks-events/WH-58D329510W468432D-8HN650336L201105X/resend",
+      "rel": "resend",
+      "method": "POST",
+      "encType": "application/json"
+    }
+  ],
+  "event_version": "1.0",
+  "resource_version": "2.0"
+}
+
+###
+
+POST http://view.bk.cloudns.cc:8080/payment/skrill/pay
+Content-Type: application/json
+
+{
+"amount":"23.21",
+"currency":"EUR",
+"description":"riptifdsafsafasfdsadfsafdon",
+"payer_email":"18901882538@189.cn",
+"address":"天2323色一万",
+"city":"上海3434",
+"country":"打算列",
+"description":"阿斯顿麻木"
+}
+
+
+###
+
+POST  https://pay.skrill.com/?prepare_only=1&pay_to_email=demoqco@sun-fish.com&language=EN&amount=3.2&currency=GBP&detail1_description=helloworld&detail1_text=mm
+Content-Type: application/x-www-form-urlencoded
+      
+
+														<a target="_blank" href="https://www.skrill.com/en/business/integration/">
+															<img src="https://www.skrill.com/fileadmin/content/images/brand_centre/Payment_Options_by_Skrill/skrill-powered-visa_120x60.png" alt="Visa by Skrill" title="Visa by Skrill"/>
+														</a>
+
+												
+
+### 
+
+Post https://api.smtp2go.com/v3/allowed_senders/add
+Content-Type: application/json
+
+{
+  "api_key": "api-E408790EAED711EA8BC0F23C91C88F4E",
+  "allowed_senders": ["support@bk.cloudns.cc"]
+}
+
+### 
+
+Post https://api.smtp2go.com/v3/allowed_senders/view
+
+
+"api_key"="api-E408790EAED711EA8BC0F23C91C88F4E",
+
+### 
+
+GET http://api.ipstack.com/134.201.250.155?access_key=16fb28ea154934b40d30858c34a28ca4
+
+###
+
+POST http://127.0.0.1:4200/applications
+Content-Type: application/json'
+
+{
+  "name": "智慧农业",
+  "description": "系统服务",
+  "storageEngine": "bolt",
+  "storageAccessKey": "AKIA5HF74D7DH21",
+  "storageSecretKey": "UWC3fa4j/sdasdsadazasdWQWQWQWQD2323",
+  "storageRegion": "XiongAn",
+  "deliveryUrl": "http://127.0.0.1:4200/api"
+} 
+
+###
+
+POST http://127.0.0.1:4200/api/baas/createKey
+
+{
+  "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4",
+  "userid":"jh@gmail.com",
+  "password":"abcdedfg",
+  "name":"熊6"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/createKey
+
+{
+  "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4",
+  "userid":"e_raeb@gmail.com",
+  "password":"abcdedfg",
+  "name":"熊7"
+}
+
+###
+
+Post http://127.0.0.1:4200/api/baas/getKey
+
+{
+  "userid":"jh@gmail.com",
+  "password":"abcdedfg",
+   "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4"
+}
+
+###
+
+Post http://127.0.0.1:4200/api/baas/getAddress
+
+{
+  "userid":"jh@gmail.com",
+  "password":"abcdedfg",
+   "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4"
+}
+
+###
+
+Post http://127.0.0.1:4200/api/baas/getBalance
+
+{
+  "userid":"jh@gmail.com"
+}
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/sendToken
+
+{
+  "userId":"jh@gmail.com",
+  "toUserid":"e_raeb@gmail.com",
+  "password":"abcd",
+  "quantity":"1.02"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/writeMsg
+
+{
+  "userId":"jh@gmail.com",
+  "toUserid":"e_raeb@gmail.com",
+  "password":"abcd",
+  "message":"天拉个土"
+
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/readMsg
+
+{
+"hash":"0x2dbbf0a93af9f03546b9d2b608d4888221fec8997433d3c78d1216e8bc65d3da"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getTxByHash
+
+{
+"hash":"0x2dbbf0a93af9f03546b9d2b608d4888221fec8997433d3c78d1216e8bc65d3da"
+
+}

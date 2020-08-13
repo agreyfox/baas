@@ -15,7 +15,7 @@ type ServeService struct {
 
 	UsageService       baas.UsageService
 	ApplicationService baas.ApplicationService
-	TransformService   baas.TransformService
+	//	TransformService   baas.TransformService
 
 	FullFileDir string
 
@@ -54,86 +54,66 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts baas.Transfor
 		fileBlob.Size = file.Size
 		fileBlob.MIMEValue = file.MIMEValue
 	}
-	if opts.WM { // should to do the blind watermark
-		s.Log.Printf("Doing the blind wm job")
-		//return fileBlob, nil
-		//s.Log.Printf("%v,%v", file, fileBlob)
-		f, err := s.TransformService.MakeWaterInImage(ctx, file, fileBlob, opts.WMText)
-		if err != nil {
-			return &baas.FileBlob{}, err
-		} else {
-			return f, nil
+	/*	if opts.WM { // should to do the blind watermark
+			s.Log.Printf("Doing the blind wm job")
+			//return fileBlob, nil
+			//s.Log.Printf("%v,%v", file, fileBlob)
+			f, err := s.TransformService.MakeWaterInImage(ctx, file, fileBlob, opts.WMText)
+			if err != nil {
+				return &baas.FileBlob{}, err
+			} else {
+				return f, nil
+			}
 		}
-	}
-	if opts.WMV {
-		s.Log.Printf("Doing the verify Blind WaterMark job")
-		// Now we have check image, then we need find the origin imagefile
-		origfileBlobID := getFileBlobID(opts.Origin)
+		if opts.WMV {
+			s.Log.Printf("Doing the verify Blind WaterMark job")
+			// Now we have check image, then we need find the origin imagefile
+			origfileBlobID := getFileBlobID(opts.Origin)
 
-		origfile, err := s.FileStorage.FileByFileBlobID(ctx, origfileBlobID)
-		if err != nil {
-			return nil, err
-		}
+			origfile, err := s.FileStorage.FileByFileBlobID(ctx, origfileBlobID)
+			if err != nil {
+				return nil, err
+			}
 
-		origapp, err := s.ApplicationService.Application(ctx, origfile.ApplicationID)
-		if err != nil {
-			return nil, err
-		}
+			origapp, err := s.ApplicationService.Application(ctx, origfile.ApplicationID)
+			if err != nil {
+				return nil, err
+			}
 
-		origfileBlobStorage, err := s.ApplicationService.FileBlobStorage(origapp.StorageEngine, origapp.StorageAccessKey, origapp.StorageSecretKey, origapp.StorageRegion, origapp.StorageEndpoint)
-		if err != nil {
-			return nil, err
-		}
-		var id string
-		if len(origfile.Hash) > 0 {
-			id = origfile.Hash
-		} else {
-			id = origfileBlobID
-		}
+			origfileBlobStorage, err := s.ApplicationService.FileBlobStorage(origapp.StorageEngine, origapp.StorageAccessKey, origapp.StorageSecretKey, origapp.StorageRegion, origapp.StorageEndpoint)
+			if err != nil {
+				return nil, err
+			}
+			var id string
+			if len(origfile.Hash) > 0 {
+				id = origfile.Hash
+			} else {
+				id = origfileBlobID
+			}
 
-		origfileBlob, err := origfileBlobStorage.FileBlob(ctx, origapp.StorageBucket, id, s.FullFileDir)
-		if err != nil {
-			return nil, fmt.Errorf("could not get origin file blob %w", err)
+			origfileBlob, err := origfileBlobStorage.FileBlob(ctx, origapp.StorageBucket, id, s.FullFileDir)
+			if err != nil {
+				return nil, fmt.Errorf("could not get origin file blob %w", err)
+			}
+			if len(origfile.Hash) > 0 { //fixed for ipfs
+				origfileBlob.Size = file.Size
+				origfileBlob.MIMEValue = file.MIMEValue
+			}
+			// found.check watermrk
+			f, err := s.TransformService.VerifyWaterInImage(ctx, file, fileBlob, origfile, origfileBlob)
+			// get the result and return
+			if err != nil {
+				return &baas.FileBlob{}, err
+			} else {
+				return f, nil
+			}
 		}
-		if len(origfile.Hash) > 0 { //fixed for ipfs
-			origfileBlob.Size = file.Size
-			origfileBlob.MIMEValue = file.MIMEValue
-		}
-		// found.check watermrk
-		f, err := s.TransformService.VerifyWaterInImage(ctx, file, fileBlob, origfile, origfileBlob)
-		// get the result and return
-		if err != nil {
-			return &baas.FileBlob{}, err
-		} else {
-			return f, nil
-		}
-	}
-	if !shouldTransform(file, opts) {
-		updatedUsages := &baas.UpdateUsage{
-			ApplicationID: file.ApplicationID,
-			Bandwidth:     fileBlob.Size,
-		}
-
-		if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
-			// should I fail the request
-			s.Log.Error().Err(err).Msg("failed to update usage")
-		}
-
-		return fileBlob, nil
-	}
-
-	// we can close the original fileBlob since we will be transforming it and generating a new one.
-	// the returned blob gets closed by the parent of this function that still needs the blob around.
+	*/
 	defer fileBlob.Close()
-
-	transformedBlob, err := s.TransformService.Transform(ctx, file, fileBlob, opts)
-	if err != nil {
-		return nil, err
-	}
-
+	//if !shouldTransform(file, opts) {
 	updatedUsages := &baas.UpdateUsage{
 		ApplicationID: file.ApplicationID,
-		Bandwidth:     transformedBlob.Size,
+		Bandwidth:     fileBlob.Size,
 	}
 
 	if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
@@ -141,7 +121,29 @@ func (s *ServeService) Serve(ctx context.Context, u *url.URL, opts baas.Transfor
 		s.Log.Error().Err(err).Msg("failed to update usage")
 	}
 
-	return transformedBlob, nil
+	return fileBlob, nil
+	//}
+
+	// we can close the original fileBlob since we will be transforming it and generating a new one.
+	// the returned blob gets closed by the parent of this function that still needs the blob around.
+
+	/*
+			transformedBlob, err := s.TransformService.Transform(ctx, file, fileBlob, opts)
+			if err != nil {
+				return nil, err
+			}
+
+		updatedUsages := &baas.UpdateUsage{
+			ApplicationID: file.ApplicationID,
+			Bandwidth:     transformedBlob.Size,
+		}
+
+		if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+			// should I fail the request
+			s.Log.Error().Err(err).Msg("failed to update usage")
+		}
+
+		return transformedBlob, nil*/
 }
 
 func shouldTransform(file *baas.File, opts baas.TransformationOption) bool {

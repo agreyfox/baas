@@ -13,6 +13,7 @@ var (
 		StorageEngineB2,
 		StorageEngineAzureBlob,
 		StorageEngineIPFS,
+		StorageEngineBolt,
 	}
 )
 
@@ -23,6 +24,7 @@ const (
 	StorageEngineB2           = "b2"
 	StorageEngineAzureBlob    = "azure_blob"
 	StorageEngineIPFS         = "ipfs"
+	StorageEngineBolt         = "bolt"
 )
 
 // ApplicationService defines the business logic for dealing with all aspects of an application.

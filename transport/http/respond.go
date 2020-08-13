@@ -46,6 +46,7 @@ type Message struct {
 
 type MessageData struct {
 	Message string `json:"message"`
+	Error   string `json:"error"`
 }
 
 // RespondError writes an API error message to the response and logger.

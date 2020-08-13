@@ -103,7 +103,7 @@ func run() error {
 	var fileStorage baas.FileStorage
 	var applicationStorage baas.ApplicationStorage
 	var usageStorage baas.UsageStorage
-	var transformStorage baas.TransformStorage
+	//var transformStorage baas.TransformStorage
 	var blockStorage baas.BlockStorage //add by gjh
 
 	db, err := bolt.Open(conf.Bolt.Dir)
@@ -124,10 +124,10 @@ func run() error {
 		DB: db,
 	}
 
-	transformStorage = &bolt.TransformStorage{
+	/* transformStorage = &bolt.TransformStorage{
 		DB: db,
 	}
-
+	*/
 	blockStorage = &bolt.BlockStorage{
 		DB: db,
 	}
@@ -156,19 +156,19 @@ func run() error {
 		UsageStorage: usageStorage,
 	}
 
-	transformService := &file.TransformService{
-		UsageService:         usageService,
-		TransformStorage:     transformStorage,
-		Log:                  logger,
-		MaxTransformFileSize: conf.Upload.MaxTransformFileSize,
-	}
+	/* 	transformService := &file.TransformService{
+	   		UsageService:         usageService,
+	   	//	TransformStorage:     transformStorage,
+	   		Log:                  logger,
+	   		MaxTransformFileSize: conf.Upload.MaxTransformFileSize,
+	   	} */
 
 	fileServeService := &file.ServeService{
 		FileStorage:  fileStorage,
 		UsageService: usageService,
 
 		ApplicationService: applicationService,
-		TransformService:   transformService,
+		//	TransformService:   transformService,
 
 		FullFileDir: conf.Upload.FullFileDir,
 
@@ -187,7 +187,7 @@ func run() error {
 
 		Log: logger,
 	}
-
+	block.InitBlockService()        // 初始化blockchain service
 	blockService := &block.Service{ //Provide Block Chain service
 		BlockStorage:       blockStorage,
 		ApplicationService: applicationService,

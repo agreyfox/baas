@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/mock"
 
 	"syreclabs.com/go/faker"
