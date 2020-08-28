@@ -23,15 +23,16 @@ var (
 // ApplicationService defines the business logic for dealing with all aspects of an application.
 type BlockService interface {
 	Create(ctx context.Context, n *NewBAASUser) (*BAASUser, error)
-
+	ChangePassword(ctx context.Context, userId, oldPassword, newPassword string) error
 	DeleteBAASUser(ctx context.Context, id string) error
 	UpdateBAASUser(ctx context.Context, u *UpdateBAASUser) (*BAASUser, error)
-	GetKey(ctx context.Context, id, password string) (string, error)
+	GetKey(ctx context.Context, id, password, ciper string) (string, error)
+	DeleteKey(ctx context.Context, id, passwd string) error
 	GetAddress(ctx context.Context, id, password string) (string, error)
 	RecoverKey(ctx context.Context, id string) (string, error)
 	GetBalance(ctx context.Context, addr string) (string, error)
-	SendToken(ctx context.Context, addr, toAddr, value string) (string, error)
-	WriteMsg(ctx context.Context, addr, toAddr, msg string) (string, error)
+	SendToken(ctx context.Context, userid, password, toAddr, value string) (string, error)
+	WriteMsg(ctx context.Context, addr, password, toAddr, msg string) (string, error)
 	ReadMsg(ctx context.Context, hash string) (string, string, error)
 	GetTxByHash(ctx context.Context, hash string) (string, error)
 	GetErc20Balance(ctx context.Context, addr string) (string, error)
@@ -44,14 +45,18 @@ type BlockService interface {
 	GetErc721MetaData(ctx context.Context, addr string) (string, error)
 	GetTx(ctx context.Context, addr string) (*BlockTx, error)
 	//FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (FileBlobStorage, error)
+	DecryptKey(origin, cipherFromWeb, cipherFromDb, rv, salt string) (string, error)
 }
 
 // blockStorage handles communication with the database for handling block.
 type BlockStorage interface {
 	Store(ctx context.Context, n *NewBAASUser) (*BAASUser, error)
-	GetKey(ctx context.Context, id, password string) (string, error)
+	UpdatePassword(ctx context.Context, id, old, new string) error
+	GetKey(ctx context.Context, id, password string) (string, string, string, string, error)
+	DeleteKey(ctx context.Context, id, password string) error
 	GetAddress(ctx context.Context, id, password string) (string, error)
-	GetAddressByService(ctx context.Context, id string) (string, string, error)
+	// address, origpk, rv,cipher,salt
+	GetAddressByService(ctx context.Context, id, password string) (string, string, string, string, string, error)
 	//Delete(ctx context.Context, id string) error
 	Update(ctx context.Context, u *UpdateBAASUser) (*BAASUser, error)
 }
@@ -92,6 +97,9 @@ type NewBAASUser struct {
 	ApplicationID    string
 	Address          string
 	PrivateKey       string
+	CipherText       string
+	Rv               string
+	Salt             string
 	Password         string
 }
 
@@ -107,6 +115,9 @@ type BAASUser struct {
 	Address          string
 	Password         string
 	PrivateKey       string
+	Salt             string
+	CipherText       string
+	Rv               string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }

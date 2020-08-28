@@ -82,6 +82,14 @@ func (s *Server) routes() {
 	s.Handle(baasCreateKey,
 		s.Authenticate(
 			s.handleCreateKey())).Methods("POST")
+	const baasChangePassword = "/api/baas/changePassword"
+	s.Handle(baasChangePassword,
+		s.Authenticate(
+			s.handleChangePassword())).Methods("POST")
+	const baasDeleteKey = "/api/baas/deleteKey"
+	s.Handle(baasDeleteKey,
+		s.Authenticate(
+			s.handleDeleteKey())).Methods("POST")
 
 	const baasGetKey = "/api/baas/getKey"
 	s.Handle(baasGetKey,

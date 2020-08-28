@@ -10,6 +10,7 @@ import (
 
 	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/adapter/bolt"
+	"github.com/agreyfox/baas/adapter/gm"
 	"github.com/fatih/color"
 
 	"github.com/agreyfox/baas/cmd/baasd"
@@ -142,7 +143,10 @@ func run() error {
 	encryptionService := &aes.EncryptionService{
 		Key: []byte(conf.Security.AESKey),
 	}
-
+	gmService := &gm.EncryptionService{
+		Key: []byte(conf.Security.GMKey),
+		Iv:  []byte(conf.Security.GMIV),
+	}
 	applicationService := &application.Service{
 		EncryptionService:  encryptionService,
 		ApplicationStorage: applicationStorage,
@@ -192,6 +196,7 @@ func run() error {
 		BlockStorage:       blockStorage,
 		ApplicationService: applicationService,
 		EncryptionService:  encryptionService,
+		GmService:          gmService,
 		UsageService:       usageService,
 		Log:                logger,
 	}

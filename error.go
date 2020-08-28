@@ -41,7 +41,13 @@ const (
 
 // Blockchain baas error
 const (
-	ErrBaasNoSuchUser = Error("baas user not found")
+	ErrBaasNoSuchUser            = Error("userId does not exist")
+	ErrBaasUserNameTaken         = Error("userId is already taken")
+	ErrBaasInvalidPassword       = Error("Invalid password")
+	ErrBaasParameterNotFound     = Error("Parameter is no valid")
+	ErrBaasApplicationIDRequired = Error("Application ID is required")
+	ErrBaasCipherTextRequired    = Error("CipherText is required or not enough length")
+	ErrBaasNotEnoughMoney        = Error("Account doesn't have enough money")
 )
 
 // Error represents a Mahi error.

@@ -21,6 +21,7 @@ type usageTotals struct {
 	Bandwidth             int64 `json:"bandwidth"`
 	Storage               int64 `json:"storage"`
 	FileCount             int64 `json:"fileCount"`
+	BlockChain            int64 `json:"blockChain"`
 }
 
 type usageMetric struct {

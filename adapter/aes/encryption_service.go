@@ -75,3 +75,7 @@ func (s *EncryptionService) DecryptString(ciphertext string) ([]byte, error) {
 
 	return s.Decrypt(decoded)
 }
+
+func (s *EncryptionService) Config(key []byte, iv []byte) {
+	s.Key = key
+}

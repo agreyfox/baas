@@ -6,4 +6,5 @@ type EncryptionService interface {
 	EncryptToString(plaintext []byte) (string, error)
 	Decrypt(cipherText []byte) ([]byte, error)
 	DecryptString(cipherText string) ([]byte, error)
+	Config(key []byte, iv []byte)
 }

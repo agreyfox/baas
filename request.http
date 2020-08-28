@@ -575,3 +575,108 @@ POST http://127.0.0.1:4200/api/baas/getTxByHash
 "hash":"0x2dbbf0a93af9f03546b9d2b608d4888221fec8997433d3c78d1216e8bc65d3da"
 
 }
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/createKey
+
+{
+  "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
+  "userid":"e_raeb6@tianya.com",
+  "password":"abcdedfg",
+  "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf",
+  "name":"熊8"
+}
+
+###
+
+Post http://127.0.0.1:4200/api/baas/getKey
+
+{
+  "userid":"e_raeb5@tianya.com",
+  "password":"abcdedfg",
+  "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
+   "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf"
+}
+
+###
+
+Post http://127.0.0.1:4200/api/baas/changePassword
+
+{
+  "userId":"e_raeb5@tianya.com",
+  "oldPassword":"abcdedfg",
+    "newPassword":"123456",
+  "application_id":"6a74111c-853c-4cae-a774-38e540229af0"
+
+}
+
+###
+
+Post http://127.0.0.1:4200/api/baas/deleteKey
+
+{
+  "userId":"e_raeb5@tianya.com",
+  "password":"123456",
+  "application_id":"6a74111c-853c-4cae-a774-38e540229af0"
+
+}
+
+
+###
+
+Post http://127.0.0.1:4200/api/baas/getBalance
+
+{
+  "userid":"e_raeb5@tianya.com"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/sendToken
+
+{
+  "userId":"e_raeb5@tianya.com",
+  "toUserid":"e_raeb6@tianya.com",
+  "password":"123456",
+  "quantity":"0.5"
+}
+
+### 
+
+Post http://127.0.0.1:4200/api/baas/getBalance
+
+{
+  "userid":"e_raeb6@tianya.com"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/writeMsg
+
+{
+  "userId":"e_raeb5@tianya.com",
+  "toUserid":"e_raeb5@tianya.com",
+  "password":"123456",
+  "message":"夏天走了"
+
+}
+###
+
+
+POST http://127.0.0.1:4200/api/baas/readMsg
+
+{
+"txHash":"0x6bd3e8823eaead4ba97c84c414bd3d37c9ffa8d4e36fae7cd848630c0c28dc8a"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getTxByHash
+
+{
+"txHash":"0x6bd3e8823eaead4ba97c84c414bd3d37c9ffa8d4e36fae7cd848630c0c28dc8a"
+
+}

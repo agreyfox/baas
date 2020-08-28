@@ -47,3 +47,9 @@
 "hash":"0xe4a5f20b6645aafc8bcf016976cd175681239e9638504cd58b72481878dd7915"
 }'
 {"data":{"timestamp":"2020-08-13 15:09:59 +0800 CST","txhash":"大马哈上线了"},"error":"","status":1}
+
+### curl -XPOST http://127.0.0.1:4200/api/baas/getTxByHash
+
+{
+"hash":"0x2dbbf0a93af9f03546b9d2b608d4888221fec8997433d3c78d1216e8bc65d3da"
+}

@@ -153,6 +153,8 @@ type IPFS struct {
 
 type Security struct {
 	AESKey      string `toml:"aes_key"`
+	GMKey       string `toml:"gm_key"`
+	GMIV        string `toml:"gm_iv"`
 	AuthToken   string `toml:"auth_token"`
 	HTTPS       bool   `toml:"https"`
 	Application bool   `toml:"application"`

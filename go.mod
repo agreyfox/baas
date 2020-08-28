@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/ZZMarquis/gm v1.2.0
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 	github.com/asdine/storm/v3 v3.2.0
 	github.com/aws/aws-sdk-go v1.31.4

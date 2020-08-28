@@ -32,12 +32,14 @@ type blockUser struct {
 	ID            string `storm:"index"`
 	ApplicationID string
 	FileID        string
-	Address       string
-	PrivateKey    string
+	Address       string //block address
+	PrivateKey    string //block encrypt pk
 	UserName      string `storm:"index"`
 	Email         string `storm:"unique"`
-	Salt          string
-	Password      string
+	Salt          string //block encrypt salt
+	CipherText    string //block encrypt cipherText
+	Password      string // user password
+	Rv            string //helper for encrypt algorithm
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -67,11 +69,12 @@ func (t blockUser) validate(db *storm.DB) error {
 }
 
 func (s *BlockStorage) Store(ctx context.Context, n *baas.NewBAASUser) (*baas.BAASUser, error) {
-	salt, err := randSalt()
-	if err != nil {
-		return nil, err
-	}
-
+	/* 	salt, err := randSalt()
+	   	if err != nil {
+	   		return nil, err
+	   	}
+	*/
+	salt, _ := base64.StdEncoding.DecodeString(n.Salt)
 	hash, err := hashPassword([]byte(n.Password), salt)
 	if err != nil {
 		return nil, err
@@ -84,7 +87,9 @@ func (s *BlockStorage) Store(ctx context.Context, n *baas.NewBAASUser) (*baas.BA
 		Email:         n.Email,
 		Address:       n.Address,
 		Password:      string(hash),
-		Salt:          base64.StdEncoding.EncodeToString(salt),
+		Salt:          n.Salt,
+		Rv:            n.Rv,
+		CipherText:    n.CipherText,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
@@ -95,7 +100,7 @@ func (s *BlockStorage) Store(ctx context.Context, n *baas.NewBAASUser) (*baas.BA
 
 	if err := s.DB.Save(&t); err != nil {
 		if err == storm.ErrAlreadyExists {
-			return nil, baas.ErrApplicationNameTaken
+			return nil, baas.ErrBaasUserNameTaken
 		}
 		return nil, err
 	}
@@ -105,28 +110,83 @@ func (s *BlockStorage) Store(ctx context.Context, n *baas.NewBAASUser) (*baas.BA
 	return &mahiTran, nil
 }
 
+func (s *BlockStorage) UpdatePassword(ctx context.Context, id, old, newpass string) error {
+	fmt.Printf("User try to Change password,", id)
+	var a blockUser
+	if err := s.DB.One("Email", id, &a); err != nil {
+		if err == storm.ErrNotFound {
+			return baas.ErrBaasNoSuchUser
+		}
+		return err
+	}
+	salt, err := base64.StdEncoding.DecodeString(a.Salt)
+	if err != nil {
+		return err
+	}
+
+	err = checkPassword([]byte(a.Password), []byte(old), salt)
+	if err == nil {
+		hash, err := hashPassword([]byte(newpass), salt)
+		if err != nil {
+			return err
+		}
+		a.Password = string(hash)
+		a.UpdatedAt = time.Now()
+
+		if err := s.DB.Update(&a); err != nil {
+			return err
+		}
+		return nil
+
+	} else {
+		return baas.ErrBaasInvalidPassword
+	}
+}
+
 // get private via email
-func (s *BlockStorage) GetKey(ctx context.Context, id, password string) (string, error) {
+func (s *BlockStorage) GetKey(ctx context.Context, id, password string) (string, string, string, string, error) {
 	fmt.Printf("User try to get private key")
 	var a blockUser
 	if err := s.DB.One("Email", id, &a); err != nil {
 		if err == storm.ErrNotFound {
-			return "", baas.ErrBaasNoSuchUser
+			return "", "", "", "", baas.ErrBaasNoSuchUser
 		}
-		return "", err
+		return "", "", "", "", err
 	}
 	salt, err := base64.StdEncoding.DecodeString(a.Salt)
 	if err != nil {
-		return "", err
+		return "", "", "", "", err
 	}
 	//fmt.Println(a, password)
 	err = checkPassword([]byte(a.Password), []byte(password), salt)
 	if err == nil {
-		return a.PrivateKey, nil
+		return a.PrivateKey, a.CipherText, a.Rv, a.Salt, nil
 	} else {
-		return "", errors.New("Wrong password")
+		return "", "", "", "", baas.ErrBaasInvalidPassword
 	}
 
+}
+func (s *BlockStorage) DeleteKey(ctx context.Context, id, password string) error {
+	fmt.Printf("User try to delete private key")
+	var a blockUser
+	if err := s.DB.One("Email", id, &a); err != nil {
+		if err == storm.ErrNotFound {
+			return baas.ErrBaasNoSuchUser
+		}
+		return err
+	}
+	salt, err := base64.StdEncoding.DecodeString(a.Salt)
+	if err != nil {
+		return err
+	}
+	//fmt.Println(a, password)
+	err = checkPassword([]byte(a.Password), []byte(password), salt)
+	if err == nil {
+		err := s.DB.DeleteStruct(&a)
+		return err
+	} else {
+		return baas.ErrBaasInvalidPassword
+	}
 }
 
 func (s *BlockStorage) GetAddress(ctx context.Context, id, password string) (string, error) {
@@ -152,17 +212,32 @@ func (s *BlockStorage) GetAddress(ctx context.Context, id, password string) (str
 
 }
 
-func (s *BlockStorage) GetAddressByService(ctx context.Context, id string) (string, string, error) {
+// called by internal
+func (s *BlockStorage) GetAddressByService(ctx context.Context, id, password string) (string, string, string, string, string, error) {
 
 	var a blockUser
 	if err := s.DB.One("Email", id, &a); err != nil {
 		if err == storm.ErrNotFound {
-			return "", "", baas.ErrBaasNoSuchUser
+			return "", "", "", "", "", baas.ErrBaasNoSuchUser
 		}
-		return "", "", err
+		return "", "", "", "", "", err
 	}
 
-	return a.Address, a.PrivateKey, nil
+	if len(password) == 0 {
+		return a.Address, "", "", "", "", nil
+	}
+
+	salt, err := base64.StdEncoding.DecodeString(a.Salt)
+	if err != nil {
+		return "", "", "", "", "", err
+	}
+
+	err = checkPassword([]byte(a.Password), []byte(password), salt)
+	if err == nil {
+		return a.Address, a.PrivateKey, a.Rv, a.CipherText, a.Salt, nil
+	} else {
+		return "", "", "", "", "", baas.ErrBaasInvalidPassword
+	}
 
 }
 
