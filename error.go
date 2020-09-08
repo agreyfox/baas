@@ -21,7 +21,7 @@ const (
 
 // Application errors
 const (
-	ErrApplicationNotFound  = Error("application not found")
+	ErrApplicationNotFound  = Error("application_id not found")
 	ErrApplicationNameTaken = Error("application name taken")
 )
 
@@ -42,12 +42,12 @@ const (
 // Blockchain baas error
 const (
 	ErrBaasNoSuchUser            = Error("userId does not exist")
-	ErrBaasUserNameTaken         = Error("userId is already taken")
+	ErrBaasUserNameTaken         = Error("userId is already exist")
 	ErrBaasInvalidPassword       = Error("Invalid password")
 	ErrBaasParameterNotFound     = Error("Parameter is no valid")
 	ErrBaasApplicationIDRequired = Error("Application ID is required")
-	ErrBaasCipherTextRequired    = Error("CipherText is required or not enough length")
-	ErrBaasNotEnoughMoney        = Error("Account doesn't have enough money")
+	ErrBaasCipherTextRequired    = Error("wrong cipherText")
+	ErrBaasNotEnoughMoney        = Error("Account doesn't have enough gas")
 )
 
 // Error represents a Mahi error.

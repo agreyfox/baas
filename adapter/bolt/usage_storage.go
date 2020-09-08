@@ -25,6 +25,8 @@ type usage struct {
 	Bandwidth             int64
 	Storage               int64
 	FileCount             int64
+	TxCount               int64
+	UserCount             int64
 	StartDate             string
 	EndDate               string
 	CreatedAt             time.Time
@@ -51,6 +53,8 @@ func (s *UsageStorage) Store(ctx context.Context, n *baas.NewUsage) (*baas.Usage
 		Bandwidth:             n.Bandwidth,
 		Storage:               n.Storage,
 		FileCount:             n.FileCount,
+		TxCount:               n.TxCount,
+		UserCount:             n.UserCount,
 		StartDate:             start,
 		EndDate:               end,
 		CreatedAt:             time.Now(),
@@ -103,7 +107,8 @@ func (s *UsageStorage) Update(ctx context.Context, u *baas.UpdateUsage) (*baas.U
 		// these items get rolled over they don't reset per day
 		storage := latestUsage.Storage + u.Storage
 		fileCount := latestUsage.FileCount + u.FileCount
-
+		tx := latestUsage.TxCount + u.TxCount
+		user := latestUsage.UserCount + u.UserCount
 		newUsage := &baas.NewUsage{
 			ApplicationID:         u.ApplicationID,
 			Transformations:       u.Transformations,
@@ -111,6 +116,8 @@ func (s *UsageStorage) Update(ctx context.Context, u *baas.UpdateUsage) (*baas.U
 			Bandwidth:             u.Bandwidth,
 			Storage:               storage,
 			FileCount:             fileCount,
+			TxCount:               tx,
+			UserCount:             user,
 			StartDate:             start,
 			EndDate:               end,
 		}
@@ -125,6 +132,8 @@ func (s *UsageStorage) Update(ctx context.Context, u *baas.UpdateUsage) (*baas.U
 		Bandwidth:             usage.Bandwidth + u.Bandwidth,
 		Storage:               usage.Storage + u.Storage,
 		FileCount:             usage.FileCount + u.FileCount,
+		TxCount:               usage.TxCount + u.TxCount,
+		UserCount:             usage.UserCount + u.UserCount,
 		StartDate:             start,
 		EndDate:               end,
 	}
@@ -227,6 +236,8 @@ func (s *UsageStorage) update(ctx context.Context, id string, updatedUsage *baas
 	u.Bandwidth = updatedUsage.Bandwidth
 	u.Storage = updatedUsage.Storage
 	u.FileCount = updatedUsage.FileCount
+	u.TxCount = updatedUsage.TxCount
+	u.UserCount = updatedUsage.UserCount
 	u.UpdatedAt = time.Now()
 
 	if err := s.DB.Save(u); err != nil {
@@ -277,6 +288,8 @@ func sanitizeUsage(u usage) (baas.Usage, error) {
 		Bandwidth:             u.Bandwidth,
 		Storage:               u.Storage,
 		FileCount:             u.FileCount,
+		TxCount:               u.TxCount,
+		UserCount:             u.UserCount,
 		StartDate:             start,
 		EndDate:               end,
 		CreatedAt:             u.CreatedAt,
@@ -301,6 +314,8 @@ func sanitizeTotalUsage(u usage) (baas.TotalUsage, error) {
 		Bandwidth:             u.Bandwidth,
 		Storage:               u.Storage,
 		FileCount:             u.FileCount,
+		UserCount:             u.UserCount,
+		TxCount:               u.TxCount,
 		StartDate:             start,
 		EndDate:               end,
 	}, nil

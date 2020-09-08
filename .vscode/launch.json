@@ -11,10 +11,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "/home/lq/block/baas/src/baas/cmd/main.go",
-            "env": {
-                "LD_LIBRARY_PATH": "/home/lq/libs/:/home/lq/vips/lib:$LD_LIBRARY_PATH",
-                "PKG_CONFIG_PATH": "/home/lq/gisvs/libvips"
-            },
+           
             "args": [
                "-config",
                "/home/lq/block/baas/baas.toml"

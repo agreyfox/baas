@@ -21,7 +21,8 @@ type usageTotals struct {
 	Bandwidth             int64 `json:"bandwidth"`
 	Storage               int64 `json:"storage"`
 	FileCount             int64 `json:"fileCount"`
-	BlockChain            int64 `json:"blockChain"`
+	TxCount               int64 `json:"txcount"`
+	UserCount             int64 `json:"usercount"`
 }
 
 type usageMetric struct {
@@ -30,6 +31,8 @@ type usageMetric struct {
 	Bandwidth             int64     `json:"bandwidth"`
 	Storage               int64     `json:"storage"`
 	FileCount             int64     `json:"fileCount"`
+	TxCount               int64     `json:"txcount"`
+	UserCount             int64     `json:"usercount"`
 	StartDate             time.Time `json:"startDate"`
 	EndDate               time.Time `json:"endDate"`
 }
@@ -99,6 +102,8 @@ func sanitizeUsages(items []*baas.Usage) *usagesData {
 		UniqueTransformations: calcTotalUniqueTransformations(metrics),
 		Bandwidth:             calcTotalBandwidth(metrics),
 		FileCount:             fileCount,
+		UserCount:             calcTotalUserCounts(metrics),
+		TxCount:               calcTotalTxCounts(metrics),
 	}
 
 	return &res
@@ -111,6 +116,8 @@ func sanitizeUsageMetric(v *baas.Usage) *usageMetric {
 		Bandwidth:             v.Bandwidth,
 		Storage:               v.Storage,
 		FileCount:             v.FileCount,
+		TxCount:               v.TxCount,
+		UserCount:             v.UserCount,
 		StartDate:             v.StartDate,
 		EndDate:               v.EndDate,
 	}
@@ -125,6 +132,23 @@ func calcTotalTransformations(items []*usageMetric) int64 {
 	return total
 }
 
+func calcTotalTxCounts(items []*usageMetric) int64 {
+	var total int64
+	for _, item := range items {
+		total += item.TxCount
+	}
+
+	return total
+}
+
+func calcTotalUserCounts(items []*usageMetric) int64 {
+	var total int64
+	for _, item := range items {
+		total += item.UserCount
+	}
+
+	return total
+}
 func calcTotalUniqueTransformations(items []*usageMetric) int64 {
 	var total int64
 	for _, item := range items {

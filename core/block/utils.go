@@ -2,13 +2,16 @@ package block
 
 import (
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/storm"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -58,7 +61,8 @@ func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, er
 	chainID, _ := storm.ParseBigInt(NetworkID)
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(&chainID), pk)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Transaction error:%s", err)
+		return nil, err
 	}
 
 	ts := types.Transactions{signedTx}
@@ -67,7 +71,8 @@ func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, er
 
 	txhash, err := StormClient.EthSendRawTransaction(rawTxHex) /// SendRawTransaction(context.Background(), signedTx)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Transaction error:%s", err)
+		return nil, err
 	}
 	//fmt.Println(txhash)
 	fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
@@ -79,7 +84,6 @@ func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, er
 		time.Sleep(time.Duration(2) * time.Second)
 		timeout += 1
 		fmt.Printf("%d", timeout)
-
 	}
 	//fmt.Println(re, err)
 	return re, nil
@@ -100,4 +104,68 @@ func FloatToBigInt(val float64) *big.Int {
 	bigval.Int(result) // store converted number in result
 
 	return result
+}
+
+func paramDecode(param string, arg *abi.Argument) (v interface{}, err error) {
+	param = strings.TrimSpace(param)
+	fmt.Println(arg.Type)
+	switch arg.Type.T {
+	case abi.StringTy:
+		str_val := new(string)
+		v = str_val
+		//err = json.Unmarshal([]byte(param), &v)
+		v = fmt.Sprintf(param)
+		err = nil
+	case abi.UintTy, abi.IntTy:
+		val := big.NewInt(0)
+		_, success := val.SetString(param, 10)
+		if !success {
+			err = errors.New(fmt.Sprintf("Invalid numeric (base 10) value: %v", param))
+		}
+		v = val
+	case abi.AddressTy:
+		if !((len(param) == (common.AddressLength*2 + 2)) || (len(param) == common.AddressLength*2)) {
+			err = errors.New(fmt.Sprintf("Invalid address length (%v), must be 40 (unprefixed) or 42 (prefixed) chars", len(param)))
+		} else {
+			var addr common.Address
+			if len(param) == (common.AddressLength*2 + 2) {
+				addr = common.HexToAddress(param)
+			} else {
+				var data []byte
+				data, err = hex.DecodeString(param)
+				addr.SetBytes(data)
+			}
+			v = addr
+		}
+	case abi.HashTy:
+		if !((len(param) == (common.HashLength*2 + 2)) || (len(param) == common.HashLength*2)) {
+			err = errors.New(fmt.Sprintf("Invalid hash length, must be 64 (unprefixed) or 66 (prefixed) chars"))
+		} else {
+			var hash common.Hash
+			if len(param) == (common.HashLength*2 + 2) {
+				hash = common.HexToHash(param)
+			} else {
+				var data []byte
+				data, err = hex.DecodeString(param)
+				hash.SetBytes(data)
+			}
+			v = hash
+		}
+	case abi.BytesTy:
+		if len(param) > 2 {
+			if (param[0] == '0') && (param[1] == 'x') {
+				param = param[2:] // cut 0x prefix
+			}
+		}
+		decoded_bytes, tmperr := hex.DecodeString(param)
+		v = decoded_bytes
+		err = tmperr
+	case abi.BoolTy:
+		val := new(bool)
+		v = val
+		err = json.Unmarshal([]byte(param), v)
+	default:
+		err = errors.New(fmt.Sprintf("Not supported parameter type: %v", arg.Type))
+	}
+	return v, err
 }

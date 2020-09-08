@@ -27,25 +27,33 @@ type BlockService interface {
 	DeleteBAASUser(ctx context.Context, id string) error
 	UpdateBAASUser(ctx context.Context, u *UpdateBAASUser) (*BAASUser, error)
 	GetKey(ctx context.Context, id, password, ciper string) (string, error)
-	DeleteKey(ctx context.Context, id, passwd string) error
+	DeleteKey(ctx context.Context, id, passwd, applicationid string) error
 	GetAddress(ctx context.Context, id, password string) (string, error)
 	RecoverKey(ctx context.Context, id string) (string, error)
 	GetBalance(ctx context.Context, addr string) (string, error)
-	SendToken(ctx context.Context, userid, password, toAddr, value string) (string, error)
+	SendToken(ctx context.Context, userid, password, toAddr, value, msg string) (string, error)
 	WriteMsg(ctx context.Context, addr, password, toAddr, msg string) (string, error)
 	ReadMsg(ctx context.Context, hash string) (string, string, error)
 	GetTxByHash(ctx context.Context, hash string) (string, error)
 	GetErc20Balance(ctx context.Context, addr string) (string, error)
 	SendErc20Token(ctx context.Context, addr string) (string, error)
 	CreateErc20Token(ctx context.Context, addr string) (string, error)
-	GetErc721Balance(ctx context.Context, addr string) (string, error)
+	GetErc721Info(ctx context.Context, addr string) (map[string]interface{}, error)
+	GetErc721Balance(ctx context.Context, addr, contractAddr string) (string, error)
 	GetErc721TotalSupply(ctx context.Context, addr string) (string, error)
-	CreateErc721Token(ctx context.Context, addr string) (string, error)
-	SendErc721Token(ctx context.Context, addr string) (string, error)
-	GetErc721MetaData(ctx context.Context, addr string) (string, error)
+	CreateErc721Token(ctx context.Context, userid, password, addr, tokenid, meta string) (string, error)
+	SendErc721Token(ctx context.Context, addr, password, contractaddr, tokeid, targetuser string) (string, error)
+	GetErc721MetaData(ctx context.Context, addr, tokenid string) (string, error)
 	GetTx(ctx context.Context, addr string) (*BlockTx, error)
+	GetBlockNumber(ctx context.Context) (string, error)
 	//FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (FileBlobStorage, error)
 	DecryptKey(origin, cipherFromWeb, cipherFromDb, rv, salt string) (string, error)
+	GetTxByUserAddress(ctx context.Context, usrid, page, size string) (string, error)                     // query backend system for address tx record
+	GetPeerToPeerTxByUserAddress(ctx context.Context, usrid, targetid, page, size string) (string, error) // query backend system for address tx record
+	GetErc721TxList(ctx context.Context, addr, page, size string) (string, error)
+	GetErc721TokenTxList(ctx context.Context, addr, tokenid, page, size string) (string, error)
+	GetErc721TxListByUser(ctx context.Context, addr, userid, page, size string) (string, error)
+	GetErc721TokenTxListByUser(ctx context.Context, addr, tokenid, userid, page, size string) (string, error)
 }
 
 // blockStorage handles communication with the database for handling block.
@@ -58,6 +66,7 @@ type BlockStorage interface {
 	// address, origpk, rv,cipher,salt
 	GetAddressByService(ctx context.Context, id, password string) (string, string, string, string, string, error)
 	//Delete(ctx context.Context, id string) error
+	GetApplicationId(ctx context.Context, id string) (string, error)
 	Update(ctx context.Context, u *UpdateBAASUser) (*BAASUser, error)
 }
 

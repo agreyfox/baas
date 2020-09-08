@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -95,7 +96,8 @@ func (rpc *EthRPC) URL() string {
 func (rpc *EthRPC) NewAddress() (string, string, error) {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return "", "", errors.New("Generate Key failed")
 	}
 
 	privateKeyBytes := crypto.FromECDSA(privateKey)

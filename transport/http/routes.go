@@ -122,6 +122,70 @@ func (s *Server) routes() {
 		s.Authenticate(
 			s.handleGetTxByHash())).Methods("POST")
 
+	const baasGetUserTxList = "/api/baas/getUserTxList"
+	s.Handle(baasGetUserTxList,
+		s.Authenticate(
+			s.handleGetUserTxList())).Methods("POST")
+	const baasGetUserToUserTxList = "/api/baas/getUserToUserTxList"
+	s.Handle(baasGetUserToUserTxList,
+		s.Authenticate(
+			s.handleGetUserToUserTxList())).Methods("POST")
+
+	const baasCreate721Token = "/api/baas/createErc721Token"
+	s.Handle(baasCreate721Token,
+		s.Authenticate(
+			s.handleCreate721Token())).Methods("POST")
+	const baasGet721Info = "/api/baas/getErc721Info"
+	s.Handle(baasGet721Info,
+		s.Authenticate(
+			s.handleGet721Info())).Methods("POST")
+	const baasGet721Balance = "/api/baas/getErc721Balance"
+	s.Handle(baasGet721Balance,
+		s.Authenticate(
+			s.handleGet721Balance())).Methods("POST")
+	const baasGet721MetaData = "/api/baas/getErc721Metadata"
+	s.Handle(baasGet721MetaData,
+		s.Authenticate(
+			s.handleGet721MetaData())).Methods("POST")
+	const baasSend721 = "/api/baas/sendErc721Token"
+	s.Handle(baasSend721,
+		s.Authenticate(
+			s.handleSend721Token())).Methods("POST")
+	const baasGet721List = "/api/baas/getErc721TxList"
+	s.Handle(baasGet721List,
+		s.Authenticate(
+			s.handleGet721TxList())).Methods("POST")
+
+	const baasGet721TokenList = "/api/baas/getErc721TokenTxList"
+	s.Handle(baasGet721TokenList,
+		s.Authenticate(
+			s.GetErc721TokenTxList())).Methods("POST")
+
+	const baasGet721UserTxList = "/api/baas/getErc721UserTxList"
+	s.Handle(baasGet721UserTxList,
+		s.Authenticate(
+			s.GetErc721TxListByUser())).Methods("POST")
+	const baasGet721TokenUserTxList = "/api/baas/getErc721TokenUserTxList"
+	s.Handle(baasGet721TokenUserTxList,
+		s.Authenticate(
+			s.GetErc721TokenTxListByUser())).Methods("POST")
+
+	/////////////////////////////////
+	//other api methods
+	////////////////////////////////
+	const baasGetBlockCount = "/api/baas/getBlockCount"
+	s.Handle(baasGetBlockCount,
+		s.Authenticate(
+			s.handleGetBlockNumber())).Methods("POST")
+	const baasGetTotalTxCounts = "/api/baas/getTotalTxCounts"
+	s.Handle(baasGetTotalTxCounts,
+		s.Authenticate(
+			s.handleUsages())).Methods("POST")
+	const baasGetTotalUserCount = "/api/baas/getTotalUserCounts"
+	s.Handle(baasGetTotalUserCount,
+		s.Authenticate(
+			s.handleUsages())).Methods("POST")
+
 	//////////////////////////////
 	// PPROF //
 	/////////////////////////////

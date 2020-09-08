@@ -27,6 +27,8 @@ type Usage struct {
 	Storage               int64
 	FileCount             int64
 	EncryptionCount       int64
+	UserCount             int64
+	TxCount               int64
 	StartDate             time.Time
 	EndDate               time.Time
 	CreatedAt             time.Time
@@ -40,6 +42,8 @@ type TotalUsage struct {
 	Storage               int64
 	FileCount             int64
 	Encryption            int64
+	TxCount               int64
+	UserCount             int64
 	StartDate             time.Time
 	EndDate               time.Time
 }
@@ -51,7 +55,8 @@ type NewUsage struct {
 	Bandwidth             int64
 	Storage               int64
 	FileCount             int64
-	User                  int64
+	UserCount             int64
+	TxCount               int64
 	StartDate             time.Time
 	EndDate               time.Time
 }
@@ -63,7 +68,8 @@ type UpdateUsage struct {
 	Bandwidth             int64
 	Storage               int64
 	FileCount             int64
-	BlockChain            int64
+	TxCount               int64
+	UserCount             int64
 	StartDate             time.Time
 	EndDate               time.Time
 }

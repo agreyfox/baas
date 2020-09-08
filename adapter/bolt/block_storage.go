@@ -212,6 +212,21 @@ func (s *BlockStorage) GetAddress(ctx context.Context, id, password string) (str
 
 }
 
+// return application id based on userId/email
+func (s *BlockStorage) GetApplicationId(ctx context.Context, id string) (string, error) {
+
+	var a blockUser
+	if err := s.DB.One("Email", id, &a); err != nil {
+		if err == storm.ErrNotFound {
+			return "", baas.ErrBaasNoSuchUser
+		}
+		return "", err
+	}
+
+	return a.ApplicationID, nil
+
+}
+
 // called by internal
 func (s *BlockStorage) GetAddressByService(ctx context.Context, id, password string) (string, string, string, string, string, error) {
 

@@ -25,13 +25,13 @@ func (r *createBaasUserRequest) validate() error {
 	if r.Email == "" {
 		return errors.New("Email is required")
 	}
-	if r.Password == "" || len(r.Password) < 6 {
+	if r.Password == "" || len(r.Password) < 8 {
 		return errors.New("Password is required or not secure")
 	}
 	if r.ApplicationID == "" {
 		return baas.ErrBaasApplicationIDRequired
 	}
-	if r.CipherText == "" {
+	if r.CipherText == "" || len(r.CipherText) < 8 {
 		color.Red("No CiperText, Will use system key")
 	}
 	return nil
@@ -48,7 +48,7 @@ type updateBaasUserRequest struct {
 
 func (r *updateBaasUserRequest) validate() error {
 	if r.ApplicationID == "" {
-		return errors.New("id is required")
+		return errors.New("application_id is required")
 	}
 
 	if r.OldPassword == "" || r.NewPassword == "" {
@@ -75,9 +75,31 @@ type BlockOperation struct {
 	Password   string `json:"password"`
 	Targetid   string `json:"toUserId"`
 	CipherText string `json:"cipherText"`
-	Message    string `json:"message"`
+	Message    string `json:"msg"`
 	Value      string `json:"quantity"`
 	Hash       string `json:"txHash"`
-	Size       int    `json:"total"`
-	Page       int    `json:"page"`
+	Size       string `json:"total"`
+	Page       string `json:"page"`
+}
+
+type SmartContractOperation struct {
+	Contract string `json:"contract"`
+	Meta     string `json:"metadata"`
+	UserId   string `json:"userId"`
+	Password string `json:"password"`
+	TokenId  string `json:"tokenId"`
+	TargetId string `json:"toUserId"`
+}
+
+type TokenInfo struct {
+	Status      string `json:"status"`
+	Name        string `json:"name"`
+	Symbol      string `json:"symbol"`
+	TotalSupply int    `json:"totalSupply"`
+}
+
+type BlockChainUsageQuery struct {
+	ApplicationID string `json:"application_id"`
+	StartDate     string `json:"start_date"`
+	EndDate       string `json:"end_date"`
 }

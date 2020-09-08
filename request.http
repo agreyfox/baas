@@ -512,7 +512,7 @@ POST http://127.0.0.1:4200/api/baas/createKey
 Post http://127.0.0.1:4200/api/baas/getKey
 
 {
-  "userid":"jh@gmail.com",
+  "userid":"@gmail.com",
   "password":"abcdedfg",
    "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4"
 }
@@ -583,10 +583,10 @@ POST http://127.0.0.1:4200/api/baas/createKey
 
 {
   "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
-  "userid":"e_raeb6@tianya.com",
+  "userid":"e_raeb18@tianya.com",
   "password":"abcdedfg",
   "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf",
-  "name":"熊8"
+  "name":"熊9"
 }
 
 ###
@@ -594,13 +594,43 @@ POST http://127.0.0.1:4200/api/baas/createKey
 Post http://127.0.0.1:4200/api/baas/getKey
 
 {
-  "userid":"e_raeb5@tianya.com",
+  "userid":"e_raeb13@tianya.com",
   "password":"abcdedfg",
   "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
-   "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf"
+ "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf"
 }
 
 ###
+
+Post http://127.0.0.1:4200/api/baas/getAddress
+
+{
+  "userid":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+   "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4"
+}
+
+###
+
+Post http://127.0.0.1:4200/api/bass/getUserTxList
+
+{
+  "userid":"e_raeb13@tianya.com"
+
+}
+
+###
+
+Post http://127.0.0.1:4200/api/bass/getUserToUserTxList
+
+{
+  "userId":"e_raeb13@tianya.com",
+  "page":1,
+  "toUserId":"e_raeb14@tianya.com"
+}
+
+###
+
 
 Post http://127.0.0.1:4200/api/baas/changePassword
 
@@ -629,7 +659,7 @@ Post http://127.0.0.1:4200/api/baas/deleteKey
 Post http://127.0.0.1:4200/api/baas/getBalance
 
 {
-  "userid":"e_raeb5@tianya.com"
+  "userid":"e_raeb13@tianya.com"
 }
 
 ###
@@ -637,9 +667,9 @@ Post http://127.0.0.1:4200/api/baas/getBalance
 POST http://127.0.0.1:4200/api/baas/sendToken
 
 {
-  "userId":"e_raeb5@tianya.com",
-  "toUserid":"e_raeb6@tianya.com",
-  "password":"123456",
+  "userId":"e_raeb13@tianya.com",
+  "toUserid":"e_raeb14@tianya.com",
+  "password":"abcdedfg",
   "quantity":"0.5"
 }
 
@@ -656,10 +686,10 @@ Post http://127.0.0.1:4200/api/baas/getBalance
 POST http://127.0.0.1:4200/api/baas/writeMsg
 
 {
-  "userId":"e_raeb5@tianya.com",
+  "userId":"e_raeb13@tianya.com",
   "toUserid":"e_raeb5@tianya.com",
-  "password":"123456",
-  "message":"夏天走了"
+  "password":"abcdedfg",
+  "msg":"秋天来了,冬天不远了，2021就要来了"
 
 }
 ###
@@ -679,4 +709,80 @@ POST http://127.0.0.1:4200/api/baas/getTxByHash
 {
 "txHash":"0x6bd3e8823eaead4ba97c84c414bd3d37c9ffa8d4e36fae7cd848630c0c28dc8a"
 
+}
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/createErc721Token
+
+{
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "toUserid":"e_raeb14@tianya.com",
+  "tokenId":"2000",
+  "matadata":"http://127.0.0.1:8000/356.html",
+  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getErc721Info
+
+{
+
+  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getErc721Balance
+
+{
+
+  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136",
+  "userId":"e_raeb13@tianya.com"
+
+}
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/getErc721MetaData
+
+{
+
+  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136",
+  "tokenId":"1999"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getBlockCount
+
+
+###
+
+POST http://127.0.0.1:4200/api/baas/sendErc721Token
+
+{
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "toUserid":"e_raeb14@tianya.com",
+  "tokenId":"2000",
+  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getTotalUserCounts
+
+{
+  "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
+  "start_date":"2017-01-01",
+  "end_date":"2020-09-30"
 }

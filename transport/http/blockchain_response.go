@@ -18,8 +18,8 @@ type baasUsersResponse struct {
 
 type bassUserData struct {
 	ID            string `json:"id"`
-	Email         string `json:"email"`
-	Name          string `json:"name"`
+	Email         string `json:"userId"`
+	Name          string
 	ApplicationID string `json:"application_id"`
 	Description   string `json:"description"`
 	//StorageAccessKey string    `json:"storageAccessKey"`
