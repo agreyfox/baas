@@ -83,12 +83,15 @@ type BlockOperation struct {
 }
 
 type SmartContractOperation struct {
-	Contract string `json:"contract"`
-	Meta     string `json:"metadata"`
-	UserId   string `json:"userId"`
-	Password string `json:"password"`
-	TokenId  string `json:"tokenId"`
-	TargetId string `json:"toUserId"`
+	Contract    string `json:"contract"`
+	Meta        string `json:"metadata"`
+	UserId      string `json:"userId"`
+	Password    string `json:"password"`
+	TokenId     string `json:"tokenId"`
+	TargetId    string `json:"toUserId"`
+	Property    string `json:"property"`
+	Memo        string `json:"memo"`
+	BlockNumber string `json:"blockNumber"`
 }
 
 type TokenInfo struct {

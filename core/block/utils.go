@@ -1,11 +1,13 @@
 package block
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 
@@ -168,4 +170,53 @@ func paramDecode(param string, arg *abi.Argument) (v interface{}, err error) {
 		err = errors.New(fmt.Sprintf("Not supported parameter type: %v", arg.Type))
 	}
 	return v, err
+}
+
+func Padding(src []byte, blockSize int) []byte {
+	padding := blockSize - len(src)%blockSize
+	padtext := bytes.Repeat([]byte{byte('0')}, padding)
+	return append(padtext, src...)
+}
+
+func UnPadding(src []byte) []byte {
+	if len(src) == 0 {
+		return src
+	}
+	fsrc := src
+	if src[0] == '0' && src[1] == 'x' {
+		fsrc = src[2:]
+	}
+	length := len(fsrc)
+	start := 0
+	for i := 0; i < length; i++ {
+		if fsrc[i] == 0 {
+			start++
+		} else {
+			break
+		}
+	}
+
+	end := 0
+	for j := 1; j < length; j++ {
+
+		if fsrc[length-j] == 0 {
+			end++
+		} else {
+			break
+		}
+	}
+	fmt.Print(fsrc[start : length-end])
+	return fsrc[start : length-end]
+
+}
+
+func IntStringToHex(str string) string {
+	//var n int64
+	n, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		fmt.Println("Error when convert int string to hex")
+		return ""
+	}
+	//return []byte(strconv.FormatInt(n, 16))
+	return fmt.Sprintf("%#x", n)
 }

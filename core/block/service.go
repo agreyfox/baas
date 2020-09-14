@@ -20,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"golang.org/x/crypto/sha3"
 
 	"github.com/agreyfox/baas/cmd/baasd"
@@ -28,17 +29,19 @@ import (
 )
 
 var (
-	StormClient *storm.EthRPC
-	BigHelper   = big.NewInt(10)
-	Wei         = BigHelper.Exp(BigHelper, big.NewInt(18), nil)
-	Abi         abi.ABI
+	StormClient     *storm.EthRPC
+	BigHelper       = big.NewInt(10)
+	Wei             = BigHelper.Exp(BigHelper, big.NewInt(18), nil)
+	Abi             abi.ABI
+	GasCheckMinimum = 0.001
 )
 
 const (
 	BackEndGetAddressTx = "http://dao.moacchain.net/api/v1/wallets/%s/tx"
 	BackEndPeerToPeerTx = "http://dao.moacchain.net/api/v1/wallets/%s/%s/txfilter"
-
-	ContractABI = "[{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_tokenUri\",\"type\":\"string\"}],\"name\":\"mint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenOfOwnerByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+	ContractABI         = "[{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"memoAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"property\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"tokenUri\",\"type\":\"string\"}],\"name\":\"tokenMinted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"transactionMemo\",\"type\":\"event\"},{\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_memo\",\"type\":\"string\"}],\"name\":\"addMemo\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"}],\"name\":\"getProperty\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_property\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_tokenUri\",\"type\":\"string\"}],\"name\":\"mint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"property\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_property\",\"type\":\"string\"}],\"name\":\"setProperty\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenOfOwnerByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_memo\",\"type\":\"string\"}],\"name\":\"transferWithMemo\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+	Sign721Log1         = "0x123392ef4dfc825252c018e5fdcbb56bd895e4f681eba5e936e164009a05f435"
+	Sign721Log2         = "0x4a62fa304d9a5993f36546283e9d483bc1cb4909a24a0bb0104fb47505caea20"
 )
 
 type Service struct {
@@ -402,7 +405,7 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 	}
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < 0.0001 {
+	if f < GasCheckMinimum {
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
@@ -555,7 +558,7 @@ func (s *Service) GetPeerToPeerTxByUserAddress(ctx context.Context, usrid, targe
 	}
 	url := fmt.Sprintf(BackEndPeerToPeerTx, address, toAddress)
 	url += fmt.Sprintf("?page=%s", page)
-	fmt.Println("backend url ", url)
+	//fmt.Println("backend url ", url)
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -610,6 +613,7 @@ func (s *Service) GetErc721Balance(ctx context.Context, addr, contractAddr strin
 	if exists {
 		fmt.Println("Function is expected", m)
 	}
+
 	method_params := make([]interface{}, 0, 8)
 	v, err := paramDecode(address, &m.Inputs[0])
 	if err != nil {
@@ -680,7 +684,7 @@ func (s *Service) GetErc721TotalSupply(ctx context.Context, addr string) (string
 	//	return "", nil
 }
 
-func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contract, tokenid, meta string) (string, error) {
+func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contract, tokenid, meta, property string) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
 	if err != nil {
@@ -695,7 +699,7 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < 0.001 { //TODO:need check mint token total gas
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -718,13 +722,116 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 		fmt.Println("Function is expected", m)
 	}
 	method_params := make([]interface{}, 0, 8)
-	v, err := paramDecode(tokenid, &m.Inputs[0])
+	v, err := paramDecode(tokenid, &m.Inputs[0]) //tokenid
 	if err != nil {
 		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err))
 		return "", err
 	}
 	method_params = append(method_params, v)
-	v, err = paramDecode(meta, &m.Inputs[1])
+	v, err = paramDecode(property, &m.Inputs[1]) //meta
+
+	if err != nil {
+		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err))
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	v, err = paramDecode(meta, &m.Inputs[2]) //property
+
+	if err != nil {
+		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 2, m.Inputs[2].Name, err))
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+	//fmt.Println(dataEncodefor721Call)
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      baas.GasERC721Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("Transaction timeout!")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, userid)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", userid)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx mint  usage")
+			}
+		}
+		return t.TransactionHash, ee
+	} else {
+		return "", ee
+	}
+	return "", nil
+}
+
+func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, contract, tokenid, property string) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(from, " try to set  new token property at ", contract, tokenid)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+	tid, err := strconv.ParseUint(tokenid, 10, 0)
+	if err != nil {
+		return "", err
+	}
+	if tid == 0 {
+		return "", errors.New("tokenid is not correct!")
+	}
+	m, exists := Abi.Methods["setProperty"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(tokenid, &m.Inputs[0]) //tokenid
+	if err != nil {
+		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err))
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	v, err = paramDecode(property, &m.Inputs[1]) //property
 
 	if err != nil {
 		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err))
@@ -819,7 +926,7 @@ func (s *Service) GetErc721Info(ctx context.Context, addr string) (map[string]in
 }
 
 //send a 721 to other
-func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tokenid, targetid string) (string, error) {
+func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tokenid, memo, targetid string) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, pass)
 	if err != nil {
@@ -839,7 +946,7 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < 0.001 { //TODO:need check mint token total gas
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -857,28 +964,279 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	if tid == 0 {
 		return "", errors.New("tokenid is not correct!")
 	}
-	m, exists := Abi.Methods["transferFrom"]
+	var m abi.Method
+	var exists bool
+	if len(memo) == 0 {
+		m, exists = Abi.Methods["transferFrom"]
+	} else {
+		m, exists = Abi.Methods["transferWithMemo"]
+	}
+
 	if exists {
 		fmt.Println("Function is expected", m)
 	}
+
 	method_params := make([]interface{}, 0, 8)
 	v, err := paramDecode(from, &m.Inputs[0])
 	if err != nil {
-		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err))
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
 		return "", err
 	}
 	method_params = append(method_params, v)
 	v, err = paramDecode(toAddress, &m.Inputs[1])
 
 	if err != nil {
-		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err))
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
 		return "", err
 	}
 	method_params = append(method_params, v)
 	v, err = paramDecode(tokenid, &m.Inputs[2])
 
 	if err != nil {
-		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 2, m.Inputs[2].Name, err))
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 2, m.Inputs[2].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+	if len(memo) > 0 {
+		v, err = paramDecode(tokenid, &m.Inputs[3])
+
+		if err != nil {
+			err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 3, m.Inputs[3].Name, err)
+			return "", err
+		}
+		method_params = append(method_params, v)
+	}
+
+	dataEncodefor721Call, err := Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+	//fmt.Println(dataEncodefor721Call)
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      baas.GasERC721Limit * 2,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send 721 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("Send toke return error")
+		return "", ee
+	}
+
+}
+
+// 获取 memo search by blocknumber
+func (s *Service) GetSendErc721TokenMemos(ctx context.Context, contractaddr, tokenid, blockNumber string) (string, error) {
+
+	numstr := IntStringToHex(tokenid)
+	bufofnun := []byte(numstr)
+	wc := "0x" + string(Padding(bufofnun[2:], 64))
+	fmt.Println("tokenid is ", wc)
+	hash := sha3.NewLegacyKeccak256()
+	var buf []byte
+	//hash.Write([]byte{0xcc})
+	hash.Write([]byte("transactionMemo(uint256,uint,string)"))
+	buf = hash.Sum(nil)
+	fmt.Println(hex.EncodeToString(buf[:]))
+	fmt.Println(Sign721Log1)
+
+	filter := storm.FilterParams{
+		FromBlock: IntStringToHex(blockNumber),
+		ToBlock:   "latest",
+		Address:   []string{contractaddr},
+		Topics: []string{
+			"0x" + hex.EncodeToString(buf[:]),
+			wc,
+		},
+	}
+
+	//tx, err := StormClient.EthGetLogs(filter)
+	tx, err := StormClient.EthNewFilter(filter) //tx is filter id
+	if err != nil {
+		return "", err
+	}
+	logs, err := StormClient.EthGetFilterLogs(tx)
+
+	for i := 0; i < len(logs); i++ {
+		dd := []byte(logs[i].Data)
+		mm, _ := hex.DecodeString(string(dd[128:]))
+		mm = UnPadding(mm)
+		logs[i].Data = fmt.Sprint(string(mm))
+	}
+	mt, err := json.Marshal(logs)
+	//str := new(string)
+	//err = Abi.Unpack(&str, "transactionMemo", common.FromHex(tx))
+	//	mmemo := common.FromHex(tx)
+
+	/* type log struct {
+		TokenId big.Int
+		Memo    string
+	}
+
+	retlog := make([]log, 0)
+	for _, vLog := range logs {
+		event := log{}
+
+		fmt.Println(vLog.Data)
+		err := Abi.Unpack(&event, "transactionMemo", []byte(vLog.Data))
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		retlog = append(retlog, event)
+		fmt.Println(event) // foo
+	}
+	mt, _ := json.Marshal(retlog) */
+	return string(mt), err
+}
+
+// 获取 memo list search by
+func (s *Service) GetErc721TokenMemoList(ctx context.Context, contractaddr, tokenid string) (string, error) {
+	//var buf [32]byte
+	//wo := hex.EncodeToString([]byte("transactionMemo"))
+	//wc := "0x" + string(Padding([]byte(wo), 64))
+
+	numstr := IntStringToHex(tokenid)
+	bufofnun := []byte(numstr)
+	wc := "0x" + string(Padding(bufofnun[2:], 64))
+	fmt.Println("tokenid is ", wc)
+	hash := sha3.NewLegacyKeccak256()
+	var buf []byte
+	//hash.Write([]byte{0xcc})
+	hash.Write([]byte("memoAdded(uint256,string)"))
+	buf = hash.Sum(nil)
+	fmt.Println(hex.EncodeToString(buf[:]))
+	//fmt.Println(Sign721Log2)
+
+	filter := storm.FilterParams{
+		FromBlock: IntStringToHex("0"),
+		ToBlock:   "latest",
+		Address:   []string{contractaddr},
+		Topics: []string{
+			"0x" + hex.EncodeToString(buf[:]),
+			wc,
+		},
+	}
+
+	//tx, err := StormClient.EthGetLogs(filter)
+	tx, err := StormClient.EthNewFilter(filter) //tx is filter id
+	if err != nil {
+		return "", err
+	}
+	logs, err := StormClient.EthGetFilterLogs(tx)
+
+	for i := 0; i < len(logs); i++ {
+		dd := []byte(logs[i].Data)
+
+		mm, _ := hex.DecodeString(string(dd[128:]))
+		mm = UnPadding(mm)
+		logs[i].Data = fmt.Sprint(string(mm))
+	}
+	mt, err := json.Marshal(logs)
+	//str := new(string)
+	//err = Abi.Unpack(&str, "transactionMemo", common.FromHex(tx))
+	//	mmemo := common.FromHex(tx)
+
+	/* type log struct {
+		TokenId big.Int
+		Memo    string
+	}
+
+	retlog := make([]log, 0)
+	for _, vLog := range logs {
+		event := log{}
+
+		fmt.Println(vLog.Data)
+		err := Abi.Unpack(&event, "transactionMemo", []byte(vLog.Data))
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		retlog = append(retlog, event)
+		fmt.Println(event) // foo
+	}
+	mt, _ := json.Marshal(retlog) */
+	return string(mt), err
+}
+
+// add memo to a 721 token
+func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, contract, tokenid, memo string) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(from, " try to set  new memo at ", contract, tokenid)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+	tid, err := strconv.ParseUint(tokenid, 10, 0)
+	if err != nil {
+		return "", err
+	}
+	if tid == 0 {
+		return "", errors.New("tokenid is not correct!")
+	}
+	m, exists := Abi.Methods["addMemo"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(tokenid, &m.Inputs[0]) //tokenid
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	v, err = paramDecode(memo, &m.Inputs[1]) //property
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
 		return "", err
 	}
 	method_params = append(method_params, v)
@@ -902,12 +1260,12 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	var ee = err
 	if ee == nil {
 		if len(t.TransactionHash) == 0 {
-			ee = errors.New("Transaction timeout!")
+			ee = errors.New("transaction timeout")
 		}
 		if ee == nil {
-			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			appid, err := s.BlockStorage.GetApplicationId(ctx, userid)
 			if err != nil {
-				fmt.Println("Warnning, Application id search error:", addr)
+				fmt.Println("Warnning, Application id search error:", userid)
 			}
 			updatedUsages := &baas.UpdateUsage{
 				ApplicationID: appid,
@@ -915,7 +1273,7 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 			}
 
 			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
-				s.Log.Error().Err(err).Msg("failed to update block tx send 721 token  usage")
+				s.Log.Error().Err(err).Msg("failed to update block tx mint  usage")
 			}
 		}
 		return t.TransactionHash, ee
@@ -924,6 +1282,45 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	}
 
 }
+
+// 获取property
+func (s *Service) GetErc721TokenProperty(ctx context.Context, contractaddr, tokenid string) (string, error) {
+
+	m, exists := Abi.Methods["getProperty"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(tokenid, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+
+	callpara := storm.T{
+		From: contractaddr,
+		To:   contractaddr,
+		Data: hexutil.Encode(dataEncodefor721Call),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return "", err
+	}
+	nameb := new(string)
+	returns := common.FromHex(tx)
+	err = Abi.Unpack(&nameb, "getProperty", returns)
+
+	return *nameb, err
+
+}
+
+// Get Erc721 token 's metadata
 func (s *Service) GetErc721MetaData(ctx context.Context, contractaddr, tokenid string) (string, error) {
 
 	m, exists := Abi.Methods["tokenURI"]
@@ -933,7 +1330,7 @@ func (s *Service) GetErc721MetaData(ctx context.Context, contractaddr, tokenid s
 	method_params := make([]interface{}, 0, 8)
 	v, err := paramDecode(tokenid, &m.Inputs[0])
 	if err != nil {
-		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err))
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
 		return "", err
 	}
 	method_params = append(method_params, v)

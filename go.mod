@@ -26,6 +26,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/rs/zerolog v1.18.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4
 	github.com/stretchr/testify v1.5.1
 	github.com/tidwall/gjson v1.6.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a

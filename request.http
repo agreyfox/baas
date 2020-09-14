@@ -720,19 +720,33 @@ POST http://127.0.0.1:4200/api/baas/createErc721Token
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
   "toUserid":"e_raeb14@tianya.com",
-  "tokenId":"2000",
-  "matadata":"http://127.0.0.1:8000/356.html",
-  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136"
-
+  "tokenId":"10000",
+  "metadata":"http://127.0.0.1:8000/356.html",
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "property":"123"
 }
 
 ###
 
-POST http://127.0.0.1:4200/api/baas/getErc721Info
+POST http://127.0.0.1:4200/api/baas/createErc721Token
+
+{
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "toUserid":"e_raeb14@tianya.com",
+  "tokenId":"10000",
+  "metadata":"http://127.0.0.1:8000/356.html",
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "property":"123"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getErc721ContractInfo
 
 {
 
-  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136"
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E"
 
 }
 
@@ -742,20 +756,41 @@ POST http://127.0.0.1:4200/api/baas/getErc721Balance
 
 {
 
-  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136",
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
   "userId":"e_raeb13@tianya.com"
 
 }
 
 ###
 
-
-POST http://127.0.0.1:4200/api/baas/getErc721MetaData
+POST http://127.0.0.1:4200/api/baas/getErc721TokenProperty
 
 {
 
-  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136",
-  "tokenId":"1999"
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "tokenId":"10000"
+
+}
+###
+POST http://127.0.0.1:4200/api/baas/setErc721TokenProperty
+
+{
+
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "tokenId":"10000",
+  "property":"ready send to e_raeb14",
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getErc721Metadata
+
+{
+
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "tokenId":"10000"
 
 }
 
@@ -772,9 +807,22 @@ POST http://127.0.0.1:4200/api/baas/sendErc721Token
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
   "toUserid":"e_raeb14@tianya.com",
-  "tokenId":"2000",
-  "contract":"0x0bEF312019e5a101f7E6dF6CC5D5Ad49e52d4136"
+  "tokenId":"10000",
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "memo":"风吹千帆过，日落万木肃"
+}
+###
 
+POST http://127.0.0.1:4200/api/baas/sendErc721Token
+
+{
+  "userId":"e_raeb14@tianya.com",
+  "password":"abcdedfg",
+  "toUserid":"e_raeb13@tianya.com",
+  "tokenId":"10000",
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "memo":"风过树如故，乌云盖重楼"
+ 
 }
 
 ###
@@ -786,3 +834,30 @@ POST http://127.0.0.1:4200/api/baas/getTotalUserCounts
   "start_date":"2017-01-01",
   "end_date":"2020-09-30"
 }
+
+###
+
+POST http://127.0.0.1:4200/api/baas/getErc721TokenMemoList
+
+{
+
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "tokenId":"10000"
+
+}
+###
+
+
+POST http://127.0.0.1:4200/api/baas/addErc721TokenMemo
+
+{
+
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+  "tokenId":"10000",
+  "memo":"骑马飞奔而去",
+  "userId":"e_raeb14@tianya.com",
+  "password":"abcdedfg"
+
+}
+
+
