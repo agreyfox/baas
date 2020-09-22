@@ -131,70 +131,76 @@ func (s *Server) routes() {
 		s.Authenticate(
 			s.handleGetUserToUserTxList())).Methods("POST")
 
-	const baasCreate721Token = "/api/baas/createErc721Token"
+	//////////////////////////ERC721//////////////////////////////
+	const baasCreate721Token = "/api/baas/erc721/createToken"
 	s.Handle(baasCreate721Token,
 		s.Authenticate(
 			s.handleCreate721Token())).Methods("POST")
 
-	const baasSet721TokenProperty = "/api/baas/setErc721TokenProperty"
+	const baasSet721TokenProperty = "/api/baas/erc721/setTokenProperty"
 	s.Handle(baasSet721TokenProperty,
 		s.Authenticate(
 			s.handleSet721TokenProperty())).Methods("POST")
-	const baasGet721TokenProperty = "/api/baas/getErc721TokenProperty"
+	const baasGet721TokenProperty = "/api/baas/erc721/getTokenProperty"
 	s.Handle(baasGet721TokenProperty,
 		s.Authenticate(
 			s.handleGet721TokenProperty())).Methods("POST")
 
-	const baasGet721Info = "/api/baas/getErc721ContractInfo"
+	const baasGet721Info = "/api/baas/erc721/getContractInfo"
 	s.Handle(baasGet721Info,
 		s.Authenticate(
 			s.handleGet721Info())).Methods("POST")
 
-	const baasGet721Balance = "/api/baas/getErc721Balance"
+	const baasGet721Balance = "/api/baas/erc721/getBalance"
 	s.Handle(baasGet721Balance,
 		s.Authenticate(
 			s.handleGet721Balance())).Methods("POST")
 
-	const baasGet721MetaData = "/api/baas/getErc721Metadata"
+	const baasGet721MetaData = "/api/baas/erc721/getTokenMetadata"
 	s.Handle(baasGet721MetaData,
 		s.Authenticate(
 			s.handleGet721MetaData())).Methods("POST")
 
-	const baasSend721 = "/api/baas/sendErc721Token"
+	const baasSend721 = "/api/baas/erc721/sendToken"
 	s.Handle(baasSend721,
 		s.Authenticate(
 			s.handleSend721Token())).Methods("POST")
-	const baasGetSend721Memo = "/api/baas/getSendErc721TokenMemo"
+	const baasGetSend721Memo = "/api/baas/erc721/getSendTokenMemo"
 	s.Handle(baasGetSend721Memo,
 		s.Authenticate(
 			s.handleGetSend721TokenMemo())).Methods("POST")
-	const baasAddErc721TokenMemo = "/api/baas/addErc721TokenMemo"
+	const baasAddErc721TokenMemo = "/api/baas/erc721/addTokenMemo"
 	s.Handle(baasAddErc721TokenMemo,
 		s.Authenticate(
 			s.handleAdd721TokenMemo())).Methods("POST")
 
-	const baasGetErc721TokenMemoList = "/api/baas/getErc721TokenMemoList"
+	const baasGetErc721TokenMemoList = "/api/baas/erc721/getTokenMemoList"
 	s.Handle(baasGetErc721TokenMemoList,
 		s.Authenticate(
 			s.handleGet721TokenMemoList())).Methods("POST")
 	//////////////////////////////////////
 	//////get erc721   logs             //////
 	/////////////////////////////////////
-	const baasGet721List = "/api/baas/getErc721TxList"
+	const baasGetUser721Token = "/api/baas/erc721/getTokenList"
+	s.Handle(baasGetUser721Token,
+		s.Authenticate(
+			s.handleGetUser721Token())).Methods("POST")
+
+	const baasGet721List = "/api/baas/erc721/getTxList"
 	s.Handle(baasGet721List,
 		s.Authenticate(
 			s.handleGet721TxList())).Methods("POST")
 
-	const baasGet721TokenList = "/api/baas/getErc721TokenTxList"
+	const baasGet721TokenList = "/api/baas/erc721/getTokenTxList"
 	s.Handle(baasGet721TokenList,
 		s.Authenticate(
 			s.GetErc721TokenTxList())).Methods("POST")
 
-	const baasGet721UserTxList = "/api/baas/getErc721UserTxList"
+	const baasGet721UserTxList = "/api/baas/erc721/getUserTxList"
 	s.Handle(baasGet721UserTxList,
 		s.Authenticate(
 			s.GetErc721TxListByUser())).Methods("POST")
-	const baasGet721TokenUserTxList = "/api/baas/getErc721TokenUserTxList"
+	const baasGet721TokenUserTxList = "/api/baas/erc721/getTokenUserTxList"
 	s.Handle(baasGet721TokenUserTxList,
 		s.Authenticate(
 			s.GetErc721TokenTxListByUser())).Methods("POST")

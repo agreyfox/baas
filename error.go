@@ -46,7 +46,7 @@ const (
 	ErrBaasInvalidPassword       = Error("Invalid password")
 	ErrBaasParameterNotFound     = Error("Parameter is no valid")
 	ErrBaasApplicationIDRequired = Error("Application ID is required")
-	ErrBaasCipherTextRequired    = Error("wrong cipherText")
+	ErrBaasCipherTextRequired    = Error("invalid cipherText")
 	ErrBaasNotEnoughMoney        = Error("Account doesn't have enough gas")
 )
 

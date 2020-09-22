@@ -217,14 +217,17 @@ func run() error {
 
 		Log: logger,
 	})
-
+/* 
 	opts := cors.Options{
-		AllowedMethods: []string{"PUT", "POST", "GET", "DELETE", "PATCH"},
+		AllowedMethods: []string{"PUT", "POST", "GET", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "Authorization", "Referer"},
 		AllowedOrigins: []string{"*"},
-	}
-	corsOpts := cors.New(opts)
-	corsHandler := corsOpts.Handler(h)
+		Debug:          true,
+	} */
+	//corsOpts := cors.New(opts)
+	
+	//corsHandler := corsOpts.Handler(h)
+	corsHandler := cors.AllowAll().Handler(h)
 	requestIDMiddleware := http.RequestIDMiddleware(corsHandler)
 
 	return http.Serve(requestIDMiddleware, conf.HTTP.Port, conf.HTTP.HTTPS, conf.HTTP.SSLCertPath, conf.HTTP.SSLKeyPath)

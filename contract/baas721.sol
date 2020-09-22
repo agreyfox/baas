@@ -3,9 +3,9 @@
 /// @notice 这个合约是对标准ERC721合约的扩展
 
 pragma solidity ^0.5.0;
+
 import "OpenZeppelin/token/ERC721Full.sol";
 import "OpenZeppelin/token//ERC721Holder.sol";
-
 
 contract BaasBlock is ERC721Full, ERC721Holder {
   // 这是每一个721token的固定属性，铸造的时候设定
@@ -18,8 +18,7 @@ contract BaasBlock is ERC721Full, ERC721Holder {
 
   event tokenMinted(uint256 indexed tokenId, string property, string tokenUri);
   event memoAdded(uint256 indexed tokenId, string memo);
-  event transactionMemo(uint256 indexed tokenId, uint indexed blockNumber, string memo);
-  // event txMemoAdded(uint256 indexed tokenId, bytes32 indexed txHash, string memo);
+  event transactionMemo(uint256 indexed tokenId, string memo);
 
   /// @notice 设置一个token的属性
   /// @param _tokenId 唯一的通证id
@@ -49,14 +48,9 @@ contract BaasBlock is ERC721Full, ERC721Holder {
   function transferWithMemo(address _from, address _to, uint256 _tokenId, string memory _memo) public {
     transferFrom(_from, _to, _tokenId);
     if (bytes(_memo).length > 0) {
-      emit transactionMemo(_tokenId, block.number, _memo);
+      emit transactionMemo(_tokenId, _memo);
     }
   }
-
-  // function addTxMemo(uint256 _tokenId, bytes32 _txHash, string memory _memo) public {
-  //   require(bytes(_memo).length > 0, "empty string");
-  //   emit txMemoAdded(_tokenId, _txHash, _memo);
-  // }
 
   function mint(uint256 _tokenId, string memory _property, string memory _tokenUri) public {
     _mint(msg.sender, _tokenId);

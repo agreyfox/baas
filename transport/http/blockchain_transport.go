@@ -27,7 +27,7 @@ func (s *Server) handleCreateKey() http.Handler {
 
 		if err := payload.validate(); err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  "Password is not secure",
+				"error":  err.Error(),
 				"status": 0,
 			})
 			return
@@ -126,7 +126,7 @@ func (s *Server) handleGetKey() http.Handler {
 
 		if err := payload.validate(); err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  baas.ErrBaasParameterNotFound,
+				"error":  err.Error(),
 				"status": 0,
 			})
 			return
@@ -914,7 +914,7 @@ func (s *Server) handleGet721TokenMemoList() http.Handler {
 		}
 		list := make([]map[string]interface{}, 0)
 		err = json.Unmarshal([]byte(a), &list)
-		fmt.Println(list)
+		//fmt.Println(list)
 		resp := &map[string]interface{}{
 			"status": 1,
 			"data":   list,
@@ -934,7 +934,7 @@ func (s *Server) handleGetSend721TokenMemo() http.Handler {
 			return
 		}
 
-		if len(payload.BlockNumber) == 0 || len(payload.TokenId) == 0 || len(payload.Contract) == 0 {
+		if len(payload.Hash) == 0 { //|| len(payload.TokenId) == 0 || len(payload.Contract) == 0
 			RespondOK(w, map[string]interface{}{
 				"error":  baas.ErrBaasParameterNotFound,
 				"status": 0,
@@ -942,7 +942,45 @@ func (s *Server) handleGetSend721TokenMemo() http.Handler {
 			return
 		}
 
-		a, err := s.BlockService.GetSendErc721TokenMemos(r.Context(), payload.Contract, payload.TokenId, payload.BlockNumber)
+		a, err := s.BlockService.GetSendErc721TokenMemo(r.Context(), payload.Contract, payload.TokenId, payload.Hash)
+		if err != nil {
+			RespondOK(w, map[string]interface{}{
+				"error":  err.Error(),
+				"status": 0,
+			})
+			return
+		}
+
+		resp := &map[string]interface{}{
+			"status": 1,
+			"data": map[string]interface{}{
+				"memo": a,
+			},
+			"error": "",
+		}
+
+		RespondOK(w, resp)
+	})
+}
+
+// 调用erc721 send a toke to another address
+func (s *Server) handleGetUser721Token() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		payload := new(SmartContractOperation)
+		if err := json.NewDecoder(r.Body).Decode(payload); err != nil {
+			RespondError(w, err, http.StatusBadRequest, GetReqID(r))
+			return
+		}
+
+		if len(payload.UserId) == 0 || len(payload.Contract) == 0 {
+			RespondOK(w, map[string]interface{}{
+				"error":  baas.ErrBaasParameterNotFound,
+				"status": 0,
+			})
+			return
+		}
+
+		a, err := s.BlockService.GetUserErc721TokenList(r.Context(), payload.UserId, payload.Contract)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
 				"error":  err.Error(),
@@ -952,7 +990,13 @@ func (s *Server) handleGetSend721TokenMemo() http.Handler {
 		}
 		list := make([]map[string]interface{}, 0)
 		err = json.Unmarshal([]byte(a), &list)
-		fmt.Println(list)
+		if err != nil {
+			RespondOK(w, map[string]interface{}{
+				"error":  err.Error(),
+				"status": 0,
+			})
+			return
+		}
 		resp := &map[string]interface{}{
 			"status": 1,
 			"data":   list,

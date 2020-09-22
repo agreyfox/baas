@@ -205,8 +205,8 @@ func UnPadding(src []byte) []byte {
 			break
 		}
 	}
-	fmt.Print(fsrc[start : length-end])
-	return fsrc[start : length-end]
+	fmt.Print(fsrc[start+1 : length-end])
+	return fsrc[start+1 : length-end]
 
 }
 

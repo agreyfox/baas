@@ -33,6 +33,7 @@ func (r *createBaasUserRequest) validate() error {
 	}
 	if r.CipherText == "" || len(r.CipherText) < 8 {
 		color.Red("No CiperText, Will use system key")
+		return baas.ErrBaasCipherTextRequired
 	}
 	return nil
 }
@@ -92,6 +93,7 @@ type SmartContractOperation struct {
 	Property    string `json:"property"`
 	Memo        string `json:"memo"`
 	BlockNumber string `json:"blockNumber"`
+	Hash        string `json:"txHash"`
 }
 
 type TokenInfo struct {
