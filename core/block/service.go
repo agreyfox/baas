@@ -35,6 +35,7 @@ var (
 	Wei             = BigHelper.Exp(BigHelper, big.NewInt(18), nil)
 	Abi             abi.ABI
 	GasCheckMinimum = 0.001
+	GasPrice        int64
 )
 
 const (
@@ -61,7 +62,7 @@ func init() {
 		fmt.Println("721 abi parse failed,please check ")
 		return
 	}
-	fmt.Println("load 721 ABI success!")
+	fmt.Println("System load 721 ABI success!")
 }
 
 // block service first connect storm block chain service
@@ -79,7 +80,9 @@ func InitBlockService() {
 		fmt.Println(err)
 		os.Exit(-2)
 	}
+	GasPrice = int64(conf.Blockchain.GasPrice) // 设置gasPrice from configure file
 	fmt.Println("Blockchain backend service connected! \n Version ", version)
+	fmt.Printf("Blockchain backend service gas price set to %d!\n", GasPrice)
 }
 
 //return two array byte, first is 8 byte, second is 12 byte
@@ -358,16 +361,17 @@ func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, 
 			datalen = len(datappayload)
 		}
 	}
+	s.Log.Log().Msgf("Total data length is %d\n", datalen)
 	var maxGas = gas
 	if maxGas <= 0 {
 		maxGas = baas.OriginTokenOP
 	}
-	maxGas += int64(datalen) * 12
+	//maxGas += int64(datalen) * 12
 	tx := storm.T{
 		From:     from,
 		To:       to,
 		Gas:      int(maxGas), //baas.GasLimit + 3000 + datalen*6,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     datappayload,
 		Nonce:    nounce,
@@ -441,12 +445,12 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 	if maxGas <= 0 {
 		maxGas = baas.OriginTokenOP
 	}
-	maxGas += int64(len(msg)) * 12
+	//maxGas += int64(len(msg)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       to,
 		Gas:      int(maxGas),
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     msg,
 		Nonce:    nounce,
@@ -880,12 +884,12 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenOP
 	}
-	maxGas += int64(len(meta)+len(property)) * 12
+	//maxGas += int64(len(meta)+len(property)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas),
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -980,12 +984,12 @@ func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, 
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenOP
 	}
-	maxGas += int64(len(property)) * 12
+	//maxGas += int64(len(property)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC721Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -1152,12 +1156,12 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenOP
 	}
-	maxGas += int64(len(memo)) * 12
+	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC721Limit * 2,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -1367,12 +1371,12 @@ func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, cont
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenOP
 	}
-	maxGas += int64(len(memo)) * 12
+	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC721Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -1603,7 +1607,7 @@ func (s *Service) CreateERC721Contract(ctx context.Context, userid, pass, name, 
 	tx := storm.T{
 		From:     from,
 		Gas:      int(maxGas), //3000000, //baas.GasERC721Limit * 10,
-		GasPrice: big.NewInt(1000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    big.NewInt(0),
 		Data:     string(dataContract),
 		Nonce:    nounce,
@@ -1692,7 +1696,7 @@ func (s *Service) DeployERC20Contract(ctx context.Context, userid, password, nam
 	tx := storm.T{
 		From:     from,
 		Gas:      int(maxGas), //5000000,
-		GasPrice: big.NewInt(1000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    big.NewInt(0),
 		Data:     string(dataContract),
 		Nonce:    nounce,
@@ -1991,12 +1995,12 @@ func (s *Service) SendErc20Token(ctx context.Context, addr, password, toAddr, co
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenSend
 	}
-	maxGas += int64(len(memo)) * 12
+	//	maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasMsgLimit * 2,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -2115,7 +2119,7 @@ func (s *Service) ApproveErc20(ctx context.Context, addr, password, toAddr, cont
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), // baas.GasERC20Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -2298,7 +2302,7 @@ func (s *Service) IncreaseAllowanceErc20(ctx context.Context, addr, password, to
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC20Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -2418,7 +2422,7 @@ func (s *Service) DecresaseAllowanceErc20(ctx context.Context, addr, password, t
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC20Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -2578,7 +2582,7 @@ func (s *Service) TransferFromErc20(ctx context.Context, user, password, fromadd
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasMax,
-		GasPrice: big.NewInt(10000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodeforCall),
 		Nonce:    nounce,
@@ -2710,7 +2714,7 @@ func (s *Service) BurnErc20(ctx context.Context, addr, password, contract string
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC20Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -2806,7 +2810,7 @@ func (s *Service) PauseErc20(ctx context.Context, addr, password, contract strin
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC20Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
@@ -2958,7 +2962,7 @@ func (s *Service) MintErc20(ctx context.Context, addr, password, contract string
 		From:     from,
 		To:       contract,
 		Gas:      int(maxGas), //baas.GasERC20Limit,
-		GasPrice: big.NewInt(5000000000),
+		GasPrice: big.NewInt(GasPrice),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
 		Nonce:    nounce,
