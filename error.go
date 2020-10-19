@@ -43,8 +43,11 @@ const (
 const (
 	ErrBaasNoSuchUser            = Error("userId does not exist")
 	ErrBaasUserNameTaken         = Error("userId is already exist")
-	ErrBaasInvalidPassword       = Error("Invalid password")
-	ErrBaasParameterNotFound     = Error("Parameter is no valid")
+	ErrBaasInvalidPassword       = Error("invalid password")
+	ErrBaasParameterNotFound     = Error("parameter is no valid")
+	ErrBassContractCmdNotFound   = Error("invalid contract action")
+	ErrBaasInvalidQuantity       = Error("Quantity is invalid")
+	ErrBaasContractInValid       = Error("The Contract data is invalid")
 	ErrBaasApplicationIDRequired = Error("Application ID is required")
 	ErrBaasCipherTextRequired    = Error("invalid cipherText")
 	ErrBaasNotEnoughMoney        = Error("Account doesn't have enough gas")

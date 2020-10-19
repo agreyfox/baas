@@ -178,6 +178,81 @@ func (s *Server) routes() {
 	s.Handle(baasGetErc721TokenMemoList,
 		s.Authenticate(
 			s.handleGet721TokenMemoList())).Methods("POST")
+	const baasDeploy721 = "/api/baas/erc721/createContract"
+	s.Handle(baasDeploy721,
+		s.Authenticate(
+			s.handleDeploy721Contract())).Methods("POST")
+
+	//////////////////////////ERC20//////////////////////////////
+	const baasDeploy20 = "/api/baas/erc20/createToken"
+	s.Handle(baasDeploy20,
+		s.Authenticate(
+			s.handleDeploy20Token())).Methods("POST")
+
+	const baasGet20Info = "/api/baas/erc20/getContractInfo"
+	s.Handle(baasGet20Info,
+		s.Authenticate(
+			s.handleGet20Info())).Methods("POST")
+
+	const baasGet20Balance = "/api/baas/erc20/getBalance"
+	s.Handle(baasGet20Balance,
+		s.Authenticate(
+			s.handleGet20Balance())).Methods("POST")
+
+	const baasSend20 = "/api/baas/erc20/transfer"
+	s.Handle(baasSend20,
+		s.Authenticate(
+			s.handleSend20Token())).Methods("POST")
+
+	const baasApprove20 = "/api/baas/erc20/approve"
+	s.Handle(baasApprove20,
+		s.Authenticate(
+			s.handleApprove())).Methods("POST")
+
+	const baasAllowance = "/api/baas/erc20/allowance"
+	s.Handle(baasAllowance,
+		s.Authenticate(
+			s.handleAllowance())).Methods("POST")
+
+	const baasIncreaseAllowance = "/api/baas/erc20/increaseAllowance"
+	s.Handle(baasIncreaseAllowance,
+		s.Authenticate(
+			s.handleIncreaseAllowance())).Methods("POST")
+
+	const baasDecreaseAllowance = "/api/baas/erc20/decreaseAllowance"
+	s.Handle(baasDecreaseAllowance,
+		s.Authenticate(
+			s.handleDecreaseAllowance())).Methods("POST")
+
+	const baasTransferFrom = "/api/baas/erc20/transferFrom"
+	s.Handle(baasTransferFrom,
+		s.Authenticate(
+			s.handleTransferFrom())).Methods("POST")
+
+	const baasGetSend20Memo = "/api/baas/erc20/getTxMemo"
+	s.Handle(baasGetSend20Memo,
+		s.Authenticate(
+			s.handleGet20TxMemo())).Methods("POST")
+
+	const baasBurn20Token = "/api/baas/erc20/burnToken"
+	s.Handle(baasBurn20Token,
+		s.Authenticate(
+			s.handleBurn20Token())).Methods("POST")
+
+	const baasPause20Token = "/api/baas/erc20/pauseToken"
+	s.Handle(baasPause20Token,
+		s.Authenticate(
+			s.handlePause20Token())).Methods("POST")
+
+	const baasGet20Status = "/api/baas/erc20/getPauseStatus"
+	s.Handle(baasGet20Status,
+		s.Authenticate(
+			s.handleGet20PauseStatus())).Methods("POST")
+	const baasMint20Token = "/api/baas/erc20/mintToken"
+	s.Handle(baasMint20Token,
+		s.Authenticate(
+			s.handleMint20Token())).Methods("POST")
+
 	//////////////////////////////////////
 	//////get erc721   logs             //////
 	/////////////////////////////////////
@@ -204,7 +279,18 @@ func (s *Server) routes() {
 	s.Handle(baasGet721TokenUserTxList,
 		s.Authenticate(
 			s.GetErc721TokenTxListByUser())).Methods("POST")
+	//////////////////////////////////////
+	//////get erc20   logs             //////
+	/////////////////////////////////////
+	const baasGet20TxLog = "/api/baas/erc20/getTxList"
+	s.Handle(baasGet20TxLog,
+		s.Authenticate(
+			s.handleGet20TxList())).Methods("POST")
 
+	const baasGet20UserList = "/api/baas/erc20/getUserTxList"
+	s.Handle(baasGet20UserList,
+		s.Authenticate(
+			s.handleGet20UserTxList())).Methods("POST")
 	/////////////////////////////////
 	//other api methods
 	////////////////////////////////

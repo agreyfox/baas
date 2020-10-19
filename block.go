@@ -9,15 +9,22 @@ var ()
 
 const (
 	BlockEngine            = "http://127.0.0.1:8545"
+	GasMax                 = 90000000
 	GasLimit               = 21000
 	GasMsgLimit            = 1800000
-	GasERC20Limit          = 100000
+	GasERC20Limit          = 500000
 	GasERC721Limit         = 1000000
 	GasERC721TransferLimit = 100000
 )
 
 var (
-	BlockChainServer = BlockEngine
+	BlockChainServer        = BlockEngine
+	DelplyContractGas int64 = 3500000
+	OriginTokenOP     int64 = 545228
+	ERC20TokenOP      int64 = 10000
+	ERC20TokenSend    int64 = 500000
+	ERC721TokenOP     int64 = 500000
+	ERC721TokenSend   int64 = 500000
 )
 
 // ApplicationService defines the business logic for dealing with all aspects of an application.
@@ -31,26 +38,48 @@ type BlockService interface {
 	GetAddress(ctx context.Context, id, password string) (string, error)
 	RecoverKey(ctx context.Context, id string) (string, error)
 	GetBalance(ctx context.Context, addr string) (string, error)
-	SendToken(ctx context.Context, userid, password, toAddr, value, msg string) (string, error)
-	WriteMsg(ctx context.Context, addr, password, toAddr, msg string) (string, error)
-	ReadMsg(ctx context.Context, hash string) (string, string, error)
+	SendToken(ctx context.Context, userid, password, toAddr, value, msg, encode string, gas int64) (string, error)
+	WriteMsg(ctx context.Context, addr, password, toAddr, msg string, gas int64) (string, error)
+	ReadMsg(ctx context.Context, hash, encode string) (string, string, error)
 	GetTxByHash(ctx context.Context, hash string) (string, error)
-	GetErc20Balance(ctx context.Context, addr string) (string, error)
-	SendErc20Token(ctx context.Context, addr string) (string, error)
-	CreateErc20Token(ctx context.Context, addr string) (string, error)
+	//===================erc721 ====================================
 	GetErc721Info(ctx context.Context, addr string) (map[string]interface{}, error)
 	GetErc721Balance(ctx context.Context, addr, contractAddr string) (string, error)
 	GetErc721TotalSupply(ctx context.Context, addr string) (string, error)
-	CreateErc721Token(ctx context.Context, userid, password, addr, tokenid, meta, property string) (string, error)
-	SetErc721TokenProperty(ctx context.Context, userid, password, addr, tokenid, property string) (string, error)
+	CreateErc721Token(ctx context.Context, userid, password, addr, tokenid, meta, property string, gas int64) (string, error)
+	SetErc721TokenProperty(ctx context.Context, userid, password, addr, tokenid, property string, gas int64) (string, error)
 	GetErc721TokenProperty(ctx context.Context, addr, tokenid string) (string, error)
-	SendErc721Token(ctx context.Context, addr, password, contractaddr, tokeid, memo, targetuser string) (string, error)
+	SendErc721Token(ctx context.Context, addr, password, contractaddr, tokeid, memo, targetuser string, gas int64) (string, error)
 	GetSendErc721TokenMemo(ctx context.Context, contractaddr, tokeid, hash string) (string, error)
 	GetErc721MetaData(ctx context.Context, addr, tokenid string) (string, error)
-	AddErc721TokenMemo(ctx context.Context, user, password, contract, tokenid, memo string) (string, error)
+	AddErc721TokenMemo(ctx context.Context, user, password, contract, tokenid, memo string, gas int64) (string, error)
 	GetErc721TokenMemoList(ctx context.Context, contractaddr, tokenid string) (string, error)
 	GetUserErc721TokenList(ctx context.Context, userid, contractaddr string) (string, error)
+	CreateERC721Contract(ctx context.Context, userid, password, name, symbol, class string) (string, string, error) //user create new ERC721 contranct with type
+	//===================erc20 ====================================
+	DeployERC20Contract(ctx context.Context, userid, password, name, symbol, class string, totalsupply uint64, decimal uint8, capacity uint64) (string, string, error) //user create new ERC20 contranct with type
+	GetErc20TotalSupply(ctx context.Context, addr string) (string, error)
+	GetErc20Decimal(ctx context.Context, addr string) (string, error)
+	GetErc20Info(ctx context.Context, addr string) (map[string]interface{}, error)
+	GetErc20Balance(ctx context.Context, userid, addr string) (string, error)
+	SendErc20Token(ctx context.Context, addr, password, toAddr, contract, memo string, value float64, gas int64) (string, error)
+	ApproveErc20(ctx context.Context, addr, password, toAddr, contract string, value float64, gas int64) (string, error)
+	AllowanceErc20(ctx context.Context, addr, toAddr, contract string) (string, error)
+	IncreaseAllowanceErc20(ctx context.Context, addr, password, toAddr, contract string, value float64, gas int64) (string, error)
+	DecresaseAllowanceErc20(ctx context.Context, addr, password, toAddr, contract string, value float64, gas int64) (string, error)
+	GetErc20TxMemo(ctx context.Context, hash string) (string, error)
+	BurnErc20(ctx context.Context, addr, password, contract string, value float64, gas int64) (string, error)
+	PauseErc20(ctx context.Context, addr, password, contract string, value bool, gas int64) (string, error)
+	MintErc20(ctx context.Context, addr, password, contract string, value float64, gas int64) (string, error)
+	GetErc20PauseStatus(ctx context.Context, contract string) (string, error)
+	TransferFromErc20(ctx context.Context, user, password, fromaddr, toAddr, contract, memo string, value float64, gas int64) (string, error)
+	// ==================++Erc20 analysis
+	GetERC20TxByUserAddress(ctx context.Context, userid, contract, page, pagesize string) (string, error)
+	GetERC20TxList(ctx context.Context, contract, page, pagesize string) (string, error)
+	//CreateErc20Token(ctx context.Context, addr string) (string, error)
+	// The following the some statistics functions
 	//GetErc721Property(ctx context.Context, addr, tokenid string) (string, error)
+	//===================analysis and utility ====================================
 	GetTx(ctx context.Context, addr string) (*BlockTx, error)
 	GetBlockNumber(ctx context.Context) (string, error)
 	//FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (FileBlobStorage, error)
@@ -58,9 +87,9 @@ type BlockService interface {
 	GetTxByUserAddress(ctx context.Context, usrid, page, size string) (string, error)                     // query backend system for address tx record
 	GetPeerToPeerTxByUserAddress(ctx context.Context, usrid, targetid, page, size string) (string, error) // query backend system for address tx record
 	GetErc721TxList(ctx context.Context, addr, page, size string) (string, error)
-	GetErc721TokenTxList(ctx context.Context, addr, tokenid, page, size string) (string, error)
-	GetErc721TxListByUser(ctx context.Context, addr, userid, page, size string) (string, error)
-	GetErc721TokenTxListByUser(ctx context.Context, addr, tokenid, userid, page, size string) (string, error)
+	GetErc721TokenTxList(ctx context.Context, contract, tokenid, page, size string) (string, error)
+	GetErc721TxListByUser(ctx context.Context, userid, contract, page, size string) (string, error)
+	GetErc721TokenTxListByUser(ctx context.Context, userid, contract, tokenid, page, size string) (string, error)
 }
 
 // blockStorage handles communication with the database for handling block.

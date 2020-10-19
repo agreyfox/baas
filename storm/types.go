@@ -31,12 +31,13 @@ func (s *Syncing) UnmarshalJSON(data []byte) error {
 // T - input transaction object
 type T struct {
 	From     string
-	To       string
+	To       string `json:"to,omitempty"`
 	Gas      int
 	GasPrice *big.Int
 	Value    *big.Int
 	Data     string
 	Nonce    int
+
 }
 
 // MarshalJSON implements the json.Unmarshaler interface.

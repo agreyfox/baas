@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/agreyfox/baas"
 	"github.com/agreyfox/baas/storm"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,17 +19,14 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-const (
-	NetworkID = "4452999"
-)
+const ()
 
 // sign struct for raw message
 func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, error) {
 
 	pk, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
-		fmt.Errorf("%s", err)
-		return nil, err
+		return nil, fmt.Errorf("%s", err)
 	}
 
 	//publicKey := privateKey.Public()
@@ -48,17 +45,26 @@ func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, er
 	}
 	*/
 	value := st.Value //big.NewInt(1000000000000000000) // in wei (1 eth)
-	gasLimit := uint64(baas.GasMsgLimit)
+	//gasLimit := uint64(baas.GasMsgLimit)
+	gasLimit := uint64(st.Gas)
 	gasPrice := st.GasPrice // in units
 	/* gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	} */
-	toAddress := common.HexToAddress(st.To)
+	var toAddress common.Address
+
+	toAddress = common.HexToAddress(st.To)
+
 	//toAddress := common.HexToAddress("0x4592d8f8d7b001e72cb26a73e4fa1806a51ac79d")
 	var data []byte
 	data = []byte(st.Data)
-	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
+	var tx *types.Transaction
+	if len(st.To) > 0 {
+		tx = types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
+	} else {
+		tx = types.NewContractCreation(nonce, value, gasLimit, gasPrice, data) // for contract deployment
+	}
 
 	chainID, _ := storm.ParseBigInt(NetworkID)
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(&chainID), pk)
@@ -77,7 +83,7 @@ func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, er
 		return nil, err
 	}
 	//fmt.Println(txhash)
-	fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
+	fmt.Printf("===================>tx sent: %s", signedTx.Hash().Hex())
 
 	re, err := StormClient.EthGetTransactionReceipt(txhash)
 	var timeout int
@@ -87,7 +93,7 @@ func SignAndSendTx(st storm.T, privateKey string) (*storm.TransactionReceipt, er
 		timeout += 1
 		fmt.Printf("%d", timeout)
 	}
-	//fmt.Println(re, err)
+
 	return re, nil
 }
 
@@ -210,6 +216,37 @@ func UnPadding(src []byte) []byte {
 
 }
 
+func UnPaddingStr(src []byte) []byte {
+	if len(src) == 0 {
+		return src
+	}
+	fsrc := src
+	if src[0] == '0' && src[1] == 'x' {
+		fsrc = src[2:]
+	}
+	length := len(fsrc)
+	start := 0
+	for i := 0; i < length; i++ {
+		if fsrc[i] == 0 {
+			start++
+		} else {
+			break
+		}
+	}
+
+	end := 0
+	for j := 1; j < length; j++ {
+
+		if fsrc[length-j] == 0 {
+			end++
+		} else {
+			break
+		}
+	}
+	fmt.Print(fsrc[start : length-end])
+	return fsrc[start : length-end]
+
+}
 func IntStringToHex(str string) string {
 	//var n int64
 	n, err := strconv.ParseInt(str, 10, 64)
@@ -219,4 +256,20 @@ func IntStringToHex(str string) string {
 	}
 	//return []byte(strconv.FormatInt(n, 16))
 	return fmt.Sprintf("%#x", n)
+}
+
+func removeDecimal(origin, decimalstr string) string {
+	f, ok := big.NewFloat(0).SetString(origin)
+	if !ok {
+		return origin
+	}
+	dd, err := strconv.Atoi(decimalstr)
+	if err != nil {
+		fmt.Println("===========================Decimal error")
+		return origin
+	}
+
+	value := new(big.Float).Quo(f, big.NewFloat(math.Pow10(int(dd))))
+
+	return value.String()
 }

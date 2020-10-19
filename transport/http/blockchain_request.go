@@ -71,29 +71,49 @@ type listApplicationQueryParam struct {
 */
 
 type BlockOperation struct {
-	Opr        string `json:"op"`
-	Userid     string `json:"userId"`
-	Password   string `json:"password"`
-	Targetid   string `json:"toUserId"`
-	CipherText string `json:"cipherText"`
-	Message    string `json:"msg"`
-	Value      string `json:"quantity"`
-	Hash       string `json:"txHash"`
-	Size       string `json:"total"`
-	Page       string `json:"page"`
+	Opr        string  `json:"op"`
+	Userid     string  `json:"userId"`
+	Password   string  `json:"password"`
+	Targetid   string  `json:"toUserId"`
+	CipherText string  `json:"cipherText"`
+	Message    string  `json:"msg"`
+	Encode     string  `json:"encode"`
+	Value      float64 `json:"quantity"`
+	Hash       string  `json:"txHash"`
+	Size       string  `json:"total"`
+	Page       string  `json:"page"`
+	Contract   string  `json:"contract"`
+	TokenId    string  `json:"tokenId"`
+	GasLimit   int64   `json:"gasLimit"`
 }
 
 type SmartContractOperation struct {
-	Contract    string `json:"contract"`
-	Meta        string `json:"metadata"`
+	Contract    string  `json:"contract"`
+	Meta        string  `json:"metadata"`
+	UserId      string  `json:"userId"`
+	Password    string  `json:"password"`
+	TokenId     string  `json:"tokenId"`
+	SendUserId  string  `json:"sendUserId"`
+	TargetId    string  `json:"toUserId"`
+	Property    string  `json:"property"`
+	Memo        string  `json:"memo"`
+	BlockNumber string  `json:"blockNumber"`
+	Hash        string  `json:"txHash"`
+	Quantity    float64 `json:"quantity"`
+	Action      string  `json:"action"`
+	GasLimit    int64   `json:"gasLimit"`
+}
+
+type DeployOperation struct {
+	Name        string `json:"name"`
 	UserId      string `json:"userId"`
 	Password    string `json:"password"`
-	TokenId     string `json:"tokenId"`
-	TargetId    string `json:"toUserId"`
-	Property    string `json:"property"`
-	Memo        string `json:"memo"`
-	BlockNumber string `json:"blockNumber"`
-	Hash        string `json:"txHash"`
+	Symbol      string `json:"symbol"`
+	Decimal     uint8  `json:"decimals"`
+	TotalSupply uint64 `json:"totalSupply"`
+	Capacity    uint64 `json:"cap"`
+	Class       uint8  `json:"type"`
+	Description string `json:"desc"`
 }
 
 type TokenInfo struct {

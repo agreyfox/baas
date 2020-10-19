@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"net/http"
 	"os"
@@ -37,12 +38,11 @@ var (
 )
 
 const (
-	BackEndGetAddressTx = "http://dao.moacchain.net/api/v1/wallets/%s/tx"
-	BackEndPeerToPeerTx = "http://dao.moacchain.net/api/v1/wallets/%s/%s/txfilter"
-
-	ContractABI = "[{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"memoAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"property\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"tokenUri\",\"type\":\"string\"}],\"name\":\"tokenMinted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"memo\",\"type\":\"string\"}],\"name\":\"transactionMemo\",\"type\":\"event\"},{\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_memo\",\"type\":\"string\"}],\"name\":\"addMemo\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"}],\"name\":\"getProperty\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_property\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_tokenUri\",\"type\":\"string\"}],\"name\":\"mint\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC721Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"property\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_property\",\"type\":\"string\"}],\"name\":\"setProperty\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenOfOwnerByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_memo\",\"type\":\"string\"}],\"name\":\"transferWithMemo\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
-	Sign721Log1 = "0x123392ef4dfc825252c018e5fdcbb56bd895e4f681eba5e936e164009a05f435"
-	Sign721Log2 = "0x4a62fa304d9a5993f36546283e9d483bc1cb4909a24a0bb0104fb47505caea20"
+	BackEndGetAddressTx      = "http://dao.moacchain.net/api/v1/wallets/%s/tx"
+	BackEndPeerToPeerTx      = "http://dao.moacchain.net/api/v1/wallets/%s/%s/txfilter"
+	BackEndPeerToERC20Tx     = "http://dao.moacchain.net/api/v1/wallets/%s/%s/tx"
+	BackEndPeerToERC721Tx    = "http://dao.moacchain.net/api/v1/wallets/%s/%s/tx"
+	BackEndPeerERC721TokenTx = "http://dao.moacchain.net/api/v1/erc721/%s/%s/%s/tokentx"
 )
 
 type Service struct {
@@ -56,12 +56,12 @@ type Service struct {
 
 func init() {
 	var err error
-	Abi, err = abi.JSON(strings.NewReader(ContractABI))
+	Abi, err = abi.JSON(strings.NewReader(getBaas721ABI()))
 	if err != nil {
 		fmt.Println("721 abi parse failed,please check ")
 		return
 	}
-	fmt.Println(Abi)
+	fmt.Println("load 721 ABI success!")
 }
 
 // block service first connect storm block chain service
@@ -298,8 +298,9 @@ func (s *Service) DecryptKey(origin, cipherFromWeb, cipherFromDb, rv, salt strin
 
 }
 
-func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, msg string) (string, error) {
+func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, msg, encode string, gas int64) (string, error) {
 	var err error
+
 	from := addr
 	to := toAddr
 	var frompk, rv, salt, cipher string
@@ -335,18 +336,37 @@ func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, 
 	amount := FloatToBigInt(vv)
 	var datappayload string
 	var datalen int
-	if len(msg) > 0 {
-		datappayload = msg
-		datalen = len(datappayload)
-	} else {
-		datappayload = ""
-		datalen = 0
+	if encode == "utf8" {
+		if len(msg) > 0 {
+			datappayload = msg
+			datalen = len(datappayload)
+		} else {
+			datappayload = ""
+			datalen = 0
+		}
+	} else if encode == "hex" {
+		if len(msg) > 0 {
+
+			//dt := common.HexToHash(msg)
+			//dt, _ := hex.DecodeString(msg)
+			ma := common.Hex2Bytes(msg)
+			//dt := common.HexToAddress(msg)
+			//mm := UnPaddingStr(dt.Bytes())
+			//fmt.Println(mm, ma)
+			datappayload = string(ma) //string(dt) //common.Bytes2Hex(dt)
+			//datappayload = string(dt.Bytes())
+			datalen = len(datappayload)
+		}
 	}
-	//fmt.Println(storm.BigToHex(vv))
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.OriginTokenOP
+	}
+	maxGas += int64(datalen) * 12
 	tx := storm.T{
 		From:     from,
 		To:       to,
-		Gas:      baas.GasLimit + 3000 + datalen*6,
+		Gas:      int(maxGas), //baas.GasLimit + 3000 + datalen*6,
 		GasPrice: big.NewInt(5000000000),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     datappayload,
@@ -381,7 +401,7 @@ func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, 
 
 }
 
-func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg string) (string, error) {
+func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg string, gas int64) (string, error) {
 	var err error
 	from := addr
 	to := toAddr
@@ -417,11 +437,15 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 	vv, err := strconv.ParseFloat("0", 64)
 
 	amount := FloatToBigInt(vv)
-
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.OriginTokenOP
+	}
+	maxGas += int64(len(msg)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       to,
-		Gas:      baas.GasMsgLimit,
+		Gas:      int(maxGas),
 		GasPrice: big.NewInt(5000000000),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     msg,
@@ -456,7 +480,7 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 }
 
 /// read msg from blockchain
-func (s *Service) ReadMsg(ctx context.Context, hash string) (string, string, error) {
+func (s *Service) ReadMsg(ctx context.Context, hash, encode string) (string, string, error) {
 	var tm string
 	tx, err := StormClient.EthGetTransactionByHash(hash)
 	if err != nil {
@@ -464,7 +488,13 @@ func (s *Service) ReadMsg(ctx context.Context, hash string) (string, string, err
 		return "", "", err
 	}
 	//fmt.Println(tx)
-	retstr, _ := hex.DecodeString(tx.Input[2:]) //remove 0x
+	var retstr []byte
+	if encode == "utf8" {
+		retstr, _ = hex.DecodeString(tx.Input[2:]) //remove 0x
+	} else if encode == "hex" {
+		retstr = []byte(tx.Input)
+	}
+
 	if *tx.BlockNumber > 0 {
 		block, err := StormClient.EthGetBlockByNumber(*tx.BlockNumber, false)
 		if err == nil {
@@ -599,10 +629,106 @@ func (s *Service) GetPeerToPeerTxByUserAddress(ctx context.Context, usrid, targe
 	return "", errors.New("No result return")
 }
 
-func (s *Service) GetErc20Balance(ctx context.Context, addr string) (string, error) { return "", nil }
+// return erc20 a user tx list
+func (s *Service) GetERC20TxByUserAddress(ctx context.Context, userid, contract, page, pagesize string) (string, error) {
+	var err error
+	address := userid
 
-func (s *Service) SendErc20Token(ctx context.Context, addr string) (string, error)   { return "", nil }
-func (s *Service) CreateErc20Token(ctx context.Context, addr string) (string, error) { return "", nil }
+	if !strings.HasPrefix(address, "0x") {
+		address, _, _, _, _, err = s.BlockStorage.GetAddressByService(ctx, userid, "")
+		if err != nil {
+			s.Log.Err(err).Msg("From User id is not found")
+			return "", err
+		}
+	}
+
+	url := fmt.Sprintf(BackEndPeerToERC20Tx, address, contract)
+	url += fmt.Sprintf("?page=%s", page)
+	fmt.Println("backend url for user call erc20 tx: ", url)
+	resp, err := http.Get(url)
+
+	if err != nil {
+		s.Log.Err(err).Msg("Backend system error!")
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		s.Log.Err(err).Msg("Backend system return data error!")
+		return "", err
+	}
+	result := map[string]interface{}{}
+	err = json.Unmarshal(body, &result)
+
+	if err != nil {
+		s.Log.Err(err).Msg("Backend system return data error!")
+		return "", err
+	}
+
+	code, ok := result["statusCode"].(string)
+	if ok {
+		if code == "1" {
+			dataArray := result["data"]
+			datastr, err := json.Marshal(dataArray)
+			if err != nil {
+				s.Log.Err(err).Msg("Backend system return data error!")
+				return "", err
+			}
+			return string(datastr), nil
+
+		}
+	}
+	return "", errors.New("No result return")
+}
+
+func (s *Service) GetERC20TxList(ctx context.Context, contract, page, pagesize string) (string, error) {
+	var err error
+	//address := contract
+
+	url := fmt.Sprintf(BackEndPeerToERC20Tx, "*", contract)
+	url += fmt.Sprintf("?page=%s", page)
+	fmt.Println("backend url for all erc20  txs: ", url)
+	resp, err := http.Get(url)
+
+	if err != nil {
+		s.Log.Err(err).Msg("Backend system error!")
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		s.Log.Err(err).Msg("Backend system return data error!")
+		return "", err
+	}
+	result := map[string]interface{}{}
+	err = json.Unmarshal(body, &result)
+
+	if err != nil {
+		s.Log.Err(err).Msg("Backend system return data error!")
+		return "", err
+	}
+
+	code, ok := result["statusCode"].(string)
+	if ok {
+		if code == "1" {
+			dataArray := result["data"]
+			datastr, err := json.Marshal(dataArray)
+			if err != nil {
+				s.Log.Err(err).Msg("Backend system return data error!")
+				return "", err
+			}
+			return string(datastr), nil
+
+		}
+	}
+	return "", errors.New("No result return")
+}
 func (s *Service) GetErc721Balance(ctx context.Context, addr, contractAddr string) (string, error) {
 	address, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, addr, "")
 	if err != nil {
@@ -654,6 +780,7 @@ func decodeHex(s string) []byte {
 
 	return b
 }
+
 func (s *Service) GetErc721TotalSupply(ctx context.Context, addr string) (string, error) {
 
 	//datamethod, err := sha3.New([]byte("totalSupply()"))
@@ -684,7 +811,7 @@ func (s *Service) GetErc721TotalSupply(ctx context.Context, addr string) (string
 	//	return "", nil
 }
 
-func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contract, tokenid, meta, property string) (string, error) {
+func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contract, tokenid, meta, property string, gas int64) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
 	if err != nil {
@@ -749,10 +876,15 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 		return "", err
 	}
 	//fmt.Println(dataEncodefor721Call)
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC721TokenOP
+	}
+	maxGas += int64(len(meta)+len(property)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
-		Gas:      baas.GasERC721Limit,
+		Gas:      int(maxGas),
 		GasPrice: big.NewInt(5000000000),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
@@ -786,7 +918,7 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 	return "", nil
 }
 
-func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, contract, tokenid, property string) (string, error) {
+func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, contract, tokenid, property string, gas int64) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
 	if err != nil {
@@ -843,11 +975,16 @@ func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, 
 	if err != nil {
 		return "", err
 	}
-	//fmt.Println(dataEncodefor721Call)
+
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC721TokenOP
+	}
+	maxGas += int64(len(property)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
-		Gas:      baas.GasERC721Limit,
+		Gas:      int(maxGas), //baas.GasERC721Limit,
 		GasPrice: big.NewInt(5000000000),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
@@ -926,7 +1063,7 @@ func (s *Service) GetErc721Info(ctx context.Context, addr string) (map[string]in
 }
 
 //send a 721 to other
-func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tokenid, memo, targetid string) (string, error) {
+func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tokenid, memo, targetid string, gas int64) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, pass)
 	if err != nil {
@@ -1011,11 +1148,15 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	if err != nil {
 		return "", err
 	}
-	//fmt.Println(dataEncodefor721Call)
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC721TokenOP
+	}
+	maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
-		Gas:      baas.GasERC721Limit * 2,
+		Gas:      int(maxGas), //baas.GasERC721Limit * 2,
 		GasPrice: big.NewInt(5000000000),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
@@ -1065,8 +1206,8 @@ func (s *Service) GetSendErc721TokenMemo(ctx context.Context, contractaddr, toke
 	//hash.Write([]byte{0xcc})
 	hash.Write([]byte("transactionMemo(uint256,string)"))
 	buf = hash.Sum(nil)
-	fmt.Println(hex.EncodeToString(buf[:]))
-	fmt.Println(Sign721Log1)
+	//fmt.Println(hex.EncodeToString(buf[:]))
+	//fmt.Println(Sign721Log1)
 	opcode := "0x" + hex.EncodeToString(buf[:])
 	//tx, err := StormClient.EthGetLogs(filter)
 	tx, err := StormClient.EthGetTransactionReceipt(txhash) //tx is filter id
@@ -1075,7 +1216,7 @@ func (s *Service) GetSendErc721TokenMemo(ctx context.Context, contractaddr, toke
 	}
 	logs := tx.Logs
 	var retMemo string
-	fmt.Println(logs)
+	//fmt.Println(logs)
 	for i := 0; i < len(logs); i++ {
 		if logs[i].Topics[0] == opcode {
 			dd := []byte(logs[i].Data)
@@ -1165,7 +1306,7 @@ func (s *Service) GetErc721TokenMemoList(ctx context.Context, contractaddr, toke
 }
 
 // add memo to a 721 token
-func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, contract, tokenid, memo string) (string, error) {
+func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, contract, tokenid, memo string, gas int64) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
 	if err != nil {
@@ -1222,11 +1363,15 @@ func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, cont
 	if err != nil {
 		return "", err
 	}
-	//fmt.Println(dataEncodefor721Call)
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC721TokenOP
+	}
+	maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
-		Gas:      baas.GasERC721Limit,
+		Gas:      int(maxGas), //baas.GasERC721Limit,
 		GasPrice: big.NewInt(5000000000),
 		Value:    amount, //big.NewInt(1000000000000000000),
 		Data:     string(dataEncodefor721Call),
@@ -1416,13 +1561,1446 @@ func (s *Service) GetUserErc721TokenList(ctx context.Context, userid, contractad
 	return string(outputstr), err
 }
 
+//Create new 721 token
+func (s *Service) CreateERC721Contract(ctx context.Context, userid, pass, name, symbol, class string) (string, string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, pass)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", "", err
+	}
+
+	s.Log.Debug().Msgf(" try to create new 721 contract with name: %s symbol:%s to addr:%s and type %s", userid, name, symbol, class)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", "", err
+	}
+
+	dataContract := getBaas721Code()
+
+	if err != nil {
+		return "", "", err
+	}
+
+	mm, err := Abi.Constructor.Inputs.PackValues([]interface{}{name, symbol})
+
+	dataContract = append(dataContract, mm...)
+	var maxGas int64
+
+	maxGas = baas.DelplyContractGas
+
+	tx := storm.T{
+		From:     from,
+		Gas:      int(maxGas), //3000000, //baas.GasERC721Limit * 10,
+		GasPrice: big.NewInt(1000000000),
+		Value:    big.NewInt(0),
+		Data:     string(dataContract),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, userid)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", userid)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to deploy  721")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, "", errors.New("Transaction failed")
+		}
+		return t.ContractAddress, t.TransactionHash, nil
+	} else {
+		s.Log.Err(err).Msg("Deploy 721 Contract  return error")
+		return "", "", ee
+	}
+
+}
+
+//user create new ERC20 contranct with type
+func (s *Service) DeployERC20Contract(ctx context.Context, userid, password, name, symbol, class string, total uint64, decimal uint8, capacity uint64) (string, string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, userid, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", "", err
+	}
+
+	s.Log.Debug().Msgf(" try to create new 20 contract with name: %s symbol:%s to addr:%s and type %s,decimal %d,capacity:%d", userid, name, symbol, class, decimal, capacity)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", "", err
+	}
+
+	erc20Abi, err := abi.JSON(strings.NewReader(getBaas20ABIStr(class)))
+	if err != nil {
+
+		return "", "", fmt.Errorf("erc20 abi parse failed,please check")
+	}
+
+	dataContract := getBaas20Code(class)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	var mm []byte
+	if class == "4" {
+		mm, err = erc20Abi.Constructor.Inputs.PackValues([]interface{}{name, symbol, decimal, big.NewInt(int64(total)), big.NewInt(int64(capacity))})
+	} else {
+		mm, err = erc20Abi.Constructor.Inputs.PackValues([]interface{}{name, symbol, decimal, big.NewInt(int64(total))})
+	}
+
+	dataContract = append(dataContract, mm...)
+	var maxGas int64
+
+	maxGas = baas.DelplyContractGas
+	tx := storm.T{
+		From:     from,
+		Gas:      int(maxGas), //5000000,
+		GasPrice: big.NewInt(1000000000),
+		Value:    big.NewInt(0),
+		Data:     string(dataContract),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, userid)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", userid)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to deploy erc20")
+			}
+		}
+		if t.Status == "0x0" {
+			return "", t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.ContractAddress, t.TransactionHash, nil
+	} else {
+		s.Log.Err(err).Msg("Deploy 20 Contract  return error")
+		return "", "", ee
+	}
+}
+
+func (s *Service) GetErc20TotalSupply(ctx context.Context, addr string) (string, error) {
+
+	hash := sha3.NewLegacyKeccak256()
+
+	var buf []byte
+	//hash.Write([]byte{0xcc})
+	hash.Write([]byte("totalSupply()"))
+	buf = hash.Sum(nil)
+
+	//fmt.Println(buf)
+
+	callpara := storm.T{
+		From: addr,
+		To:   addr,
+		Data: "0x" + hex.EncodeToString(buf[0:10]),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	var balance *big.Int
+	var returns = common.FromHex(tx)
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	err = erc20Abi.Unpack(&balance, "totalSupply", returns)
+	decimalstr, err := s.GetErc20Decimal(ctx, addr)
+	//fmt.Println(balance.Text(10))
+	return removeDecimal(balance.Text(10), decimalstr), err
+
+}
+
+func (s *Service) GetErc20Decimal(ctx context.Context, addr string) (string, error) {
+
+	hash := sha3.NewLegacyKeccak256()
+
+	var buf []byte
+	//hash.Write([]byte{0xcc})
+	hash.Write([]byte("decimals()"))
+	buf = hash.Sum(nil)
+
+	//fmt.Println(buf)
+
+	callpara := storm.T{
+		From: addr,
+		To:   addr,
+		Data: "0x" + hex.EncodeToString(buf[0:10]),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return "", err
+	}
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	var dd uint8
+	var returns = common.FromHex(tx)
+	err = erc20Abi.Unpack(&dd, "decimals", returns)
+
+	return fmt.Sprint(dd), err
+
+}
+
+func (s *Service) GetErc20Info(ctx context.Context, addr string) (map[string]interface{}, error) {
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	supply, err := s.GetErc20TotalSupply(ctx, addr)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	hash := sha3.NewLegacyKeccak256()
+
+	var buf []byte
+	hash.Write([]byte("name()"))
+	buf = hash.Sum(nil)
+
+	callpara := storm.T{
+		From: addr,
+		To:   addr,
+		Data: "0x" + hex.EncodeToString(buf[0:10]),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	nameb := new(string)
+	var returns = common.FromHex(tx)
+	err = erc20Abi.Unpack(&nameb, "name", returns)
+
+	hashsymbol := sha3.NewLegacyKeccak256()
+
+	hashsymbol.Write([]byte("symbol()"))
+	buf = hashsymbol.Sum(nil)
+
+	callpara2 := storm.T{
+		From: addr,
+		To:   addr,
+		Data: "0x" + hex.EncodeToString(buf[0:10]),
+	}
+	tx, err = StormClient.EthCall(callpara2, "latest")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	symbol := new(string)
+	returns = common.FromHex(tx)
+	erc20Abi.Unpack(&symbol, "symbol", returns)
+	dd, err := s.GetErc20Decimal(ctx, addr)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	//decimal, _ := strconv.Atoi(dd)
+
+	//amount, _ := big.NewFloat(0).SetString(supply)
+	//deci := big.NewFloat(0).SetFloat64(math.Pow10(decimal))
+	//realSupply := big.NewFloat(0).Quo(amount, deci)
+
+	return map[string]interface{}{"name": nameb, "symbol": *symbol, "supply": supply, "decimals": dd}, err
+}
+
+// get user in erc20 contract hash
+func (s *Service) GetErc20Balance(ctx context.Context, userid, addr string) (string, error) {
+	address, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, userid, "")
+	if err != nil {
+		s.Log.Err(err).Msg("From User id is not found")
+		return "", err
+	}
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	m, exists := erc20Abi.Methods["balanceOf"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(address, &m.Inputs[0])
+	if err != nil {
+		err := errors.New(fmt.Sprintf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err))
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+
+	callpara := storm.T{
+		From: address,
+		To:   addr,
+		Data: hexutil.Encode(dataEncodefor721Call),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	var balance *big.Int
+	var returns = common.FromHex(tx)
+	err = erc20Abi.Unpack(&balance, "balanceOf", returns)
+	//fmt.Println(balance)
+	decimalstr, err := s.GetErc20Decimal(ctx, addr)
+	decimal, _ := strconv.Atoi(decimalstr)
+	f := new(big.Float).SetInt(balance)
+	d := big.NewFloat(math.Pow10(decimal))
+	return f.Quo(f, d).String(), err
+}
+
+// send erc20 token to others
+
+func (s *Service) SendErc20Token(ctx context.Context, addr, password, toAddr, contract, memo string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, toAddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+	fmt.Printf("%s try to send erc20 token %s to addr:%s", from, contract, toAddress)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+	if len(memo) == 0 {
+		m, exists = erc20Abi.Methods["transfer"]
+	} else {
+		m, exists = erc20Abi.Methods["transferWithMemo"]
+	}
+
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+	v1, v2 := big.NewFloat(math.Pow10(decimal)), big.NewFloat(value)
+	v3 := v1.Mul(v1, v2)
+	v3Str := v3.Text('f', 0)
+	vinput, _ := big.NewInt(0).SetString(v3Str, 10) //(int64(value * math.Pow10(decimal)))
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(toAddress, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+	v, err = paramDecode(vinput.String(), &m.Inputs[1])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	if len(memo) > 0 {
+		v, err = paramDecode(memo, &m.Inputs[2])
+		if err != nil {
+			err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 3, m.Inputs[2].Name, err)
+			return "", err
+		}
+		method_params = append(method_params, v)
+	}
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenSend
+	}
+	maxGas += int64(len(memo)) * 12
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasMsgLimit * 2,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("Send toke return error")
+		return "", ee
+	}
+
+}
+
+// ERC20 Approve interface
+func (s *Service) ApproveErc20(ctx context.Context, addr, password, toAddr, contract string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, toAddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+	fmt.Printf("%s try to send erc20 token %s to addr:%s", from, contract, toAddress)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+
+	m, exists = erc20Abi.Methods["approve"]
+
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+	v1, v2 := big.NewFloat(math.Pow10(decimal)), big.NewFloat(value)
+	v3 := v1.Mul(v1, v2)
+	v3str := v3.Text('f', 0)
+	fmt.Println(v3str)
+	vinput, _ := big.NewInt(0).SetString(v3str, 10)
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(toAddress, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+	v, err = paramDecode(vinput.String(), &m.Inputs[1])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+	//dataEncodeFor20Call, err := m.Inputs.PackValues([]interface{}{toAddress, vinput.String()})
+	if err != nil {
+		return "", err
+	}
+	//fmt.Println(dataEncodefor721Call)
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenOP
+	}
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), // baas.GasERC20Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("Send toke return error")
+		return "", ee
+	}
+
+}
+
+func (s *Service) AllowanceErc20(ctx context.Context, addr, toAddr, contract string) (string, error) {
+	from, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, addr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Send User id is not found")
+		return "", err
+	}
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, toAddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	m, exists := erc20Abi.Methods["allowance"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(from, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	v, err = paramDecode(toAddress, &m.Inputs[1])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor20Call, err := erc20Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+
+	callpara := storm.T{
+		From: toAddress,
+		To:   contract,
+		Data: hexutil.Encode(dataEncodefor20Call),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return "", err
+	}
+	var amount *big.Int
+	var returns = common.FromHex(tx)
+
+	//nameb := new(string)
+	//	returns := common.FromHex(tx)
+	decimalstr, _ := s.GetErc20Decimal(ctx, contract)
+
+	err = erc20Abi.Unpack(&amount, "allowance", returns)
+
+	return removeDecimal(amount.String(), decimalstr), err
+	//return amount.String(), err
+
+}
+
+// ERC20 Approve interface
+func (s *Service) IncreaseAllowanceErc20(ctx context.Context, addr, password, toAddr, contract string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, toAddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+	fmt.Printf("%s try to send erc20 token %s to addr:%s", from, contract, toAddress)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+
+	m, exists = erc20Abi.Methods["increaseAllowance"]
+
+	if !exists {
+		return "", fmt.Errorf("contract method not exists")
+	} else {
+		fmt.Println("Function is expected", m)
+	}
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+	v1 := big.NewFloat(math.Pow10(decimal))
+	v2 := big.NewFloat(0).SetFloat64(value)
+	v3 := v1.Mul(v1, v2)
+	v4 := v3.Text('f', 0)
+	vinput, _ := big.NewInt(0).SetString(v4, 10)
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(toAddress, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+	v, err = paramDecode(vinput.String(), &m.Inputs[1])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+	//dataEncodeFor20Call, err := m.Inputs.PackValues([]interface{}{toAddress, vinput.String()})
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenOP
+	}
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasERC20Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("Send toke return error")
+		return "", ee
+	}
+
+}
+
+// ERC20 Approve interface
+func (s *Service) DecresaseAllowanceErc20(ctx context.Context, addr, password, toAddr, contract string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, toAddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+	fmt.Printf("%s try to send erc20 token %s to addr:%s", from, contract, toAddress)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+
+	m, exists = erc20Abi.Methods["decreaseAllowance"]
+
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+
+	v1 := big.NewFloat(math.Pow10(decimal))
+	v2 := big.NewFloat(0).SetFloat64(value)
+	v3 := v1.Mul(v1, v2)
+	v4 := v3.Text('f', 0)
+	vinput, _ := big.NewInt(0).SetString(v4, 10)
+	//vinput := big.NewInt(int64(value * math.Pow10(decimal)))
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(toAddress, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+	v, err = paramDecode(vinput.String(), &m.Inputs[1])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+	//dataEncodeFor20Call, err := m.Inputs.PackValues([]interface{}{toAddress, vinput.String()})
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenOP
+	}
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasERC20Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("Send toke return error")
+		return "", ee
+	}
+
+}
+
+func (s *Service) TransferFromErc20(ctx context.Context, user, password, fromaddr, toAddr, contract, memo string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, user, password)
+	//fmt.Println(frompk)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+	//fmt.Println(frompk)
+	fromAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, fromaddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, toAddr, "")
+	if err != nil {
+		s.Log.Err(err).Msg("Target User id is not found")
+		return "", err
+	}
+	fmt.Printf("%s try to transfer erc20 token %s from %s to addr:%s", from, contract, fromAddress, toAddress)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("1")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+	if len(memo) == 0 {
+		m, exists = erc20Abi.Methods["transferFrom"]
+	} else {
+		m, exists = erc20Abi.Methods["transferFromWithMemo"]
+	}
+
+	if exists {
+		fmt.Println("Function is expected", m)
+	}
+
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+
+	v1 := big.NewFloat(math.Pow10(decimal))
+	v2 := big.NewFloat(0).SetFloat64(value)
+	v3 := v1.Mul(v1, v2)
+	v4 := v3.Text('f', 0)
+	vinput, _ := big.NewInt(0).SetString(v4, 10)
+	var dataEncodeforCall []byte
+	fmt.Println(m.RawName)
+	/* if len(memo) == 0 {
+		dataEncodeforCall, err = m.Inputs.PackValues([]interface{}{common.HexToAddress(fromAddress), common.HexToAddress(toAddress), vinput})
+	} else {
+		dataEncodeforCall, err = m.Inputs.PackValues([]interface{}{common.HexToAddress(fromAddress), common.HexToAddress(toAddress), vinput, memo})
+	}
+
+	if err != nil {
+		return "", err
+	} */
+	//vinput := big.NewInt(int64(value * math.Pow10(decimal)))
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(fromAddress, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	v, err = paramDecode(toAddress, &m.Inputs[1])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	v, err = paramDecode(vinput.String(), &m.Inputs[2])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 2, m.Inputs[2].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	if len(memo) > 0 {
+		v, err = paramDecode(memo, &m.Inputs[3])
+		if err != nil {
+			err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 3, m.Inputs[3].Name, err)
+			return "", err
+		}
+		method_params = append(method_params, v)
+	}
+
+	dataEncodeforCall, err = erc20Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenSend
+	}
+	maxGas += int64(len(memo)) * 12
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasMax,
+		GasPrice: big.NewInt(10000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodeforCall),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, user)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", err)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("TransferFrom toke return error")
+		return "", ee
+	}
+}
+
+func (s *Service) GetErc20TxMemo(ctx context.Context, hash string) (string, error) {
+	tx, err := StormClient.EthGetTransactionReceipt(hash) //tx is filter id
+	if err != nil {
+		return "", err
+	}
+	logs := tx.Logs
+	var retMemo string
+	//fmt.Println(logs)
+	for i := 0; i < len(logs); i++ {
+		if logs[i].Topics[0] == "0x35fad523fac4c32a939871d91c2d88ee509d2f04fdb4e41ad07d8bb7b96e490d" {
+			dd := []byte(logs[i].Data)
+			fmt.Println(string(dd))
+			if len(dd) < 64 {
+				return "", fmt.Errorf("no memo")
+			}
+			mm, _ := hex.DecodeString(string(dd[128:]))
+			mm = UnPadding(mm)
+			retMemo = fmt.Sprint(string(mm))
+			break
+		}
+	}
+
+	return retMemo, err
+
+}
+
+func (s *Service) BurnErc20(ctx context.Context, addr, password, contract string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("%s try to Burn erc20 token %s to addr:%s", from, contract)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("2")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+
+	m, exists = erc20Abi.Methods["burn"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	} else {
+		return "", fmt.Errorf("contract method is not support")
+	}
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+	v1, v2 := big.NewFloat(math.Pow10(decimal)), big.NewFloat(value)
+	v3 := v1.Mul(v1, v2)
+	v3str := v3.Text('f', 0)
+	//	fmt.Println(v3str)
+	vinput, _ := big.NewInt(0).SetString(v3str, 10)
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(vinput.String(), &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenOP
+	}
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasERC20Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx burn erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("burn token return error")
+		return "", ee
+	}
+}
+func (s *Service) PauseErc20(ctx context.Context, addr, password, contract string, value bool, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("%s try to pause erc20 token %s to addr:%s status:%v", from, contract, value)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("2")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+	if value {
+		m, exists = erc20Abi.Methods["pause"]
+	} else {
+		m, exists = erc20Abi.Methods["unpause"]
+	}
+
+	if exists {
+		fmt.Println("Function is expected", m)
+	} else {
+		return "", fmt.Errorf("contract method is not support")
+	}
+
+	method_params := make([]interface{}, 0, 8)
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenOP
+	}
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasERC20Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx puase erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("puase token return error")
+		return "", ee
+	}
+}
+
+func (s *Service) GetErc20PauseStatus(ctx context.Context, contract string) (string, error) {
+
+	erc20Abi, err := getBaas20ABI("2")
+	if err != nil {
+		return "", err
+	}
+	m, exists := erc20Abi.Methods["paused"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	} else {
+		return "", fmt.Errorf("contract method is not support")
+	}
+
+	method_params := make([]interface{}, 0, 8)
+
+	dataEncodefor20Call, err := erc20Abi.Pack(m.Name, method_params...)
+	if err != nil {
+		return "", err
+	}
+
+	callpara := storm.T{
+		From: contract,
+		To:   contract,
+		Data: hexutil.Encode(dataEncodefor20Call),
+	}
+	tx, err := StormClient.EthCall(callpara, "latest")
+	if err != nil {
+		return "", err
+	}
+	var statusOfContract bool
+	var returns = common.FromHex(tx)
+
+	err = erc20Abi.Unpack(&statusOfContract, "paused", returns)
+
+	return fmt.Sprint(statusOfContract), err
+
+}
+
+func (s *Service) MintErc20(ctx context.Context, addr, password, contract string, value float64, gas int64) (string, error) {
+	var err error
+	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
+	if err != nil {
+		s.Log.Err(err).Msg("User id is not found")
+		return "", err
+	}
+	frompk, err = s.DecryptKey(frompk, "", cipher, rv, salt)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("%s try to mint erc20 token %s to addr:%s quantity:%f", from, contract, value)
+
+	balancestr, err := s.GetBalance(ctx, from)
+	f, _ := strconv.ParseFloat(balancestr, 64)
+	if f < GasCheckMinimum { //TODO:need check mint token total gas
+		return "", baas.ErrBaasNotEnoughMoney
+	}
+
+	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
+	if err != nil {
+		return "", err
+	}
+
+	vv, err := strconv.ParseFloat("0", 64)
+	amount := FloatToBigInt(vv)
+
+	var m abi.Method
+	erc20Abi, err := getBaas20ABI("3")
+	if err != nil {
+		return "", err
+	}
+	var exists bool
+
+	m, exists = erc20Abi.Methods["mint"]
+	if exists {
+		fmt.Println("Function is expected", m)
+	} else {
+		return "", fmt.Errorf("contract method is not support")
+	}
+
+	decimalstr, err := s.GetErc20Decimal(ctx, contract)
+	decimal, _ := strconv.Atoi(decimalstr)
+	v1, v2 := big.NewFloat(math.Pow10(decimal)), big.NewFloat(value)
+	v3 := v1.Mul(v1, v2)
+	v3str := v3.Text('f', 0)
+	//fmt.Println(v3str)
+	vinput, _ := big.NewInt(0).SetString(v3str, 10)
+
+	method_params := make([]interface{}, 0, 8)
+	v, err := paramDecode(from, &m.Inputs[0])
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 0, m.Inputs[0].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+	v, err = paramDecode(vinput.String(), &m.Inputs[1])
+
+	if err != nil {
+		err := fmt.Errorf("Failed to decode parameter %v (%v): %v", 1, m.Inputs[1].Name, err)
+		return "", err
+	}
+	method_params = append(method_params, v)
+
+	dataEncodefor721Call, err := erc20Abi.Pack(m.Name, method_params...)
+	//dataEncodeFor20Call, err := m.Inputs.PackValues([]interface{}{toAddress, vinput.String()})
+	if err != nil {
+		return "", err
+	}
+	var maxGas = gas
+	if maxGas <= 0 {
+		maxGas = baas.ERC20TokenOP
+	}
+	tx := storm.T{
+		From:     from,
+		To:       contract,
+		Gas:      int(maxGas), //baas.GasERC20Limit,
+		GasPrice: big.NewInt(5000000000),
+		Value:    amount, //big.NewInt(1000000000000000000),
+		Data:     string(dataEncodefor721Call),
+		Nonce:    nounce,
+	}
+
+	t, err := SignAndSendTx(tx, frompk)
+	var ee = err
+	if ee == nil {
+		if len(t.TransactionHash) == 0 {
+			ee = errors.New("transaction timeout")
+		}
+		if ee == nil {
+			appid, err := s.BlockStorage.GetApplicationId(ctx, addr)
+			if err != nil {
+				fmt.Println("Warnning, Application id search error:", addr)
+			}
+			updatedUsages := &baas.UpdateUsage{
+				ApplicationID: appid,
+				TxCount:       1,
+			}
+
+			if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+				s.Log.Error().Err(err).Msg("failed to update block tx send erc20 token  usage")
+			}
+		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+		return t.TransactionHash, ee
+	} else {
+		s.Log.Err(err).Msg("Mint token return error")
+		return "", ee
+	}
+}
+
 // encaspulate tx to json string and return
-func (s *Service) GetErc721TxList(ctx context.Context, addr, page, size string) (string, error) {
+func (s *Service) GetErc721TxList(ctx context.Context, contract, page, size string) (string, error) {
 	var err error
 
-	url := fmt.Sprintf(BackEndGetAddressTx, addr)
+	url := fmt.Sprintf(BackEndPeerToERC721Tx, "*", contract)
 	url += fmt.Sprintf("?page=%s", page)
-	fmt.Println("backend url ", url)
+	fmt.Println("backend get erc 721 tx url is  ", url)
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -1463,12 +3041,13 @@ func (s *Service) GetErc721TxList(ctx context.Context, addr, page, size string) 
 }
 
 // encaspulate tx to json string and return
-func (s *Service) GetErc721TokenTxList(ctx context.Context, addr, tokenid, page, size string) (string, error) {
+
+func (s *Service) GetErc721TokenTxList(ctx context.Context, contract, tokenid, page, size string) (string, error) {
 	var err error
 
-	url := fmt.Sprintf(BackEndGetAddressTx, addr)
+	url := fmt.Sprintf(BackEndPeerERC721TokenTx, "*", tokenid, contract)
 	url += fmt.Sprintf("?page=%s", page)
-	fmt.Println("backend url ", url)
+	fmt.Println("backend url for 721 token tx query: ", url)
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -1509,12 +3088,21 @@ func (s *Service) GetErc721TokenTxList(ctx context.Context, addr, tokenid, page,
 }
 
 // encaspulate tx to json string and return
-func (s *Service) GetErc721TxListByUser(ctx context.Context, addr, userid, page, size string) (string, error) {
+func (s *Service) GetErc721TxListByUser(ctx context.Context, userid, contract, page, size string) (string, error) {
 	var err error
+	address := userid
 
-	url := fmt.Sprintf(BackEndGetAddressTx, addr)
+	if !strings.HasPrefix(address, "0x") {
+		address, _, _, _, _, err = s.BlockStorage.GetAddressByService(ctx, userid, "")
+		if err != nil {
+			s.Log.Err(err).Msg("From User id is not found")
+			return "", err
+		}
+	}
+
+	url := fmt.Sprintf(BackEndPeerToERC721Tx, address, contract)
 	url += fmt.Sprintf("?page=%s", page)
-	fmt.Println("backend url ", url)
+	fmt.Println("backend service for 721 with user addres  url is : ", url)
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -1555,12 +3143,17 @@ func (s *Service) GetErc721TxListByUser(ctx context.Context, addr, userid, page,
 }
 
 // encaspulate tx to json string and return
-func (s *Service) GetErc721TokenTxListByUser(ctx context.Context, addr, tokenid, userid, page, size string) (string, error) {
+func (s *Service) GetErc721TokenTxListByUser(ctx context.Context, userid, contract, tokenid, page, size string) (string, error) {
 	var err error
-
-	url := fmt.Sprintf(BackEndGetAddressTx, addr)
+	toAddress, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, userid, "")
+	if err != nil {
+		s.Log.Err(err).Msg("request User id is not found")
+		return "", err
+	}
+	//url := fmt.Sprintf(BackEndGetAddressTx, addr)
+	url := fmt.Sprintf(BackEndPeerERC721TokenTx, toAddress, tokenid, contract)
 	url += fmt.Sprintf("?page=%s", page)
-	fmt.Println("backend url ", url)
+	fmt.Printf("backend url to get token tx for specified user  %s", url)
 	resp, err := http.Get(url)
 
 	if err != nil {

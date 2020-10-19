@@ -532,7 +532,7 @@ Post http://127.0.0.1:4200/api/baas/getAddress
 Post http://127.0.0.1:4200/api/baas/getBalance
 
 {
-  "userid":"jh@gmail.com"
+  "userid":"e_raeb14@tianya.com"
 }
 
 ###
@@ -541,9 +541,9 @@ Post http://127.0.0.1:4200/api/baas/getBalance
 POST http://127.0.0.1:4200/api/baas/sendToken
 
 {
-  "userId":"jh@gmail.com",
-  "toUserid":"e_raeb@gmail.com",
-  "password":"abcd",
+  "userId":"e_raeb13@tianya.com",
+  "toUserid":"e_raeb14@tianya.com",
+  "password":"abcdedfg",
   "quantity":"1.02"
 }
 
@@ -606,8 +606,16 @@ Post http://127.0.0.1:4200/api/baas/getAddress
 
 {
   "userid":"e_raeb13@tianya.com",
-  "password":"abcdedfg",
-   "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4"
+  "password":"abcdedfg"
+}
+
+###
+
+Post http://baasdev.moacchain.net/api/baas/getAddress
+
+{
+  "userid":"tst1002",
+  "password":"password"
 }
 
 ###
@@ -668,9 +676,11 @@ POST http://127.0.0.1:4200/api/baas/sendToken
 
 {
   "userId":"e_raeb13@tianya.com",
-  "toUserid":"e_raeb14@tianya.com",
+  "toUserid":"e_raeb18@tianya.com",
   "password":"abcdedfg",
-  "quantity":"0.5"
+  "quantity":0.3,
+  "msg":"sdf四大",
+  "encode":"hex"
 }
 
 ### 
@@ -678,7 +688,15 @@ POST http://127.0.0.1:4200/api/baas/sendToken
 Post http://127.0.0.1:4200/api/baas/getBalance
 
 {
-  "userid":"e_raeb6@tianya.com"
+  "userid":"e_raeb13@tianya.com"
+}
+
+###
+
+Post http://baasdev.moacchain.net/api/baas/getBalance
+
+{
+  "userid":"tst1002"
 }
 
 ###
@@ -698,7 +716,8 @@ POST http://127.0.0.1:4200/api/baas/writeMsg
 POST http://127.0.0.1:4200/api/baas/readMsg
 
 {
-"txHash":"0x6bd3e8823eaead4ba97c84c414bd3d37c9ffa8d4e36fae7cd848630c0c28dc8a"
+"txHash":"0x947eaf24f43e9adcee8172e474fb01fa48571fb7f67e1f5edd238f966016c463",
+"encode":"hex"
 
 }
 
@@ -714,38 +733,38 @@ POST http://127.0.0.1:4200/api/baas/getTxByHash
 ###
 
 
-POST http://127.0.0.1:4200/api/baas/createErc721Token
+POST http://127.0.0.1:4200/api/baas/erc721/createToken
 
 {
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
   "toUserid":"e_raeb14@tianya.com",
-  "tokenId":"10000",
+  "tokenId":"20002",
   "metadata":"http://127.0.0.1:8000/356.html",
   "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
-  "property":"123"
+  "property":"123123"
 }
 
 ###
 
-POST http://127.0.0.1:4200/api/baas/createErc721Token
+POST http://127.0.0.1:4200/api/baas/erc721/createToken
 
 {
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
-  "tokenId":"18889",
+  "tokenId":"1",
   "metadata":"http://dao.moacchain.net",
-  "contract":"0xE5AC3D9408caB0ee89C001B4d680221bC7494d57",
-  "property":"天地玄黄，龙战于野"
+  "contract":"0x28d53c28f82d28c1d7df774c81e53e5df1144046",
+  "property":"龙战于野"
 }
 
 ###
 
-POST http://127.0.0.1:4200/api/baas/getErc721ContractInfo
+POST http://127.0.0.1:4200/api/baas/erc721/getContractInfo
 
 {
 
-  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E"
+  "contract":"0x28d53c28f82d28c1d7df774c81e53e5df1144046"
 
 }
 
@@ -762,22 +781,22 @@ POST http://127.0.0.1:4200/api/baas/erc721/getBalance
 
 ###
 
-POST http://127.0.0.1:4200/api/baas/getErc721TokenProperty
+POST http://127.0.0.1:4200/api/baas/erc721/getTokenProperty
 
 {
 
   "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
-  "tokenId":"10000"
+  "tokenId":"20000"
 
 }
 ###
-POST http://127.0.0.1:4200/api/baas/setErc721TokenProperty
+POST http://127.0.0.1:4200/api/baas/erc721/setTokenProperty
 
 {
 
   "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
-  "tokenId":"10000",
-  "property":"ready send to e_raeb14",
+  "tokenId":"20002",
+  "property":"20002 reset",
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg"
 }
@@ -800,15 +819,14 @@ POST http://127.0.0.1:4200/api/baas/getBlockCount
 
 ###
 
-POST http://127.0.0.1:4200/api/baas/sendErc721Token
+POST http://127.0.0.1:4200/api/baas/erc721/sendToken
 
 {
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
   "toUserid":"e_raeb14@tianya.com",
-  "tokenId":"18889",
-  "contract":"0xE5AC3D9408caB0ee89C001B4d680221bC7494d57",
-  "memo":"风吹千帆过，日落万木肃"
+  "tokenId":"20001",
+  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E"
 }
 ###
 
@@ -881,3 +899,320 @@ POST http://127.0.0.1:4200/api/baas/erc721/getTokenList
 }
 
 
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc721/createContract
+
+{  
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "name":"821 base",
+  "type":1,
+  "symbol":"ase "
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc721/getContractInfo
+
+{
+  "contract":"0xaf9761e109c4460c61f24ee1c94410c1ae71fae1"
+}
+
+####
+
+
+POST http://127.0.0.1:4200/api/baas/erc20/createToken
+
+{  
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "name":"大明茱萸",
+  "type":2,
+  "symbol":"DMZY",
+  "totalSupply":880000000,
+  "decimals":18
+}
+
+####
+
+POST http://127.0.0.1:4200/api/baas/erc20/getContractInfo
+
+{
+  "contract":"0xea38df04bac15dd396196ae6c13d05dacdba8778"
+}
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc20/getBalance
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb13@tianya.com"
+}
+
+###
+
+POST http://baasdev.moacchain.net/api/baas/erc20/getBalance
+
+{
+  "contract":"0xcca1b0a49980f2f10466a792c9f29749cfeb2a92",
+  "userId":"tst1001"
+}
+
+###
+POST http://127.0.0.1:4200/api/baas/erc20/transfer
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb13@tianya.com",
+    "password":"abcdedfg",
+    "quantity":1,
+    "toUserid":"e_raeb14@tianya.com"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/approve
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb13@tianya.com",
+    "password":"abcdedfg",
+    "quantity":11,
+    "toUserid":"e_raeb14@tianya.com"
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/allowance
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb13@tianya.com",
+    "password":"abcdedfg",
+    "toUserid":"e_raeb14@tianya.com"
+}
+
+###
+POST http://baasdev.moacchain.net/api/baas/erc20/allowance
+
+{
+  "contract":"0xcca1b0a49980f2f10466a792c9f29749cfeb2a92",
+  "userId":"tst1002",
+    "toUserid":"tst1001"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/increaseAllowance
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb13@tianya.com",
+    "password":"abcdedfg",
+    "quantity":1000,
+    "toUserid":"e_raeb14@tianya.com"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/decreaseAllowance
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb13@tianya.com",
+    "password":"abcdedfg",
+    "quantity":10,
+    "toUserid":"e_raeb14@tianya.com"
+}
+
+################################################################
+
+POST http://127.0.0.1:4200/api/baas/erc20/transferFrom
+
+{
+  "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb14@tianya.com",
+  "sendUserId":"e_raeb13@tianya.com",
+    "password":"abcdedfg",
+    "quantity":1,
+    "toUserid":"e_raeb18@tianya.com",
+    "memo":"慢慢的们"
+
+}
+
+###
+
+POST http://baasdev.moacchain.net/api/baas/erc20/transferFrom
+
+{
+  "contract":"0xcca1b0a49980f2f10466a792c9f29749cfeb2a92",
+  "userId":"tst1002",
+  "sendUserId":"tst1001",
+    "password":"password",
+    "quantity":1,
+    "toUserid":"tst1003"
+
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/getTxMemo
+
+{
+  "txHash":"0xf13bfe2589b91660e6ba48d5a80fd0d03bcfd33d96c000a77e8a1b30d2ba7a2b"
+}
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc20/burnToken
+
+{
+    "contract":"0x8e266bda55640674c4c24a96ee5ad116630bb233",
+  "userId":"e_raeb14@tianya.com",
+  
+    "password":"abcdedfg",
+    "quantity":1
+
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/createToken
+
+{  
+  "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "name":"大辽壁元",
+  "type":4,
+  "symbol":"LBS",
+  "totalSupply":80000,
+  "decimals":18,
+  "cap":20000000000
+
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/getPauseStatus
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b"
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/pauseToken
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b",
+      "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "action":"start"
+
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/burnToken
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b",
+      "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "quantity":32.1
+
+}
+###
+POST http://127.0.0.1:4200/api/baas/erc20/getContractInfo
+
+{
+  "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b"
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/mintToken
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b",
+      "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "quantity":32.1
+
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc20/mintToken
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b",
+      "userId":"e_raeb13@tianya.com",
+  "password":"abcdedfg",
+  "quantity":32.1
+
+}
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc20/getUserTxList
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b",
+      "userId":"e_raeb13@tianya.com",
+      "page":"1"
+}
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc20/getTxList
+
+{
+    "contract":"0xfd8b7a166261313a360bdef9e72a588b5cf6689b",
+      "userId":"e_raeb13@tianya.com",
+      "page":"1"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/erc721/getUserTxList
+
+{
+    "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+      "userId":"e_raeb13@tianya.com",
+      "page":"1"
+}
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc721/getTxList
+
+{
+    "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+      "userId":"e_raeb13@tianya.com",
+      "page":"1"
+}
+
+###
+
+
+POST http://127.0.0.1:4200/api/baas/erc721/getTokenTxList
+
+{
+    "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+      "userId":"e_raeb13@tianya.com",
+      "tokenId":"20001",
+      "page":"1"
+}
+
+################################
+
+
+POST http://127.0.0.1:4200/api/baas/erc721/getTokenUserTxList
+
+{
+    "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
+      "userId":"e_raeb13@tianya.com",
+      "tokenId":"20001",
+      "page":"1"
+}
