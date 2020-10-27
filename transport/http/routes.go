@@ -17,6 +17,10 @@ func (s *Server) routes() {
 	s.Handle(createApplicationPath,
 		s.Authenticate(
 			s.handleCreateApplication())).Methods("POST")
+	const createApplicationAdminPath = "/admin/applications"
+	s.Handle(createApplicationAdminPath,
+		s.Authenticate(
+			s.handleCreateApplication())).Methods("POST")
 
 	const getApplicationPath = "/applications/{id}"
 	s.Handle(getApplicationPath,
@@ -27,7 +31,10 @@ func (s *Server) routes() {
 	s.Handle(listApplicationsPath,
 		s.Authenticate(
 			s.handleListApplications())).Methods("GET")
-
+	const listApplicationsAdminPath = "/admin/applications"
+	s.Handle(listApplicationsAdminPath,
+		s.Authenticate(
+			s.handleListApplications())).Methods("GET")
 	const updateApplication = "/applications/{id}"
 	s.Handle(updateApplication,
 		s.Authenticate(
@@ -82,6 +89,14 @@ func (s *Server) routes() {
 	s.Handle(baasCreateKey,
 		s.Authenticate(
 			s.handleCreateKey())).Methods("POST")
+	const baasCreateUser = "/api/baas/createUser"
+	s.Handle(baasCreateUser,
+		s.Authenticate(
+			s.handleCreateKey())).Methods("POST")
+	const baasImportUser = "/api/baas/createUserByKey"
+	s.Handle(baasImportUser,
+		s.Authenticate(
+			s.handleImportKey())).Methods("POST")
 	const baasChangePassword = "/api/baas/changePassword"
 	s.Handle(baasChangePassword,
 		s.Authenticate(
@@ -90,11 +105,26 @@ func (s *Server) routes() {
 	s.Handle(baasDeleteKey,
 		s.Authenticate(
 			s.handleDeleteKey())).Methods("POST")
-
+	const baasDeleteUser = "/api/baas/deleteUser"
+	s.Handle(baasDeleteUser,
+		s.Authenticate(
+			s.handleDeleteKey())).Methods("POST")
 	const baasGetKey = "/api/baas/getKey"
 	s.Handle(baasGetKey,
 		s.Authenticate(
 			s.handleGetKey())).Methods("POST")
+	const baasGetAddresByPk = "/api/baas/privatekey2Address"
+	s.Handle(baasGetAddresByPk,
+		s.Authenticate(
+			s.handleGetAddressByPK())).Methods("POST")
+	const baasGetKeyStoreByPk = "/api/baas/privatekey2Keystore"
+	s.Handle(baasGetKeyStoreByPk,
+		s.Authenticate(
+			s.handleGetKeyStoreByPK())).Methods("POST")
+	const baasGetPKByKeyStore = "/api/baas/keystore2Privatekey"
+	s.Handle(baasGetPKByKeyStore,
+		s.Authenticate(
+			s.handleGetPKByKeyStore())).Methods("POST")
 	const baasGetAddress = "/api/baas/getAddress"
 	s.Handle(baasGetAddress,
 		s.Authenticate(

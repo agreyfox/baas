@@ -491,9 +491,9 @@ POST http://127.0.0.1:4200/api/baas/createKey
 
 {
   "application_id":"cc4eef02-ee43-4019-90cf-754a8c8f24d4",
-  "userid":"jh@gmail.com",
+  "userid":"lq001@gmail.com",
   "password":"abcdedfg",
-  "name":"熊6"
+  "name":"刘大"
 }
 
 ###
@@ -583,13 +583,49 @@ POST http://127.0.0.1:4200/api/baas/createKey
 
 {
   "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
-  "userid":"e_raeb18@tianya.com",
+  "userid":"e_raeb20@tianya.com",
   "password":"abcdedfg",
   "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf",
-  "name":"熊9"
+  "name":"熊10"
 }
 
 ###
+
+POST http://127.0.0.1:4200/api/baas/createUserByKey
+
+{
+  "application_id":"6a74111c-853c-4cae-a774-38e540229af0",
+  "userid":"e_raeb21@tianya.com",
+  "password":"abcdedfg",
+  "cipherText":"lasdfljsafljsafdasdfljsafdlsadkfjsaldfjsalfasdf",
+  "name":"熊10",
+  "key":"c7eb390d8264855f65f85ca712dff45ff71434ced13fb0119e6246fdeb73bddd"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/privatekey2Address  
+
+{
+  "key":"c7eb390d8264855f65f85ca712dff45ff71434ced13fb0119e6246fdeb73bddd"
+}
+
+###
+
+POST http://127.0.0.1:4200/api/baas/privatekey2Keystore  
+
+{
+  "key":"0xeea5cb6358800ac558a06d744eb51a739c816b4d65fa693b2e7094f84dcde1f3",
+  "password":"password"
+}
+###
+
+POST http://127.0.0.1:4200/api/baas/keystore2Privatekey  
+
+{
+  "keystore":"{\"address\":\"48d3a716493c1a5d8b8beebd67d26542e1d79543\",\"crypto\":{\"cipher\":\"aes-128-ctr\",\"ciphertext\":\"1efdc4fdf781c9162fa8cfd8fe66844136e2a1705a6bc11b42c649b72f256f67\",\"cipherparams\":{\"iv\":\"8d955c30f554f1b0b5bd08e8d6653d96\"},\"kdf\":\"scrypt\",\"kdfparams\":{\"dklen\":32,\"n\":262144,\"p\":1,\"r\":8,\"salt\":\"5293a292349b16488d61ba648801a7ba55ce4e92d98590e4ccdc563101db2468\"},\"mac\":\"58a549416d5f58f17f7c560d08444e748b91fa1f61a576d8281bc5857032c786\"},\"id\":\"1bcd7a58-e0e9-4342-9241-30928285e4e9\",\"version\":3}",
+  "password":"password"
+}
 
 Post http://127.0.0.1:4200/api/baas/getKey
 
@@ -752,10 +788,10 @@ POST http://127.0.0.1:4200/api/baas/erc721/createToken
 {
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
-  "tokenId":"1",
+  "tokenId":"100000",
   "metadata":"http://dao.moacchain.net",
-  "contract":"0x28d53c28f82d28c1d7df774c81e53e5df1144046",
-  "property":"龙战于野"
+  "contract":"0x5c9753706dea5480d89e80ee85fd842c1155d850",
+  "property":"杨浦区一街坊1号101室"
 }
 
 ###
@@ -774,8 +810,8 @@ POST http://127.0.0.1:4200/api/baas/erc721/getBalance
 
 {
 
-  "contract":"0xE5AC3D9408caB0ee89C001B4d680221bC7494d57",
-  "userId":"e_raeb14@tianya.com"
+  "contract":"0x5c9753706dea5480d89e80ee85fd842c1155d850",
+  "userId":"e_raeb13@tianya.com"
 
 }
 
@@ -785,8 +821,8 @@ POST http://127.0.0.1:4200/api/baas/erc721/getTokenProperty
 
 {
 
-  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
-  "tokenId":"20000"
+  "contract":"0x5c9753706dea5480d89e80ee85fd842c1155d850",
+  "tokenId":"100000"
 
 }
 ###
@@ -794,9 +830,9 @@ POST http://127.0.0.1:4200/api/baas/erc721/setTokenProperty
 
 {
 
-  "contract":"0xBce357EE4795028F9Bf7A010eC4f5F4CFF3e413E",
-  "tokenId":"20002",
-  "property":"20002 reset",
+  "contract":"0x5c9753706dea5480d89e80ee85fd842c1155d850",
+  "tokenId":"20000",
+  "property":"修改20000",
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg"
 }
@@ -907,9 +943,9 @@ POST http://127.0.0.1:4200/api/baas/erc721/createContract
 {  
   "userId":"e_raeb13@tianya.com",
   "password":"abcdedfg",
-  "name":"821 base",
-  "type":1,
-  "symbol":"ase "
+  "name":"SH estmaste",
+  "type":3,
+  "symbol":"she"
 }
 
 ###
@@ -917,7 +953,7 @@ POST http://127.0.0.1:4200/api/baas/erc721/createContract
 POST http://127.0.0.1:4200/api/baas/erc721/getContractInfo
 
 {
-  "contract":"0xaf9761e109c4460c61f24ee1c94410c1ae71fae1"
+  "contract":"0x5c9753706dea5480d89e80ee85fd842c1155d850"
 }
 
 ####

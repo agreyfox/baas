@@ -19,6 +19,8 @@ type createBaasUserRequest struct {
 	StorageRegion    string `json:"storageRegion" `
 	StorageEngine    string `json:"storageEngine"`
 	DeliveryURL      string `json:"deliveryUrl"`
+	Key              string `json:"key"`      //add for import private key
+	KeyStore         string `json:"keyStore"` //add for walltes
 }
 
 func (r *createBaasUserRequest) validate() error {

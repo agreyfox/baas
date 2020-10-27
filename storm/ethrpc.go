@@ -14,6 +14,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -121,6 +122,41 @@ func (rpc *EthRPC) NewAddress() (string, string, error) {
 	addr := fmt.Sprintf(hexutil.Encode(hash.Sum(nil)[12:]))
 	fmt.Println("address:", addr) // 0x96216849c49358b10257cb55b28ea603c874b05e
 	return addr, pk, nil
+}
+
+// import private key and generate address
+func (rpc *EthRPC) NewAddressFromPK(pk string) string {
+
+	var e ecdsa.PrivateKey
+	e.D, _ = new(big.Int).SetString(pk, 16)
+	e.PublicKey.Curve = secp256k1.S256()
+	e.PublicKey.X, e.PublicKey.Y = e.PublicKey.Curve.ScalarBaseMult(e.D.Bytes())
+
+	privateKeyBytes := crypto.FromECDSA(&e)
+	pkstr := hexutil.Encode(privateKeyBytes)[2:]
+	fmt.Println("pk", pk, pkstr) // 0xfad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19
+
+	publicKey := e.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		log.Fatal("error casting public key to ECDSA")
+	}
+
+	//publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+
+	address := crypto.PubkeyToAddress(*publicKeyECDSA).Hex()
+	fmt.Println("address1:", address) // 0x96216849c49358B10257cb55b28eA603c874b05E
+
+	//hash := sha3.NewLegacyKeccak256()
+	//hash.Write(publicKeyBytes[1:])
+
+	//addr := fmt.Sprintf(hexutil.Encode(hash.Sum(nil)[12:]))
+	//fmt.Println("address2 :", addr) // 0x96216849c49358b10257cb55b28ea603c874b05e
+	return address
+	//e.PublicKey.Curve = secp256k1.S256()
+	//e.PublicKey.X, e.PublicKey.Y = e.PublicKey.Curve.ScalarBaseMult(e.D.Bytes())
+	//return fmt.Sprintf("%x", elliptic.Marshal(secp256k1.S256(), e.X, e.Y))
+
 }
 
 // Call returns raw response of method call

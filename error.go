@@ -51,6 +51,7 @@ const (
 	ErrBaasApplicationIDRequired = Error("Application ID is required")
 	ErrBaasCipherTextRequired    = Error("invalid cipherText")
 	ErrBaasNotEnoughMoney        = Error("Account doesn't have enough gas")
+	ErrBaasQueryNoResult         = Error("No result")
 )
 
 // Error represents a Mahi error.

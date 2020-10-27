@@ -19,17 +19,19 @@ const (
 
 var (
 	BlockChainServer        = BlockEngine
-	DelplyContractGas int64 = 3500000
+	DelplyContractGas int64 = 5000000
 	OriginTokenOP     int64 = 545228
-	ERC20TokenOP      int64 = 10000
+	ERC20TokenOP      int64 = 100000
 	ERC20TokenSend    int64 = 500000
 	ERC721TokenOP     int64 = 500000
-	ERC721TokenSend   int64 = 500000
+	ERC721TokenMint   int64 = 700000
+	ERC721TokenSend   int64 = 700000
 )
 
 // ApplicationService defines the business logic for dealing with all aspects of an application.
 type BlockService interface {
 	Create(ctx context.Context, n *NewBAASUser) (*BAASUser, error)
+	Import(ctx context.Context, n *NewBAASUser) (*BAASUser, error)
 	ChangePassword(ctx context.Context, userId, oldPassword, newPassword string) error
 	DeleteBAASUser(ctx context.Context, id string) error
 	UpdateBAASUser(ctx context.Context, u *UpdateBAASUser) (*BAASUser, error)
@@ -82,6 +84,9 @@ type BlockService interface {
 	//===================analysis and utility ====================================
 	GetTx(ctx context.Context, addr string) (*BlockTx, error)
 	GetBlockNumber(ctx context.Context) (string, error)
+	GetAddressFromPK(ctx context.Context, pk string) (string, error)
+	GetKeyStoreFromPK(ctx context.Context, pk, password string) (string, error)
+	GetPKFromKeyStore(ctx context.Context, keystore, password string) (string, error)
 	//FileBlobStorage(engine, accessKey, secretKey, region, endpoint string) (FileBlobStorage, error)
 	DecryptKey(origin, cipherFromWeb, cipherFromDb, rv, salt string) (string, error)
 	GetTxByUserAddress(ctx context.Context, usrid, page, size string) (string, error)                     // query backend system for address tx record
@@ -146,6 +151,7 @@ type NewBAASUser struct {
 	Rv               string
 	Salt             string
 	Password         string
+	Key              string
 }
 
 type BAASUser struct {

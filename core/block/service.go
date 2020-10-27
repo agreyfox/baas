@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
@@ -18,10 +19,14 @@ import (
 	"time"
 
 	"github.com/agreyfox/baas"
+
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/agreyfox/baas/cmd/baasd"
@@ -174,6 +179,127 @@ func (s *Service) Create(ctx context.Context, n *baas.NewBAASUser) (*baas.BAASUs
 	}
 
 	return s.BlockStorage.Store(ctx, n)
+}
+
+func (s *Service) Import(ctx context.Context, n *baas.NewBAASUser) (*baas.BAASUser, error) {
+	fmt.Printf("Call to Import private key to  the new baas user %s with application id :%s\n", n.Email, n.ApplicationID)
+	config := baasd.GetSystemConfig()
+	ppk := n.Key
+	if ppk[0] == '0' && ppk[1] == 'x' {
+		ppk = ppk[2:]
+	}
+	add := StormClient.NewAddressFromPK(ppk)
+
+	n.Address = add
+
+	salt, _ := baas.GenerateSalt()
+	ciper := n.CipherText
+	if len(n.CipherText) == 0 {
+		//config := baasd.GetSystemConfig()
+		ciper = config.Security.GMKey
+	}
+	rvorig, partCiper := ExtractCipher(ciper)
+	//rv := rvorig) //change to 4 byte
+
+	rvorig = append(rvorig, partCiper...)
+
+	s.GmService.Config(md516(partCiper), salt)
+	defer s.GmService.Config([]byte(config.Security.GMKey), []byte(config.Security.GMIV))
+	fmt.Println("now to encrypt:", time.Now())
+
+	skey, err := s.GmService.EncryptToString([]byte(ppk))
+	if err != nil {
+		s.Log.Error().Err(err).Msg("EncryptToString error")
+		return nil, err
+	}
+	fmt.Println("Done:", time.Now())
+
+	n.PrivateKey = skey
+	n.Salt = base64.StdEncoding.EncodeToString(salt)
+	n.CipherText = string(partCiper)
+	n.Rv = string(rvorig)
+
+	updatedUsages := &baas.UpdateUsage{
+		ApplicationID: n.ApplicationID,
+		UserCount:     1,
+	}
+
+	if err := s.UsageService.Update(ctx, updatedUsages); err != nil {
+		// should I fail the request
+		s.Log.Error().Err(err).Msg("failed to update Create user  usage")
+	}
+
+	return s.BlockStorage.Store(ctx, n)
+}
+
+func (s *Service) GetAddressFromPK(ctx context.Context, pk string) (string, error) {
+	privatekey := pk
+	fmt.Printf("Call to transfer  private key to  address:%s\n", privatekey)
+
+	if pk[0] == '0' && pk[1] == 'x' {
+		privatekey = privatekey[2:]
+	}
+	add := StormClient.NewAddressFromPK(privatekey)
+
+	return add, nil
+
+}
+
+func (s *Service) GetKeyStoreFromPK(ctx context.Context, pk, password string) (string, error) {
+	privatekey := pk
+	if pk[0] == '0' && pk[1] == 'x' {
+		privatekey = privatekey[2:]
+	}
+	fmt.Printf("Call to transfer  private key to  address:%s\n", privatekey)
+	ks := keystore.NewKeyStore("./keystore", keystore.StandardScryptN, keystore.StandardScryptP)
+	var e ecdsa.PrivateKey
+	e.D, _ = new(big.Int).SetString(privatekey, 16)
+	e.PublicKey.Curve = secp256k1.S256()
+	e.PublicKey.X, e.PublicKey.Y = e.PublicKey.Curve.ScalarBaseMult(e.D.Bytes())
+	addr, err := s.GetAddressFromPK(ctx, privatekey)
+	if err != nil {
+		return "", err
+	}
+	var ac accounts.Account
+	if ks.HasAddress(common.HexToAddress(addr)) {
+		a := accounts.Account{
+			Address: common.HexToAddress(addr),
+		}
+		ac, err = ks.Find(a)
+		if err != nil {
+			return "", err
+		}
+
+	} else {
+		ac, err := ks.ImportECDSA(&e, password)
+
+		if err != nil {
+			fmt.Println(err)
+			return "", err
+		}
+		fmt.Print(ac.URL)
+	}
+	keyjson, err := ioutil.ReadFile(ac.URL.Path)
+
+	return string(keyjson), nil
+
+}
+
+func (s *Service) GetPKFromKeyStore(ctx context.Context, ks, password string) (string, error) {
+
+	fmt.Printf("Call to transfer keystore to private key:%s\n", ks)
+
+	key, err := keystore.DecryptKey([]byte(ks), password)
+	if err != nil {
+		fmt.Println("json key failed to decrypt: %v", err)
+	}
+
+	privateKeyBytes := crypto.FromECDSA(key.PrivateKey)
+	pkstr := hexutil.Encode(privateKeyBytes)[2:]
+	fmt.Println(pkstr)
+
+	return pkstr, nil
+
 }
 
 //change password with email oldpass, and newpass
@@ -397,6 +523,10 @@ func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, 
 				s.Log.Error().Err(err).Msg("failed to update block tx   usage")
 			}
 		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+
 		return t.TransactionHash, ee
 	} else {
 		return "", ee
@@ -476,6 +606,10 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 				s.Log.Error().Err(err).Msg("failed to update block tx   usage")
 			}
 		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+
 		return t.TransactionHash, ee
 	} else {
 		return "", ee
@@ -569,7 +703,7 @@ func (s *Service) GetTxByUserAddress(ctx context.Context, usrid, page, size stri
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 
 // encaspulate tx to json string and return
@@ -630,7 +764,7 @@ func (s *Service) GetPeerToPeerTxByUserAddress(ctx context.Context, usrid, targe
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 
 // return erc20 a user tx list
@@ -685,7 +819,7 @@ func (s *Service) GetERC20TxByUserAddress(ctx context.Context, userid, contract,
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 
 func (s *Service) GetERC20TxList(ctx context.Context, contract, page, pagesize string) (string, error) {
@@ -731,7 +865,7 @@ func (s *Service) GetERC20TxList(ctx context.Context, contract, page, pagesize s
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 func (s *Service) GetErc721Balance(ctx context.Context, addr, contractAddr string) (string, error) {
 	address, _, _, _, _, err := s.BlockStorage.GetAddressByService(ctx, addr, "")
@@ -768,11 +902,11 @@ func (s *Service) GetErc721Balance(ctx context.Context, addr, contractAddr strin
 		return "", err
 	}
 
-	var balance *big.Int
+	//var balance []*big.Int
 	var returns = common.FromHex(tx)
-	err = Abi.Unpack(&balance, "balanceOf", returns)
+	out, err := Abi.Unpack("balanceOf", returns) // modify by api change 2020/10/27
 	//fmt.Println(balance)
-	return balance.String(), err
+	return fmt.Sprintf("%v", out[0]), err
 
 }
 
@@ -807,12 +941,12 @@ func (s *Service) GetErc721TotalSupply(ctx context.Context, addr string) (string
 		return "", err
 	}
 
-	var balance *big.Int
+	//var balance *big.Int
 	var returns = common.FromHex(tx)
-	err = Abi.Unpack(&balance, "totalSupply", returns)
-	//fmt.Println(balance)
-	return balance.String(), err
-	//	return "", nil
+	out, err := Abi.Unpack("totalSupply", returns) /// modified at 2020/10/27
+
+	return fmt.Sprintf("%v", out[0]), err
+
 }
 
 func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contract, tokenid, meta, property string, gas int64) (string, error) {
@@ -882,7 +1016,7 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 	//fmt.Println(dataEncodefor721Call)
 	var maxGas = gas
 	if maxGas <= 0 {
-		maxGas = baas.ERC721TokenOP
+		maxGas = baas.ERC721TokenMint
 	}
 	//maxGas += int64(len(meta)+len(property)) * 12
 	tx := storm.T{
@@ -915,6 +1049,10 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 				s.Log.Error().Err(err).Msg("failed to update block tx mint  usage")
 			}
 		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+
 		return t.TransactionHash, ee
 	} else {
 		return "", ee
@@ -1015,6 +1153,10 @@ func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, 
 				s.Log.Error().Err(err).Msg("failed to update block tx mint  usage")
 			}
 		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+
 		return t.TransactionHash, ee
 	} else {
 		return "", ee
@@ -1044,7 +1186,8 @@ func (s *Service) GetErc721Info(ctx context.Context, addr string) (map[string]in
 
 	nameb := new(string)
 	var returns = common.FromHex(tx)
-	err = Abi.Unpack(&nameb, "name", returns)
+	out, err := Abi.Unpack("name", returns)
+	*nameb = fmt.Sprint(out[0]) // modified 2020/10/27
 
 	hashsymbol := sha3.NewLegacyKeccak256()
 
@@ -1062,7 +1205,8 @@ func (s *Service) GetErc721Info(ctx context.Context, addr string) (map[string]in
 	}
 	symbol := new(string)
 	returns = common.FromHex(tx)
-	Abi.Unpack(&symbol, "symbol", returns)
+	out, err = Abi.Unpack("symbol", returns)
+	*symbol = fmt.Sprint(out[0]) // modified 2020/10/27
 	return map[string]interface{}{"name": nameb, "symbol": *symbol, "supply": supply}, err
 }
 
@@ -1154,7 +1298,7 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	}
 	var maxGas = gas
 	if maxGas <= 0 {
-		maxGas = baas.ERC721TokenOP
+		maxGas = baas.ERC721TokenSend
 	}
 	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
@@ -1402,6 +1546,10 @@ func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, cont
 				s.Log.Error().Err(err).Msg("failed to update block tx mint  usage")
 			}
 		}
+		if t.Status == "0x0" {
+			return t.TransactionHash, errors.New("Transaction failed")
+		}
+
 		return t.TransactionHash, ee
 	} else {
 		return "", ee
@@ -1440,8 +1588,8 @@ func (s *Service) GetErc721TokenProperty(ctx context.Context, contractaddr, toke
 	}
 	nameb := new(string)
 	returns := common.FromHex(tx)
-	err = Abi.Unpack(&nameb, "getProperty", returns)
-
+	out, err := Abi.Unpack("getProperty", returns)
+	*nameb = fmt.Sprint(out[0])
 	return *nameb, err
 
 }
@@ -1477,9 +1625,9 @@ func (s *Service) GetErc721MetaData(ctx context.Context, contractaddr, tokenid s
 	}
 	nameb := new(string)
 	returns := common.FromHex(tx)
-	err = Abi.Unpack(&nameb, "tokenURI", returns)
+	out, err := Abi.Unpack("tokenURI", returns)
+	*nameb = fmt.Sprint(out[0]) // modified 2020/10/27
 
-	//	fmt.Println(*nameb)
 	return *nameb, err
 
 }
@@ -1550,13 +1698,14 @@ func (s *Service) GetUserErc721TokenList(ctx context.Context, userid, contractad
 		if err != nil {
 			return "", err
 		}
-		var nameb *big.Int
+		//	var nameb *big.Int
 		returns := common.FromHex(tx)
-		err = Abi.Unpack(&nameb, "tokenOfOwnerByIndex", returns)
+		out, err := Abi.Unpack("tokenOfOwnerByIndex", returns)
+
 		if err != nil {
 			return "", err
 		}
-		returnData = append(returnData, map[string]interface{}{"tokenid": nameb.String()})
+		returnData = append(returnData, map[string]interface{}{"tokenid": fmt.Sprint(out[0])}) // modified 2020/10/27
 
 	}
 
@@ -1634,7 +1783,7 @@ func (s *Service) CreateERC721Contract(ctx context.Context, userid, pass, name, 
 			}
 		}
 		if t.Status == "0x0" {
-			return t.TransactionHash, "", errors.New("Transaction failed")
+			return "", t.TransactionHash, errors.New("Transaction failed")
 		}
 		return t.ContractAddress, t.TransactionHash, nil
 	} else {
@@ -1753,16 +1902,16 @@ func (s *Service) GetErc20TotalSupply(ctx context.Context, addr string) (string,
 		return "", err
 	}
 
-	var balance *big.Int
+	//var balance *big.Int
 	var returns = common.FromHex(tx)
 	erc20Abi, err := getBaas20ABI("1")
 	if err != nil {
 		return "", err
 	}
-	err = erc20Abi.Unpack(&balance, "totalSupply", returns)
+	out, err := erc20Abi.Unpack("totalSupply", returns)
 	decimalstr, err := s.GetErc20Decimal(ctx, addr)
-	//fmt.Println(balance.Text(10))
-	return removeDecimal(balance.Text(10), decimalstr), err
+
+	return removeDecimal(fmt.Sprint(out[0]), decimalstr), err //modified 2020/10/27
 
 }
 
@@ -1790,11 +1939,11 @@ func (s *Service) GetErc20Decimal(ctx context.Context, addr string) (string, err
 	if err != nil {
 		return "", err
 	}
-	var dd uint8
+	//var dd uint8
 	var returns = common.FromHex(tx)
-	err = erc20Abi.Unpack(&dd, "decimals", returns)
+	out, err := erc20Abi.Unpack("decimals", returns)
 
-	return fmt.Sprint(dd), err
+	return fmt.Sprint(out[0]), err //modified 2020/10/27
 
 }
 
@@ -1825,8 +1974,8 @@ func (s *Service) GetErc20Info(ctx context.Context, addr string) (map[string]int
 
 	nameb := new(string)
 	var returns = common.FromHex(tx)
-	err = erc20Abi.Unpack(&nameb, "name", returns)
-
+	out, err := erc20Abi.Unpack("name", returns)
+	*nameb = fmt.Sprint(out[0]) // modified 2020/10/27
 	hashsymbol := sha3.NewLegacyKeccak256()
 
 	hashsymbol.Write([]byte("symbol()"))
@@ -1843,7 +1992,8 @@ func (s *Service) GetErc20Info(ctx context.Context, addr string) (map[string]int
 	}
 	symbol := new(string)
 	returns = common.FromHex(tx)
-	erc20Abi.Unpack(&symbol, "symbol", returns)
+	out, err = erc20Abi.Unpack("symbol", returns)
+	*symbol = fmt.Sprint(out[0])
 	dd, err := s.GetErc20Decimal(ctx, addr)
 	if err != nil {
 		return map[string]interface{}{}, err
@@ -1896,13 +2046,16 @@ func (s *Service) GetErc20Balance(ctx context.Context, userid, addr string) (str
 		return "", err
 	}
 
-	var balance *big.Int
+	//var balance *big.Int
 	var returns = common.FromHex(tx)
-	err = erc20Abi.Unpack(&balance, "balanceOf", returns)
-	//fmt.Println(balance)
+	out, err := erc20Abi.Unpack("balanceOf", returns)
+
 	decimalstr, err := s.GetErc20Decimal(ctx, addr)
 	decimal, _ := strconv.Atoi(decimalstr)
-	f := new(big.Float).SetInt(balance)
+
+	//f := new(big.Float).SetInt(balance)
+	f, _ := new(big.Float).SetString(fmt.Sprint(out[0])) // modified 2020/10/27
+
 	d := big.NewFloat(math.Pow10(decimal))
 	return f.Quo(f, d).String(), err
 }
@@ -2205,17 +2358,16 @@ func (s *Service) AllowanceErc20(ctx context.Context, addr, toAddr, contract str
 	if err != nil {
 		return "", err
 	}
-	var amount *big.Int
+	//var amount *big.Int
 	var returns = common.FromHex(tx)
 
 	//nameb := new(string)
 	//	returns := common.FromHex(tx)
 	decimalstr, _ := s.GetErc20Decimal(ctx, contract)
 
-	err = erc20Abi.Unpack(&amount, "allowance", returns)
+	out, err := erc20Abi.Unpack("allowance", returns)
 
-	return removeDecimal(amount.String(), decimalstr), err
-	//return amount.String(), err
+	return removeDecimal(fmt.Sprint(out[0]), decimalstr), err
 
 }
 
@@ -2577,7 +2729,7 @@ func (s *Service) TransferFromErc20(ctx context.Context, user, password, fromadd
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenSend
 	}
-	maxGas += int64(len(memo)) * 12
+	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -2875,12 +3027,12 @@ func (s *Service) GetErc20PauseStatus(ctx context.Context, contract string) (str
 	if err != nil {
 		return "", err
 	}
-	var statusOfContract bool
+	//var statusOfContract bool
 	var returns = common.FromHex(tx)
 
-	err = erc20Abi.Unpack(&statusOfContract, "paused", returns)
+	out, err := erc20Abi.Unpack("paused", returns)
 
-	return fmt.Sprint(statusOfContract), err
+	return fmt.Sprint(out[0]), err //modified 2020/10/27
 
 }
 
@@ -3041,7 +3193,7 @@ func (s *Service) GetErc721TxList(ctx context.Context, contract, page, size stri
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 
 // encaspulate tx to json string and return
@@ -3088,7 +3240,7 @@ func (s *Service) GetErc721TokenTxList(ctx context.Context, contract, tokenid, p
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 
 // encaspulate tx to json string and return
@@ -3143,7 +3295,7 @@ func (s *Service) GetErc721TxListByUser(ctx context.Context, userid, contract, p
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }
 
 // encaspulate tx to json string and return
@@ -3194,5 +3346,5 @@ func (s *Service) GetErc721TokenTxListByUser(ctx context.Context, userid, contra
 
 		}
 	}
-	return "", errors.New("No result return")
+	return "", baas.ErrBaasQueryNoResult
 }

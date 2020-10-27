@@ -8,9 +8,10 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 	github.com/asdine/storm/v3 v3.2.0
 	github.com/aws/aws-sdk-go v1.31.4
+	github.com/bitherhq/go-bither v1.7.1
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
 	github.com/davidbyttow/govips v0.0.0-20200412130214-cbefdd8c639a
-	github.com/ethereum/go-ethereum v1.9.20
+	github.com/ethereum/go-ethereum v1.9.23
 	github.com/fatih/color v1.9.0
 	github.com/gabriel-vasile/mimetype v1.1.0
 	github.com/gorilla/mux v1.7.4
