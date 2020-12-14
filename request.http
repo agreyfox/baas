@@ -656,7 +656,7 @@ Post http://baasdev.moacchain.net/api/baas/getAddress
 
 ###
 
-Post http://127.0.0.1:4200/api/bass/getUserTxList
+Post http://127.0.0.1:4200/api/bass/erc20/getUserTxList
 
 {
   "userid":"e_raeb13@tianya.com"
@@ -765,9 +765,6 @@ POST http://127.0.0.1:4200/api/baas/getTxByHash
 "txHash":"0x6bd3e8823eaead4ba97c84c414bd3d37c9ffa8d4e36fae7cd848630c0c28dc8a"
 
 }
-
-###
-
 
 POST http://127.0.0.1:4200/api/baas/erc721/createToken
 
@@ -999,6 +996,15 @@ POST http://baasdev.moacchain.net/api/baas/erc20/getBalance
 }
 
 ###
+
+POST http://baas.moacchain.net/api/baas/erc20/getBalance
+
+{
+  "contract":"0xcca1b0a49980f2f10466a792c9f29749cfeb2a92",
+  "userId":"tst1001"
+}
+####
+
 POST http://127.0.0.1:4200/api/baas/erc20/transfer
 
 {
@@ -1252,3 +1258,40 @@ POST http://127.0.0.1:4200/api/baas/erc721/getTokenUserTxList
       "tokenId":"20001",
       "page":"1"
 }
+
+###
+
+
+POST https://baas.moacchain.net/api/baas/writeMsg
+
+{
+  "userId":"tst2001",
+  "toUserid":"tst2001",
+  "password":"password",
+  "msg":"2021就要来了"
+
+}
+
+###
+
+Post https://baas.moacchain.net/api/baas/getBalance
+
+{
+  "userId":"tst2001"
+}
+###
+
+
+POST https://baas.moacchain.net/api/baas/erc20/createToken
+
+{  
+  "userId":"tst2001",
+  "password":"password",
+  "name":"FileCoin",
+  "type":3,
+  "symbol":"FCS",
+  "totalSupply":8760000,
+  "decimals":18,
+  "cap":20000000000
+}
+###

@@ -52,9 +52,10 @@ type EthRPC struct {
 }
 
 // New create new rpc client with given url
-func New(url string, options ...func(rpc *EthRPC)) *EthRPC {
+func New(url string, networkid string, options ...func(rpc *EthRPC)) *EthRPC {
 	n := new(big.Int)
-	nid, ok := n.SetString("4452999", 10)
+	//nid, ok := n.SetString("4452999", 10)
+	nid, ok := n.SetString(networkid, 10)
 	if !ok {
 		fmt.Errorf("Network ID set error")
 	}
@@ -72,8 +73,8 @@ func New(url string, options ...func(rpc *EthRPC)) *EthRPC {
 }
 
 // NewEthRPC create new rpc client with given url
-func NewEthRPC(url string, options ...func(rpc *EthRPC)) *EthRPC {
-	return New(url, options...)
+func NewEthRPC(url string, networkid string, options ...func(rpc *EthRPC)) *EthRPC {
+	return New(url, networkid, options...)
 }
 
 func (rpc *EthRPC) call(method string, target interface{}, params ...interface{}) error {

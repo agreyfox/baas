@@ -36,6 +36,10 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	VERSION = "0.8"
+)
+
 var (
 	tomlConfigPathPtr = flag.String("config", "./baas.toml", "the filepath for the system toml configuration file")
 	/* inputImage        = flag.String("in", "test.jpg", "输入图片")
@@ -81,7 +85,9 @@ func run() error {
 		return nil
 	} */
 
-	color.Blue("Start baas...")
+	color.Green(fmt.Sprintf("Start BAAS Service version %s version ...", VERSION))
+	color.Green("All Right Reserved")
+
 	conf, err := parseConfig(*tomlConfigPathPtr)
 	if err != nil {
 		return fmt.Errorf("failed parsing config file %w", err)
@@ -217,15 +223,15 @@ func run() error {
 
 		Log: logger,
 	})
-/* 
-	opts := cors.Options{
-		AllowedMethods: []string{"PUT", "POST", "GET", "DELETE", "PATCH", "OPTIONS"},
-		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "Authorization", "Referer"},
-		AllowedOrigins: []string{"*"},
-		Debug:          true,
-	} */
+	/*
+		opts := cors.Options{
+			AllowedMethods: []string{"PUT", "POST", "GET", "DELETE", "PATCH", "OPTIONS"},
+			AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "Authorization", "Referer"},
+			AllowedOrigins: []string{"*"},
+			Debug:          true,
+		} */
 	//corsOpts := cors.New(opts)
-	
+
 	//corsHandler := corsOpts.Handler(h)
 	corsHandler := cors.AllowAll().Handler(h)
 	requestIDMiddleware := http.RequestIDMiddleware(corsHandler)

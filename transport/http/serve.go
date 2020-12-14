@@ -2,7 +2,6 @@ package http
 
 import (
 	"crypto/tls"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -41,13 +40,13 @@ func Serve(handler http.Handler, port int, https bool, sslCertPath, sslKeyPath s
 		return srv.ListenAndServe()
 	}
 
-	srv := &http.Server{
-		ReadTimeout:  5 * time.Minute,
-		WriteTimeout: 45 * time.Second,
-		IdleTimeout:  120 * time.Second,
-		Handler:      http.HandlerFunc(redirectTLS),
-	}
-	go func() { log.Fatal(srv.ListenAndServe()) }()
+	/* 	srv := &http.Server{
+	   		ReadTimeout:  5 * time.Minute,
+	   		WriteTimeout: 45 * time.Second,
+	   		IdleTimeout:  120 * time.Second,
+	   		Handler:      http.HandlerFunc(redirectTLS),
+	   	}
+	   	go func() { log.Fatal(srv.ListenAndServe()) }() */
 
 	tlsConfig := &tls.Config{
 		PreferServerCipherSuites: true,

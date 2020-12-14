@@ -45,10 +45,30 @@ func sanitizeApplication(v *baas.Application) *applicationData {
 	}
 }
 
+func sanitizeApplicationUser(v *baas.BAASUser) *map[string]interface{} {
+	return &map[string]interface{}{
+		"ID":        v.ID,
+		"name":      v.Name,
+		"email":     v.Email,
+		"address":   v.Address,
+		"CreatedAt": v.CreatedAt,
+		"UpdatedAt": v.UpdatedAt,
+	}
+}
 func sanitizeApplications(v []*baas.Application) []*applicationData {
 	ss := make([]*applicationData, len(v))
 	for x, u := range v {
 		nu := sanitizeApplication(u)
+		ss[x] = nu
+	}
+
+	return ss
+}
+
+func sanitizeApplicationUsers(v []*baas.BAASUser) []*map[string]interface{} {
+	ss := make([]*map[string]interface{}, len(v))
+	for x, u := range v {
+		nu := sanitizeApplicationUser(u)
 		ss[x] = nu
 	}
 

@@ -3,7 +3,9 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -130,15 +132,15 @@ func RespondServeFile(w http.ResponseWriter, f *baas.FileBlob) {
 	w.Header().Set("Content-Type", f.MIMEValue)
 	w.Header().Set("Content-Length", strconv.FormatInt(f.Size, 10))
 	w.Header().Set("Cache-Control", "max-age=2592000")
-	/* if f.ID == "ipfs" {
+	if f.ID == "ipfs" {
 		fmt.Println("Read to send video data")
 		data, err := ioutil.ReadFile(string(f.TempFileName))
 		fmt.Println(err)
 		w.Write(data)
 
-	} else { */
-	io.Copy(w, f.Data)
-	//}
+	} else {
+		io.Copy(w, f.Data)
+	}
 
 }
 

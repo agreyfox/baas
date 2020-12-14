@@ -176,3 +176,32 @@ func generateNextApplicationURL(applications []*baas.Application, queryLimit int
 
 	return ""
 }
+
+func (s *Server) handleListApplicationUsers() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := mux.Vars(r)["id"]
+		var queryParams listApplicationQueryParam
+		if err := s.QueryDecoder.Decode(&queryParams, r.URL.Query()); err != nil {
+			RespondError(w, err, http.StatusBadRequest, GetReqID(r))
+			return
+		}
+		a, err := s.BlockService.GetApplicationUsers(r.Context(), id, queryParams.Page, queryParams.Limit)
+		if err != nil {
+			RespondError(w, err, http.StatusInternalServerError, GetReqID(r))
+			return
+		}
+
+		resp := map[string]interface{}{
+			"status": 1,
+			"error":  "",
+			"data":   sanitizeApplicationUsers(a),
+			"meta": map[string]interface{}{
+				"page":   queryParams.Page,
+				"limit":  queryParams.Limit,
+				"length": len(a),
+			},
+		}
+
+		RespondOK(w, resp)
+	})
+}

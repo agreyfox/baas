@@ -43,6 +43,7 @@ func (s *Service) Create(ctx context.Context, n *baas.NewApplication) (*baas.App
 }
 
 func (s *Service) Application(ctx context.Context, id string) (*baas.Application, error) {
+	
 	return s.ApplicationStorage.Application(ctx, id)
 }
 

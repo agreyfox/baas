@@ -309,6 +309,42 @@ func sanitizeblockUser(t blockUser) baas.BAASUser {
 	}
 }
 
+// page start 1 表示第一页
+func (s BlockStorage) paginateUsers(ctx context.Context, id string, page, limit int) ([]*baas.BAASUser, error) {
+	var users []*blockUser
+	var retUsers []*baas.BAASUser
+	if limit == -1 {
+		err := s.DB.Select(q.Eq("ApplicationID", id)).OrderBy("CreatedAt").Find(&users)
+		if err != nil {
+			if err == storm.ErrNotFound {
+				return []*baas.BAASUser{}, nil
+			}
+			return nil, err
+		}
+
+	} else {
+		realpage := 0
+		if page >= 1 {
+			realpage = page - 1
+		}
+		err := s.DB.Select(q.Eq("ApplicationID", id)).OrderBy("CreatedAt").Limit(limit).Skip(realpage * limit).Find(&users)
+		if err != nil {
+			if err == storm.ErrNotFound {
+				return []*baas.BAASUser{}, nil
+			}
+			return nil, err
+		}
+	}
+	for _, a := range users {
+		aUser := sanitizeblockUser(*a)
+		retUsers = append(retUsers, &aUser)
+	}
+	return retUsers, nil
+}
+func (s BlockStorage) ApplicationUsers(ctx context.Context, id string, page, limit int) ([]*baas.BAASUser, error) {
+	return s.paginateUsers(ctx, id, page, limit)
+}
+
 // randSalt generates 16 * 8 bits of data for a random salt
 func randSalt() ([]byte, error) {
 	buf := make([]byte, 16)

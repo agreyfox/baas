@@ -5,7 +5,9 @@ import (
 	"time"
 )
 
-var ()
+var (
+	PageSize = 25
+)
 
 const (
 	BlockEngine            = "http://127.0.0.1:8545"
@@ -82,6 +84,7 @@ type BlockService interface {
 	// The following the some statistics functions
 	//GetErc721Property(ctx context.Context, addr, tokenid string) (string, error)
 	//===================analysis and utility ====================================
+	GetApplicationUsers(ctx context.Context, id string, page, limit int) ([]*BAASUser, error)
 	GetTx(ctx context.Context, addr string) (*BlockTx, error)
 	GetBlockNumber(ctx context.Context) (string, error)
 	GetAddressFromPK(ctx context.Context, pk string) (string, error)
@@ -109,6 +112,7 @@ type BlockStorage interface {
 	//Delete(ctx context.Context, id string) error
 	GetApplicationId(ctx context.Context, id string) (string, error)
 	Update(ctx context.Context, u *UpdateBAASUser) (*BAASUser, error)
+	ApplicationUsers(ctx context.Context, id string, page, limit int) ([]*BAASUser, error)
 }
 
 type Block struct {

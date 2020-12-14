@@ -69,4 +69,5 @@ func (r *updateApplicationRequest) validate() error {
 type listApplicationQueryParam struct {
 	Limit   int    `schema:"limit"`
 	SinceID string `schema:"since_id"`
+	Page    int    `schema:"page"`
 }

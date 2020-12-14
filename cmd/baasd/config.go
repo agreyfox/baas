@@ -184,4 +184,6 @@ type Bolt struct {
 type BlockChain struct {
 	Connection string `toml:"connection"`
 	GasPrice   int    `toml:"gas_price"`
+	APIServer string `toml:"api_server"`
+	NID string `toml:"network_id"`
 }

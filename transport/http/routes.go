@@ -17,7 +17,8 @@ func (s *Server) routes() {
 	s.Handle(createApplicationPath,
 		s.Authenticate(
 			s.handleCreateApplication())).Methods("POST")
-	const createApplicationAdminPath = "/admin/applications"
+
+	const createApplicationAdminPath = "/baas/admin/createApplication"
 	s.Handle(createApplicationAdminPath,
 		s.Authenticate(
 			s.handleCreateApplication())).Methods("POST")
@@ -26,17 +27,29 @@ func (s *Server) routes() {
 	s.Handle(getApplicationPath,
 		s.Authenticate(
 			s.handleGetApplication())).Methods("GET")
+	const getApplicationAdminPath = "/baas/admin/getApplication/{id}"
+	s.Handle(getApplicationAdminPath,
+		s.Authenticate(
+			s.handleGetApplication())).Methods("GET")
 
 	const listApplicationsPath = "/applications"
 	s.Handle(listApplicationsPath,
 		s.Authenticate(
 			s.handleListApplications())).Methods("GET")
-	const listApplicationsAdminPath = "/admin/applications"
+	const listApplicationsAdminPath = "/baas/admin/getApplications"
 	s.Handle(listApplicationsAdminPath,
 		s.Authenticate(
 			s.handleListApplications())).Methods("GET")
+	const listApplicationUsersAdminPath = "/baas/admin/application/{id}/users"
+	s.Handle(listApplicationUsersAdminPath,
+		s.Authenticate(
+			s.handleListApplicationUsers())).Methods("GET")
 	const updateApplication = "/applications/{id}"
 	s.Handle(updateApplication,
+		s.Authenticate(
+			s.handleUpdateApplication())).Methods("PUT")
+	const updateApplicationAdminPath = "/baas/admin/update/application/{id}"
+	s.Handle(updateApplicationAdminPath,
 		s.Authenticate(
 			s.handleUpdateApplication())).Methods("PUT")
 
@@ -44,7 +57,10 @@ func (s *Server) routes() {
 	s.Handle(deleteApplicationPath,
 		s.Authenticate(
 			s.handleDeleteApplication())).Methods("DELETE")
-
+	const deleteApplicationAdminPath = "/baas/admin/deleteApplication/{id}"
+	s.Handle(deleteApplicationAdminPath,
+		s.Authenticate(
+			s.handleDeleteApplication())).Methods("DELETE")
 	//////////////////////////////
 	// UPLOAD //
 	/////////////////////////////
@@ -76,10 +92,15 @@ func (s *Server) routes() {
 		s.Authenticate(
 			s.handleListApplicationUsages())).Methods("GET")
 
+	const listApplicationUsagesAdmminPath = "/baas/admin/application/{application_id}/usages"
+	s.Handle(listApplicationUsagesAdmminPath,
+		s.Authenticate(
+			s.handleListApplicationUsages())).Methods("GET")
+
 	//////////////////////////////
 	// SERVE FILE //
 	/////////////////////////////
-	s.PathPrefix("/{app_name}/{date}/{file_name}").Handler(
+	s.PathPrefix("/file/{app_name}/{date}/{file_name}").Handler(
 		s.handleServeFile()).Methods("GET")
 
 	//////////////////////////////

@@ -465,7 +465,8 @@ func (s *Server) handleSendToken() http.Handler {
 		a, err := s.BlockService.SendToken(r.Context(), payload.Userid, payload.Password, payload.Targetid, fmt.Sprintf("%f", payload.Value), payload.Message, payload.Encode, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(),
+				"txhash": a,
 				"status": 0,
 			})
 			return
@@ -493,7 +494,7 @@ func (s *Server) handleWriteMsg() http.Handler {
 
 		if len(payload.Userid) == 0 || len(payload.Targetid) == 0 || len(payload.Message) == 0 {
 			RespondOK(w, map[string]interface{}{
-				"error":  "Parameter error",
+				"error":  "parameter error",
 				"status": 0,
 			})
 			return
@@ -502,7 +503,8 @@ func (s *Server) handleWriteMsg() http.Handler {
 		a, err := s.BlockService.WriteMsg(r.Context(), payload.Userid, payload.Password, payload.Targetid, payload.Message, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(),
+				"txhash": a,
 				"status": 0,
 			})
 			return
@@ -515,7 +517,6 @@ func (s *Server) handleWriteMsg() http.Handler {
 			},
 			"error": "",
 		}
-
 		RespondOK(w, resp)
 	})
 }
@@ -534,11 +535,6 @@ func (s *Server) handleReadMsg() http.Handler {
 				"status": 0,
 			})
 			return
-		}
-		if len(payload.Encode) == 0 {
-			payload.Encode = "utf8"
-		} else if payload.Encode != "hex" {
-			payload.Encode = "utf8"
 		}
 		a, t, err := s.BlockService.ReadMsg(r.Context(), payload.Hash, payload.Encode)
 		if err != nil {
@@ -623,7 +619,8 @@ func (s *Server) handleGetUserTxList() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		//var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //overall varable. =25
 		var page = fmt.Sprint(payload.Page)
 		/* if payload.Page > 0 {
 			page = fmt.Sprint(payload.Page)
@@ -633,6 +630,15 @@ func (s *Server) handleGetUserTxList() http.Handler {
 			page = "-99"
 		} */
 		a, err := s.BlockService.GetTxByUserAddress(r.Context(), payload.Userid, page, size)
+		if err == baas.ErrBaasQueryNoResult {
+			RespondOK(w, map[string]interface{}{
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
+				"Data":   []interface{}{},
+			})
+			return
+		}
+
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
 				"error":  err.Error(),
@@ -678,7 +684,7 @@ func (s *Server) handleGetUserToUserTxList() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) // "25"
 		var page = fmt.Sprint(payload.Page)
 		/* if payload.Page > 0 {
 			page = fmt.Sprint(payload.Page)
@@ -688,6 +694,14 @@ func (s *Server) handleGetUserToUserTxList() http.Handler {
 			page = "-99"
 		} */
 		a, err := s.BlockService.GetPeerToPeerTxByUserAddress(r.Context(), payload.Userid, payload.Targetid, page, size)
+		if err == baas.ErrBaasQueryNoResult {
+			RespondOK(w, map[string]interface{}{
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
+				"Data":   []interface{}{},
+			})
+			return
+		}
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
 				"error":  err.Error(),
@@ -737,7 +751,8 @@ func (s *Server) handleCreate721Token() http.Handler {
 		a, err := s.BlockService.CreateErc721Token(r.Context(), payload.UserId, payload.Password, payload.Contract, payload.TokenId, payload.Meta, payload.Property, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // + ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -775,7 +790,8 @@ func (s *Server) handleSet721TokenProperty() http.Handler {
 		a, err := s.BlockService.SetErc721TokenProperty(r.Context(), payload.UserId, payload.Password, payload.Contract, payload.TokenId, payload.Property, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), //+ ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1001,7 +1017,8 @@ func (s *Server) handleSend721Token() http.Handler {
 		a, err := s.BlockService.SendErc721Token(r.Context(), payload.UserId, payload.Password, payload.Contract, payload.TokenId, payload.Memo, payload.TargetId, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // +":" + a,
+				"txHasH": a,
 				"status": 0,
 			})
 			return
@@ -1039,7 +1056,8 @@ func (s *Server) handleAdd721TokenMemo() http.Handler {
 		a, err := s.BlockService.AddErc721TokenMemo(r.Context(), payload.UserId, payload.Password, payload.Contract, payload.TokenId, payload.Memo, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), //+ ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1233,15 +1251,15 @@ func (s *Server) handleGet721TxList() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //"25"
 		var page = fmt.Sprint(payload.Page)
 		//fmt.Println(size, page)
 
 		a, err := s.BlockService.GetErc721TxList(r.Context(), payload.Contract, page, size)
 		if err == baas.ErrBaasQueryNoResult {
 			RespondOK(w, map[string]interface{}{
-				"error":  "",
-				"status": 0,
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
 				"Data":   []interface{}{},
 			})
 			return
@@ -1292,15 +1310,15 @@ func (s *Server) GetErc721TokenTxList() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //"25"
 		var page = fmt.Sprint(payload.Page)
 		fmt.Println(size, page)
 
 		a, err := s.BlockService.GetErc721TokenTxList(r.Context(), payload.Contract, payload.TokenId, page, size)
 		if err == baas.ErrBaasQueryNoResult {
 			RespondOK(w, map[string]interface{}{
-				"error":  "",
-				"status": 0,
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
 				"Data":   []interface{}{},
 			})
 			return
@@ -1349,15 +1367,15 @@ func (s *Server) GetErc721TxListByUser() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //"25"
 		var page = fmt.Sprint(payload.Page)
 		//fmt.Println(size, page)
 
 		a, err := s.BlockService.GetErc721TxListByUser(r.Context(), payload.Userid, payload.Contract, page, size)
 		if err == baas.ErrBaasQueryNoResult {
 			RespondOK(w, map[string]interface{}{
-				"error":  "",
-				"status": 0,
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
 				"Data":   []interface{}{},
 			})
 			return
@@ -1406,15 +1424,15 @@ func (s *Server) GetErc721TokenTxListByUser() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //"25"
 		var page = fmt.Sprint(payload.Page)
 		//fmt.Println(size, page)
 
 		a, err := s.BlockService.GetErc721TokenTxListByUser(r.Context(), payload.Userid, payload.Contract, payload.TokenId, page, size)
 		if err == baas.ErrBaasQueryNoResult {
 			RespondOK(w, map[string]interface{}{
-				"error":  "",
-				"status": 0,
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
 				"Data":   []interface{}{},
 			})
 			return
@@ -1539,7 +1557,8 @@ func (s *Server) handleDeploy20Token() http.Handler {
 		a, hash, err := s.BlockService.DeployERC20Contract(r.Context(), payload.UserId, payload.Password, payload.Name, payload.Symbol, fmt.Sprint(payload.Class), payload.TotalSupply, payload.Decimal, payload.Capacity)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + hash,
+				"error":  err.Error(), // + ":" + hash,
+				"txHash": hash,
 				"status": 0,
 			})
 			return
@@ -1668,7 +1687,8 @@ func (s *Server) handleSend20Token() http.Handler {
 		a, err := s.BlockService.SendErc20Token(r.Context(), payload.UserId, payload.Password, payload.TargetId, payload.Contract, payload.Memo, vv, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // + ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1712,7 +1732,8 @@ func (s *Server) handleApprove() http.Handler {
 		a, err := s.BlockService.ApproveErc20(r.Context(), payload.UserId, payload.Password, payload.TargetId, payload.Contract, payload.Quantity, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), //,,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1801,7 +1822,8 @@ func (s *Server) handleIncreaseAllowance() http.Handler {
 		a, err := s.BlockService.IncreaseAllowanceErc20(r.Context(), payload.UserId, payload.Password, payload.TargetId, payload.Contract, payload.Quantity, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // + ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1845,7 +1867,8 @@ func (s *Server) handleDecreaseAllowance() http.Handler {
 		a, err := s.BlockService.DecresaseAllowanceErc20(r.Context(), payload.UserId, payload.Password, payload.TargetId, payload.Contract, payload.Quantity, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // + ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1897,7 +1920,8 @@ func (s *Server) handleTransferFrom() http.Handler {
 		a, err := s.BlockService.TransferFromErc20(r.Context(), payload.UserId, payload.Password, payload.SendUserId, payload.TargetId, payload.Contract, payload.Memo, payload.Quantity, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), //+ ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -1980,7 +2004,8 @@ func (s *Server) handleBurn20Token() http.Handler {
 		a, err := s.BlockService.BurnErc20(r.Context(), payload.UserId, payload.Password, payload.Contract, payload.Quantity, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // + ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -2031,7 +2056,8 @@ func (s *Server) handlePause20Token() http.Handler {
 		a, err := s.BlockService.PauseErc20(r.Context(), payload.UserId, payload.Password, payload.Contract, action, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), // + ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -2113,7 +2139,8 @@ func (s *Server) handleMint20Token() http.Handler {
 		a, err := s.BlockService.MintErc20(r.Context(), payload.UserId, payload.Password, payload.Contract, payload.Quantity, payload.GasLimit)
 		if err != nil {
 			RespondOK(w, map[string]interface{}{
-				"error":  err.Error() + ":" + a,
+				"error":  err.Error(), //+ ":" + a,
+				"txHash": a,
 				"status": 0,
 			})
 			return
@@ -2147,14 +2174,14 @@ func (s *Server) handleGet20TxList() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //"25"
 		var page = fmt.Sprint(payload.Page)
 
 		a, err := s.BlockService.GetERC20TxList(r.Context(), payload.Contract, page, size)
 		if err == baas.ErrBaasQueryNoResult {
 			RespondOK(w, map[string]interface{}{
-				"error":  "",
-				"status": 0,
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
 				"Data":   []interface{}{},
 			})
 			return
@@ -2203,7 +2230,7 @@ func (s *Server) handleGet20UserTxList() http.Handler {
 			})
 			return
 		}
-		var size = "25"
+		var size = fmt.Sprint(baas.PageSize) //"25"
 		var page = fmt.Sprint(payload.Page)
 		/* if payload.Page > 0 {
 			page = fmt.Sprint(payload.Page)
@@ -2215,8 +2242,8 @@ func (s *Server) handleGet20UserTxList() http.Handler {
 		a, err := s.BlockService.GetERC20TxByUserAddress(r.Context(), payload.Userid, payload.Contract, page, size)
 		if err == baas.ErrBaasQueryNoResult {
 			RespondOK(w, map[string]interface{}{
-				"error":  "",
-				"status": 0,
+				"error":  baas.ErrBaasQueryNoResult,
+				"status": 1,
 				"Data":   []interface{}{},
 			})
 			return

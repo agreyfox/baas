@@ -43,12 +43,12 @@ var (
 	GasPrice        int64
 )
 
-const (
-	BackEndGetAddressTx      = "http://dao.moacchain.net/api/v1/wallets/%s/tx"
-	BackEndPeerToPeerTx      = "http://dao.moacchain.net/api/v1/wallets/%s/%s/txfilter"
-	BackEndPeerToERC20Tx     = "http://dao.moacchain.net/api/v1/wallets/%s/%s/tx"
-	BackEndPeerToERC721Tx    = "http://dao.moacchain.net/api/v1/wallets/%s/%s/tx"
-	BackEndPeerERC721TokenTx = "http://dao.moacchain.net/api/v1/erc721/%s/%s/%s/tokentx"
+var (
+	BackEndGetAddressTx      = "/api/v1/wallets/%s/tx"
+	BackEndPeerToPeerTx      = "/api/v1/wallets/%s/%s/txfilter"
+	BackEndPeerToERC20Tx     = "/api/v1/wallets/%s/%s/tx"
+	BackEndPeerToERC721Tx    = "/api/v1/wallets/%s/%s/tx"
+	BackEndPeerERC721TokenTx = "/api/v1/erc721/%s/%s/%s/tokentx"
 )
 
 type Service struct {
@@ -67,7 +67,7 @@ func init() {
 		fmt.Println("721 abi parse failed,please check ")
 		return
 	}
-	fmt.Println("System load 721 ABI success!")
+	//fmt.Println("System load 721 ABI success!")
 }
 
 // block service first connect storm block chain service
@@ -78,7 +78,7 @@ func InitBlockService() {
 		os.Exit(-1)
 	}
 	fmt.Println("Trying to connect Blocachain service...", conf.Blockchain.Connection)
-	StormClient = storm.New(conf.Blockchain.Connection, storm.WithDebug(true))
+	StormClient = storm.New(conf.Blockchain.Connection, conf.Blockchain.NID, storm.WithDebug(true))
 
 	version, err := StormClient.Web3ClientVersion()
 	if err != nil {
@@ -86,8 +86,17 @@ func InitBlockService() {
 		os.Exit(-2)
 	}
 	GasPrice = int64(conf.Blockchain.GasPrice) // 设置gasPrice from configure file
+
 	fmt.Println("Blockchain backend service connected! \n Version ", version)
 	fmt.Printf("Blockchain backend service gas price set to %d!\n", GasPrice)
+	BackEndGetAddressTx = conf.Blockchain.APIServer + BackEndGetAddressTx           // "/api/v1/wallets/%s/tx"
+	BackEndPeerToPeerTx = conf.Blockchain.APIServer + BackEndPeerToPeerTx           // "/api/v1/wallets/%s/%s/txfilter"
+	BackEndPeerToERC20Tx = conf.Blockchain.APIServer + BackEndPeerToERC20Tx         // "/api/v1/wallets/%s/%s/tx"
+	BackEndPeerToERC721Tx = conf.Blockchain.APIServer + BackEndPeerToERC721Tx       // "/api/v1/wallets/%s/%s/tx"
+	BackEndPeerERC721TokenTx = conf.Blockchain.APIServer + BackEndPeerERC721TokenTx //"/api/v1/erc721/%s/%s/%s/tokentx"
+
+	NetworkID = conf.Blockchain.NID //设置网络ID
+
 }
 
 //return two array byte, first is 8 byte, second is 12 byte
@@ -234,11 +243,11 @@ func (s *Service) Import(ctx context.Context, n *baas.NewBAASUser) (*baas.BAASUs
 
 func (s *Service) GetAddressFromPK(ctx context.Context, pk string) (string, error) {
 	privatekey := pk
-	fmt.Printf("Call to transfer  private key to  address:%s\n", privatekey)
-
 	if pk[0] == '0' && pk[1] == 'x' {
 		privatekey = privatekey[2:]
 	}
+	fmt.Printf("Call to transfer  private key to  address:%s\n", privatekey)
+
 	add := StormClient.NewAddressFromPK(privatekey)
 
 	return add, nil
@@ -492,6 +501,9 @@ func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, 
 	if maxGas <= 0 {
 		maxGas = baas.OriginTokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(datalen) * 12
 	tx := storm.T{
 		From:     from,
@@ -502,7 +514,7 @@ func (s *Service) SendToken(ctx context.Context, addr, password, toAddr, value, 
 		Data:     datappayload,
 		Nonce:    nounce,
 	}
-	//fmt.Println(tx)
+
 	t, err := SignAndSendTx(tx, frompk)
 	var ee = err
 	if ee == nil {
@@ -560,7 +572,7 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 	}
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum {
+	if GasPrice > 0 && f < GasCheckMinimum {
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 	nounce, err := StormClient.EthGetTransactionCount(from, "latest")
@@ -575,6 +587,9 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 	if maxGas <= 0 {
 		maxGas = baas.OriginTokenOP
 	}
+	/* 	if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(len(msg)) * 12
 	tx := storm.T{
 		From:     from,
@@ -585,8 +600,10 @@ func (s *Service) WriteMsg(ctx context.Context, addr, password, toAddr, msg stri
 		Data:     msg,
 		Nonce:    nounce,
 	}
+	//fmt.Println(tx)
 
 	t, err := SignAndSendTx(tx, frompk)
+
 	var ee = err
 	if ee == nil {
 		if len(t.TransactionHash) == 0 {
@@ -906,6 +923,7 @@ func (s *Service) GetErc721Balance(ctx context.Context, addr, contractAddr strin
 	var returns = common.FromHex(tx)
 	out, err := Abi.Unpack("balanceOf", returns) // modify by api change 2020/10/27
 	//fmt.Println(balance)
+
 	return fmt.Sprintf("%v", out[0]), err
 
 }
@@ -964,7 +982,7 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -1018,6 +1036,9 @@ func (s *Service) CreateErc721Token(ctx context.Context, userid, password, contr
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenMint
 	}
+	/* 	if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(len(meta)+len(property)) * 12
 	tx := storm.T{
 		From:     from,
@@ -1075,7 +1096,7 @@ func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, 
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -1122,6 +1143,9 @@ func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, 
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenOP
 	}
+	/* 	if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(len(property)) * 12
 	tx := storm.T{
 		From:     from,
@@ -1161,7 +1185,7 @@ func (s *Service) SetErc721TokenProperty(ctx context.Context, userid, password, 
 	} else {
 		return "", ee
 	}
-	return "", nil
+	//return "", nil
 }
 
 func (s *Service) GetErc721Info(ctx context.Context, addr string) (map[string]interface{}, error) {
@@ -1231,7 +1255,7 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -1300,6 +1324,9 @@ func (s *Service) SendErc721Token(ctx context.Context, addr, pass, contract, tok
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenSend
 	}
+	/* 	if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
@@ -1469,7 +1496,7 @@ func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, cont
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -1515,6 +1542,9 @@ func (s *Service) AddErc721TokenMemo(ctx context.Context, userid, password, cont
 	if maxGas <= 0 {
 		maxGas = baas.ERC721TokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
@@ -1731,7 +1761,7 @@ func (s *Service) CreateERC721Contract(ctx context.Context, userid, pass, name, 
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -1752,7 +1782,9 @@ func (s *Service) CreateERC721Contract(ctx context.Context, userid, pass, name, 
 	var maxGas int64
 
 	maxGas = baas.DelplyContractGas
-
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		Gas:      int(maxGas), //3000000, //baas.GasERC721Limit * 10,
@@ -1810,7 +1842,7 @@ func (s *Service) DeployERC20Contract(ctx context.Context, userid, password, nam
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -1842,6 +1874,9 @@ func (s *Service) DeployERC20Contract(ctx context.Context, userid, password, nam
 	var maxGas int64
 
 	maxGas = baas.DelplyContractGas
+	/* 	if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		Gas:      int(maxGas), //5000000,
@@ -2082,7 +2117,7 @@ func (s *Service) SendErc20Token(ctx context.Context, addr, password, toAddr, co
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2148,6 +2183,9 @@ func (s *Service) SendErc20Token(ctx context.Context, addr, password, toAddr, co
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenSend
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//	maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
@@ -2211,7 +2249,7 @@ func (s *Service) ApproveErc20(ctx context.Context, addr, password, toAddr, cont
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2268,6 +2306,9 @@ func (s *Service) ApproveErc20(ctx context.Context, addr, password, toAddr, cont
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenOP
 	}
+	/* 	if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -2392,7 +2433,7 @@ func (s *Service) IncreaseAllowanceErc20(ctx context.Context, addr, password, to
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2450,6 +2491,9 @@ func (s *Service) IncreaseAllowanceErc20(ctx context.Context, addr, password, to
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -2512,7 +2556,7 @@ func (s *Service) DecresaseAllowanceErc20(ctx context.Context, addr, password, t
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2570,6 +2614,9 @@ func (s *Service) DecresaseAllowanceErc20(ctx context.Context, addr, password, t
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -2639,7 +2686,7 @@ func (s *Service) TransferFromErc20(ctx context.Context, user, password, fromadd
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2729,6 +2776,9 @@ func (s *Service) TransferFromErc20(ctx context.Context, user, password, fromadd
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenSend
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	//maxGas += int64(len(memo)) * 12
 	tx := storm.T{
 		From:     from,
@@ -2812,7 +2862,7 @@ func (s *Service) BurnErc20(ctx context.Context, addr, password, contract string
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2862,6 +2912,9 @@ func (s *Service) BurnErc20(ctx context.Context, addr, password, contract string
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -2901,6 +2954,7 @@ func (s *Service) BurnErc20(ctx context.Context, addr, password, contract string
 		return "", ee
 	}
 }
+
 func (s *Service) PauseErc20(ctx context.Context, addr, password, contract string, value bool, gas int64) (string, error) {
 	var err error
 	from, frompk, rv, cipher, salt, err := s.BlockStorage.GetAddressByService(ctx, addr, password)
@@ -2917,7 +2971,7 @@ func (s *Service) PauseErc20(ctx context.Context, addr, password, contract strin
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -2958,6 +3012,9 @@ func (s *Service) PauseErc20(ctx context.Context, addr, password, contract strin
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -3052,7 +3109,7 @@ func (s *Service) MintErc20(ctx context.Context, addr, password, contract string
 
 	balancestr, err := s.GetBalance(ctx, from)
 	f, _ := strconv.ParseFloat(balancestr, 64)
-	if f < GasCheckMinimum { //TODO:need check mint token total gas
+	if GasPrice > 0 && f < GasCheckMinimum { //TODO:need check mint token total gas
 		return "", baas.ErrBaasNotEnoughMoney
 	}
 
@@ -3110,6 +3167,9 @@ func (s *Service) MintErc20(ctx context.Context, addr, password, contract string
 	if maxGas <= 0 {
 		maxGas = baas.ERC20TokenOP
 	}
+	/* if GasPrice == 0 {
+		maxGas = 0
+	} */
 	tx := storm.T{
 		From:     from,
 		To:       contract,
@@ -3347,4 +3407,12 @@ func (s *Service) GetErc721TokenTxListByUser(ctx context.Context, userid, contra
 		}
 	}
 	return "", baas.ErrBaasQueryNoResult
+}
+
+func (s *Service) GetApplicationUsers(ctx context.Context, id string, page, limit int) ([]*baas.BAASUser, error) {
+	if limit == 0 {
+		limit = baas.DefaultFilePaginationLimit
+	}
+
+	return s.BlockStorage.ApplicationUsers(ctx, id, page, limit)
 }
